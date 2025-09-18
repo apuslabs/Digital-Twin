@@ -4,6 +4,7 @@ import ObamaImg from "@/resources/obama.png";
 import { Figure, ChatMessage, MessageAuthor } from "../types";
 import { startChatSession, sendMessage, Chat } from "../services/apusService";
 import { aoService } from "../services/aoService";
+import TEEService from "../services/teeService";
 
 interface ChatInterfaceProps {
   figure: Figure;
@@ -357,15 +358,39 @@ const ConnectionPanel: React.FC<{
   );
 };
 
-const TEEProtectionPanel: React.FC<{ figure: Figure; hideTitle?: boolean }> = ({
+const TEEProtectionPanel: React.FC<{ figure: Figure; hideTitle?: boolean; sessionId: string }> = ({
   figure,
   hideTitle = false,
+  sessionId,
 }) => {
-  // Generate a mockup attestation ID based on current timestamp
-  const attestationId = `TEE-CONV-${Date.now().toString().slice(-8)}-${figure.id
-    .toUpperCase()
-    .slice(0, 3)}-VERIFIED`;
-  const sessionStart = new Date().toISOString();
+  const [attestationData, setAttestationData] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [pageStartTime] = useState(new Date().toISOString());
+  
+  // Fetch TEE attestation when component mounts
+  useEffect(() => {
+    const fetchAttestation = async () => {
+      setIsLoading(true);
+      try {
+        const attestation = await TEEService.getAttestation(sessionId);
+        setAttestationData(attestation);
+      } catch (error) {
+        console.error('Failed to fetch TEE attestation:', error);
+        setAttestationData({
+          error: 'Failed to fetch attestation',
+          status: 'ERROR'
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchAttestation();
+  }, [sessionId]);
+
+  const displaySessionId = sessionId.substring(0, 16) + '...';
+  const attestationStatus = attestationData?.status === 'VERIFIED' ? '✓' : attestationData?.status === 'ERROR' ? '✗' : '⏳';
+  const statusColor = attestationData?.status === 'VERIFIED' ? 'text-green-600' : attestationData?.status === 'ERROR' ? 'text-red-600' : 'text-yellow-600';
 
   return (
     <div className="w-full relative border border-neutral-300 bg-white p-4 self-start text-neutral-900">
@@ -392,9 +417,16 @@ const TEEProtectionPanel: React.FC<{ figure: Figure; hideTitle?: boolean }> = ({
           <p className="text-[11px] font-semibold mb-1 tracking-wide text-neutral-600 uppercase">
             Security Status
           </p>
-          <p className="text-sm text-neutral-800">
-            ✓ Trusted execution environment
-          </p>
+          {isLoading ? (
+            <p className="text-sm text-neutral-500">
+              ⏳ Verifying trusted execution environment...
+            </p>
+          ) : (
+            <p className={`text-sm ${statusColor}`}>
+              {attestationStatus} {attestationData?.status === 'VERIFIED' ? 'Trusted execution environment' : 
+                 attestationData?.status === 'ERROR' ? 'Attestation failed' : 'Verifying...'}
+            </p>
+          )}
         </div>
 
         <div className="p-3 border border-neutral-300 bg-white/80">
@@ -405,13 +437,13 @@ const TEEProtectionPanel: React.FC<{ figure: Figure; hideTitle?: boolean }> = ({
             <div className="flex justify-between">
               <span className="text-[11px] text-neutral-500">Session ID:</span>
               <span className="text-[11px] font-mono text-neutral-900">
-                {attestationId.substring(0, 16)}...
+                {displaySessionId}
               </span>
             </div>
             <div className="flex justify-between">
               <span className="text-[11px] text-neutral-500">Started:</span>
               <span className="text-[11px] text-neutral-800">
-                {sessionStart.substring(11, 19)}
+                {pageStartTime.substring(11, 19)}
               </span>
             </div>
             <div className="flex justify-between">
@@ -419,7 +451,7 @@ const TEEProtectionPanel: React.FC<{ figure: Figure; hideTitle?: boolean }> = ({
                 TEE Provider:
               </span>
               <span className="text-[11px] text-neutral-900">
-                APUS Intel SGX
+                {isLoading ? 'Loading...' : (attestationData?.provider || 'APUS NVIDIA TEE')}
               </span>
             </div>
           </div>
@@ -429,16 +461,35 @@ const TEEProtectionPanel: React.FC<{ figure: Figure; hideTitle?: boolean }> = ({
           <p className="text-[11px] font-semibold mb-2 tracking-wide text-neutral-600 uppercase">
             Full Attestation
           </p>
-          <button
-            onClick={() => {
-              alert(
-                `Full TEE Attestation:\n\n${attestationId}\n\nThis conversation is verified to run in a Trusted Execution Environment.`
-              );
-            }}
-            className="w-full text-[11px] font-mono text-neutral-900 bg-transparent p-2 border border-neutral-300 hover:bg-neutral-50 transition-colors break-all"
-          >
-            {attestationId}
-          </button>
+          {isLoading ? (
+            <div className="w-full text-[11px] text-neutral-500 bg-transparent p-2 border border-neutral-300">
+              <div className="flex items-center justify-center space-x-2">
+                <div className="animate-spin rounded-full h-3 w-3 border-b border-neutral-400"></div>
+                <span>Fetching attestation...</span>
+              </div>
+            </div>
+          ) : (
+            <button
+              onClick={() => {
+                const fullAttestation = attestationData?.error 
+                  ? `TEE Attestation Error:\n\n${attestationData.error}\n\nTimestamp: ${attestationData.timestamp}`
+                  : `Full TEE Attestation:\n\nSession ID: ${sessionId}\nProvider: ${attestationData?.provider}\nStatus: ${attestationData?.status}\nTimestamp: ${attestationData?.timestamp}\n\nAttestation Data:\n${attestationData?.attestation || 'No attestation data available'}`;
+                
+                alert(fullAttestation);
+              }}
+              className="w-full text-[11px] font-mono text-neutral-900 bg-transparent p-2 border border-neutral-300 hover:bg-neutral-50 transition-colors break-all"
+              disabled={isLoading}
+            >
+              {attestationData?.error ? 'Error - Click for details' : 
+               attestationData?.attestation ? 
+                 (attestationData.attestation.startsWith('eyJ') ? 
+                   `JWT: ${attestationData.attestation.substring(0, 20)}...` : 
+                   (attestationData.attestation.length > 50 ? 
+                     attestationData.attestation.substring(0, 50) + '...' : 
+                     attestationData.attestation)) :
+                 'No attestation data'}
+            </button>
+          )}
         </div>
 
         <div className="text-center">
@@ -631,16 +682,15 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ figure, onBack }) => {
     ]);
 
     try {
-      const stream = await sendMessage(chatSession, userInput);
-      for await (const chunk of stream) {
-        setMessages((prev) =>
-          prev.map((msg) =>
-            msg.id === aiMessageId
-              ? { ...msg, text: msg.text + chunk.text }
-              : msg
-          )
-        );
-      }
+      const response = await sendMessage(chatSession, userInput, figure.config);
+      
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === aiMessageId
+            ? { ...msg, text: response }
+            : msg
+        )
+      );
     } catch (error) {
       setMessages((prev) =>
         prev.map((msg) =>
@@ -706,7 +756,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ figure, onBack }) => {
                 </a>
               </div>
             </div>
-            <TEEProtectionPanel figure={figure} />
+            <TEEProtectionPanel figure={figure} sessionId={chatSession?.sessionId || 'loading'} />
           </div>
 
           {/* Main Chat Area */}

@@ -19,6 +19,11 @@ export const FIGURES: Figure[] = [
     contributors: 2451,
     processId: 'vaRuI-7Rx5w-lvsIfmcjfcGPG5w2NjHsWUY_tYqbq7M',
     arweaveTxId: 'FhD4xbfkCkCb19BGUMduQCqmtirFCIcDUAeC0fenzbE',
+    config: `{
+    "temperature": 0.7,
+    "max_tokens": 150,
+    "top_p": 0.9
+    }`,
   },
   {
     id: 'barack_obama',
@@ -31,6 +36,11 @@ export const FIGURES: Figure[] = [
     contributors: 1873,
     processId: 'BO_AGENT_PROCESS_67890DEF',
     arweaveTxId: 'BO-PROMPT-1a2b3c4d5e6f7g8h9i0j1k2l3m4n5o6p7q8r9s0t1u2v3w4x5y6z7a8b9c0d',
+        config: `{
+    "temperature": 0.7,
+    "max_tokens": 150,
+    "top_p": 0.9
+    }`,
   },
   {
     id: 'taylor_swift',
@@ -43,6 +53,11 @@ export const FIGURES: Figure[] = [
     contributors: 3102,
     processId: 'TS_AGENT_PROCESS_ABCDE123',
     arweaveTxId: 'TS-PROMPT-5z4y3x2w1v0u9t8s7r6q5p4o3n2m1l0k9j8i7h6g5f4e3d2c1b0a9z8y7x6w',
+        config: `{
+    "temperature": 0.7,
+    "max_tokens": 150,
+    "top_p": 0.9,
+    },`,
   },
   {
     id: 'neil_degrasse_tyson',
@@ -55,6 +70,11 @@ export const FIGURES: Figure[] = [
     contributors: 987,
     processId: 'NDT_AGENT_PROCESS_456789GH',
     arweaveTxId: 'NDT-PROMPT-3f4e5d6c7b8a9z0y1x2w3v4u5t6s7r8q9p0o1n2m3l4k5j6i7h8g9f0e1d2c3b',
+        config: `{
+    "temperature": 0.7,
+    "max_tokens": 150,
+    "top_p": 0.9,
+    },`,
   },
   {
     id: 'elon_musk',
@@ -67,5 +87,10 @@ export const FIGURES: Figure[] = [
     contributors: 4211,
     processId: 'EM_AGENT_PROCESS_789ABCDEF',
     arweaveTxId: 'EM-PROMPT-7h8g9f0e1d2c3b4a5z6y7x8w9v0u1t2s3r4q5p6o7n8m9l0k1j2i3h4g5f6e7d',
+        config: `{
+    "temperature": 0.7,
+    "max_tokens": 150,
+    "top_p": 0.9,
+    },`,
   },
 ];

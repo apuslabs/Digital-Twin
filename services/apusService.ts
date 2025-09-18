@@ -1,6 +1,3 @@
-interface ApusConfig {
-  max_tokens: number;
-}
 
 interface ApusRequest {
   reference: string;
@@ -23,17 +20,10 @@ export interface ApusChat {
   conversationHistory: Array<{ role: 'user' | 'assistant'; content: string }>;
 }
 
-export interface ApusStreamChunk {
-  text: string;
-  done?: boolean;
-}
-
 const APUS_ENDPOINT = 'https://hb.apus.network/~llamacpp@1.0/chat/serialize~json@1.0';
 
 // Default configuration for APUS
-const DEFAULT_CONFIG: ApusConfig = {
-  max_tokens: 100
-};
+const DEFAULT_CONFIG = JSON.stringify({ max_tokens: 3000 });
 
 // Generate a unique session ID
 const generateSessionId = (): string => {
@@ -47,7 +37,7 @@ const generateReference = (): string => {
   // In a real implementation, this might come from a previous APUS interaction
   // For now, we'll use a mock reference based on the example
   const timestamp = Date.now();
-  return `alex-${timestamp}`;
+  return `DT-${timestamp}`;
 };
 
 // Create a chat session compatible with the existing interface
@@ -70,11 +60,12 @@ export const startChatSession = (systemInstruction: string): ApusChat | null => 
   }
 };
 
-// Send message to APUS and return the complete response as a single chunk
+// Send message to APUS and return the complete response
 export const sendMessage = async (
   chat: ApusChat,
-  message: string
-): Promise<AsyncGenerator<ApusStreamChunk>> => {
+  message: string,
+  figureConfig?: string
+): Promise<string> => {
   if (!chat) {
     throw new Error("Chat session not initialized");
   }
@@ -97,12 +88,24 @@ export const sendMessage = async (
     
     fullPrompt += `Assistant: `;
     console.log("full prompt :", fullPrompt);
+    
+    // Parse figure config or use default
+    let configToUse = DEFAULT_CONFIG;
+    if (figureConfig) {
+      try {
+        const parsedConfig = JSON.parse(figureConfig);
+        configToUse = JSON.stringify(parsedConfig);
+      } catch (error) {
+        console.warn("Failed to parse figure config, using default:", error);
+      }
+    }
+    
     // Prepare the request parameters
     const requestParams: ApusRequest = {
       reference: chat.reference,
       session_id: chat.sessionId,
       prompt: fullPrompt,
-      config: JSON.stringify(DEFAULT_CONFIG)
+      config: configToUse, 
     };
 
     // Create URL with parameters
@@ -112,6 +115,7 @@ export const sendMessage = async (
     url.searchParams.append('prompt', requestParams.prompt);
     url.searchParams.append('config', requestParams.config);
     console.log("url", url.toString());
+    
     // Make the request to APUS
     const response = await fetch(url, {
       method: 'POST',
@@ -146,11 +150,7 @@ export const sendMessage = async (
       chat.reference = data['X-Reference'];
     }
 
-    // Return the complete response immediately as a single chunk
-    return (async function* () {
-      yield { text: responseText, done: false };
-      yield { text: '', done: true };
-    })();
+    return responseText;
 
   } catch (error) {
     console.error("Error sending message to APUS:", error);
@@ -161,23 +161,16 @@ export const sendMessage = async (
 // Utility function to send a single message without streaming (for testing)
 export const sendSingleMessage = async (
   systemInstruction: string,
-  userMessage: string
+  userMessage: string,
+  figureConfig?: string
 ): Promise<string> => {
   const chat = startChatSession(systemInstruction);
   if (!chat) {
     throw new Error("Failed to create chat session");
   }
 
-  const stream = await sendMessage(chat, userMessage);
-  let fullResponse = '';
-  
-  for await (const chunk of stream) {
-    if (chunk.text) {
-      fullResponse += chunk.text;
-    }
-  }
-  
-  return fullResponse.trim();
+  const response = await sendMessage(chat, userMessage, figureConfig);
+  return response.trim();
 };
 
 // Export the chat type for compatibility

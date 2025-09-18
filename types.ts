@@ -11,6 +11,7 @@ export interface Figure {
   title: string;
   imageUrl: string;
   systemPrompt: string;
+  config: string; 
   category: Category;
   welcomeMessage: string;
   contributors: number;
