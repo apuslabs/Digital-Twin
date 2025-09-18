@@ -1,14 +1,14 @@
-
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import { ArweaveWalletKit } from '@arweave-wallet-kit/react';
+import React from "react";
+import "./styles/tailwind.css";
+import ReactDOM from "react-dom/client";
+import { ArweaveWalletKit } from "@arweave-wallet-kit/react";
 import WanderStrategy from "@arweave-wallet-kit/wander-strategy";
 import OthentStrategy from "@arweave-wallet-kit/othent-strategy";
 import BrowserWalletStrategy from "@arweave-wallet-kit/browser-wallet-strategy";
 import WebWalletStrategy from "@arweave-wallet-kit/webwallet-strategy";
-import App from './App';
+import App from "./App";
 
-const rootElement = document.getElementById('root');
+const rootElement = document.getElementById("root");
 if (!rootElement) {
   throw new Error("Could not find root element to mount to");
 }

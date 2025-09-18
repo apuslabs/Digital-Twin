@@ -1,0 +1,118 @@
+@import "tailwindcss";
+
+@theme {
+    --color-surface: rgb(244 244 244);
+    --color-foreground: #222236;
+    --color-border: rgb(222 222 222);
+    --font-mono: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+@layer base {
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        @apply font-mono uppercase text-base leading-5;
+    }
+
+    p {
+        @apply text-xs;
+    }
+}
+
+@layer utilities {
+
+    /* Easing utilities for both transitions and animations */
+    .ease-in-quad {
+        transition-timing-function: cubic-bezier(.55, .085, .68, .53);
+        animation-timing-function: cubic-bezier(.55, .085, .68, .53);
+    }
+
+    .ease-in-cubic {
+        transition-timing-function: cubic-bezier(.550, .055, .675, .19);
+        animation-timing-function: cubic-bezier(.550, .055, .675, .19);
+    }
+
+    .ease-in-quart {
+        transition-timing-function: cubic-bezier(.895, .03, .685, .22);
+        animation-timing-function: cubic-bezier(.895, .03, .685, .22);
+    }
+
+    .ease-in-quint {
+        transition-timing-function: cubic-bezier(.755, .05, .855, .06);
+        animation-timing-function: cubic-bezier(.755, .05, .855, .06);
+    }
+
+    .ease-in-expo {
+        transition-timing-function: cubic-bezier(.95, .05, .795, .035);
+        animation-timing-function: cubic-bezier(.95, .05, .795, .035);
+    }
+
+    .ease-in-circ {
+        transition-timing-function: cubic-bezier(.6, .04, .98, .335);
+        animation-timing-function: cubic-bezier(.6, .04, .98, .335);
+    }
+
+    .ease-out-quad {
+        transition-timing-function: cubic-bezier(.25, .46, .45, .94);
+        animation-timing-function: cubic-bezier(.25, .46, .45, .94);
+    }
+
+    .ease-out-cubic {
+        transition-timing-function: cubic-bezier(.215, .61, .355, 1);
+        animation-timing-function: cubic-bezier(.215, .61, .355, 1);
+    }
+
+    .ease-out-quart {
+        transition-timing-function: cubic-bezier(.165, .84, .44, 1);
+        animation-timing-function: cubic-bezier(.165, .84, .44, 1);
+    }
+
+    .ease-out-quint {
+        transition-timing-function: cubic-bezier(.23, 1, .32, 1);
+        animation-timing-function: cubic-bezier(.23, 1, .32, 1);
+    }
+
+    .ease-out-expo {
+        transition-timing-function: cubic-bezier(.19, 1, .22, 1);
+        animation-timing-function: cubic-bezier(.19, 1, .22, 1);
+    }
+
+    .ease-out-circ {
+        transition-timing-function: cubic-bezier(.075, .82, .165, 1);
+        animation-timing-function: cubic-bezier(.075, .82, .165, 1);
+    }
+
+    .ease-in-out-quad {
+        transition-timing-function: cubic-bezier(.455, .03, .515, .955);
+        animation-timing-function: cubic-bezier(.455, .03, .515, .955);
+    }
+
+    .ease-in-out-cubic {
+        transition-timing-function: cubic-bezier(.645, .045, .355, 1);
+        animation-timing-function: cubic-bezier(.645, .045, .355, 1);
+    }
+
+    .ease-in-out-quart {
+        transition-timing-function: cubic-bezier(.77, 0, .175, 1);
+        animation-timing-function: cubic-bezier(.77, 0, .175, 1);
+    }
+
+    .ease-in-out-quint {
+        transition-timing-function: cubic-bezier(.86, 0, .07, 1);
+        animation-timing-function: cubic-bezier(.86, 0, .07, 1);
+    }
+
+    .ease-in-out-expo {
+        transition-timing-function: cubic-bezier(1, 0, 0, 1);
+        animation-timing-function: cubic-bezier(1, 0, 0, 1);
+    }
+
+    .ease-in-out-circ {
+        transition-timing-function: cubic-bezier(.785, .135, .15, .86);
+        animation-timing-function: cubic-bezier(.785, .135, .15, .86);
+    }
+}

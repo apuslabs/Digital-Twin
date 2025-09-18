@@ -1,5 +1,6 @@
 import path from 'path';
 import { defineConfig, loadEnv } from 'vite';
+import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, '.', '');
@@ -18,6 +19,7 @@ export default defineConfig(({ mode }) => {
       allowedHosts: ['digital-twin-mba2.onrender.com'],
       host: '0.0.0.0',
       port: 5173
-    }
+    },
+    plugins: [tailwindcss()]
   };
 });
