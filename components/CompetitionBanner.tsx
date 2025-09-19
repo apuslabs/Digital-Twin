@@ -9,7 +9,7 @@ const CompetitionBanner: React.FC<CompetitionBannerProps> = ({
 }) => {
   return (
     <div
-      className="flex flex-col relative overflow-hidden p-8 cursor-pointer
+      className="flex flex-col relative overflow-hidden p-8 cursor-context-menu
       ring-1 ring-white/10 bg-white border border-border transition-transform duration-150 ease-out-quart hover:scale-[1.01] animate-fade-in gap-8"
       onClick={onNavigate}
     >

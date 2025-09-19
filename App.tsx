@@ -55,7 +55,7 @@ const App: React.FC = () => {
               categories={CATEGORIES}
               activeCategory={activeCategory}
               onCategoryChange={setActiveCategory}
-              figures={filteredFigures}
+              figures={FIGURES}
               onSelectFigure={handleSelectFigure}
             />
             <CompetitionBanner onNavigate={handleNavigateToCompetition} />
@@ -66,7 +66,7 @@ const App: React.FC = () => {
 
   return (
     <div className="bg-surface min-h-screen text-foreground">
-      <Header />
+      <Header onLogoClick={handleBackToSelector} />
       <main className="container mx-auto px-4 py-8 font-mono">
         {renderContent()}
       </main>

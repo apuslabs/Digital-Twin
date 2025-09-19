@@ -18,6 +18,7 @@
     "@arweave-wallet-kit/webwallet-strategy": "^0.0.1-beta.4",
     "@google/genai": "^1.16.0",
     "@permaweb/aoconnect": "^0.0.90",
+    "embla-carousel-react": "^8.6.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1"
   },
