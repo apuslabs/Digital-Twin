@@ -5,6 +5,7 @@ import { Figure, ChatMessage, MessageAuthor } from "../types";
 import { startChatSession, sendMessage, Chat } from "../services/apusService";
 import { aoService } from "../services/aoService";
 import TEEService from "../services/teeService";
+import Markdown from 'react-markdown'
 
 interface ChatInterfaceProps {
   figure: Figure;
@@ -813,7 +814,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ figure, onBack }) => {
                     }`}
                   >
                     <p className="text-white whitespace-pre-wrap text-sm">
-                      {message.text}
+                      <Markdown>{message.text}</Markdown>
                       {message.id.endsWith("-loading") && "..."}
                     </p>
                   </div>
