@@ -779,7 +779,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
           </div>
 
           {/* Main Chat Area */}
-          <div className="flex-1 min-w-0 h-[70vh] flex border border-border flex-col bg-white overflow-hidden">
+          <div className="flex-1 min-w-0 h-[82vh] flex border border-border flex-col bg-white overflow-hidden">
             <div className="flex items-center p-4 border-b border-border shrink-0 w-full justify-between">
               <div className="flex items-center" />
 
