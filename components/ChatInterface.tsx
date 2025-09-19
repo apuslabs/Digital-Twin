@@ -9,6 +9,8 @@ import { aoService } from "../services/aoService";
 interface ChatInterfaceProps {
   figure: Figure;
   onBack: () => void;
+  onNextTwin?: () => void;
+  onPrevTwin?: () => void;
 }
 
 const BackArrowIcon = () => (
@@ -603,7 +605,12 @@ const ConnectionModal: React.FC<{
   );
 };
 
-const ChatInterface: React.FC<ChatInterfaceProps> = ({ figure, onBack }) => {
+const ChatInterface: React.FC<ChatInterfaceProps> = ({
+  figure,
+  onBack,
+  onNextTwin,
+  onPrevTwin,
+}) => {
   const [chatSession, setChatSession] = useState<Chat | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [userInput, setUserInput] = useState("");
@@ -611,6 +618,10 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ figure, onBack }) => {
   const [modalPlatform, setModalPlatform] = useState<string | null>(null);
   const [shouldAutoScroll, setShouldAutoScroll] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [hotkeyActive, setHotkeyActive] = useState<"prev" | "next" | null>(
+    null
+  );
+  const hotkeyTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
     const session = startChatSession(figure.systemPrompt);
@@ -619,6 +630,39 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ figure, onBack }) => {
       { id: "welcome", text: figure.welcomeMessage, author: MessageAuthor.AI },
     ]);
   }, [figure]);
+
+  // Hotkeys to change twin while in chat
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = document.activeElement as HTMLElement | null;
+      const isTypingContext =
+        !!target &&
+        (target.tagName === "INPUT" ||
+          target.tagName === "TEXTAREA" ||
+          (target as any).isContentEditable === true ||
+          target.tagName === "SELECT");
+      if (isTypingContext) return;
+      if (e.key === "ArrowRight") {
+        onNextTwin?.();
+        setHotkeyActive("next");
+        if (hotkeyTimerRef.current) window.clearTimeout(hotkeyTimerRef.current);
+        hotkeyTimerRef.current = window.setTimeout(
+          () => setHotkeyActive(null),
+          160
+        );
+      } else if (e.key === "ArrowLeft") {
+        onPrevTwin?.();
+        setHotkeyActive("prev");
+        if (hotkeyTimerRef.current) window.clearTimeout(hotkeyTimerRef.current);
+        hotkeyTimerRef.current = window.setTimeout(
+          () => setHotkeyActive(null),
+          160
+        );
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onNextTwin, onPrevTwin]);
 
   useEffect(() => {
     if (shouldAutoScroll) {
@@ -739,13 +783,37 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ figure, onBack }) => {
             <div className="flex items-center p-4 border-b border-border shrink-0 w-full justify-between">
               <div className="flex items-center" />
 
-              <button
-                onClick={onBack}
-                className="flex gap-2 items-center py-2 px-4 hover:bg-neutral-100 transition-colors mr-3 cursor-pointer border border-border text-xs"
-              >
-                <BackArrowIcon />
-                Change Twin
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={onPrevTwin}
+                  className={`py-2 px-3 transition cursor-pointer border border-border text-xs active:scale-95 duration-150 ease-out-quart ${
+                    hotkeyActive === "prev"
+                      ? "bg-neutral-200 scale-95"
+                      : "hover:bg-neutral-100"
+                  }`}
+                  aria-label="Previous Twin (Arrow Left)"
+                >
+                  ◀
+                </button>
+                <button
+                  onClick={onNextTwin}
+                  className={`py-2 px-3 transition cursor-pointer border border-border text-xs active:scale-95 duration-150 ease-out-quart ${
+                    hotkeyActive === "next"
+                      ? "bg-neutral-200 scale-95"
+                      : "hover:bg-neutral-100"
+                  }`}
+                  aria-label="Next Twin (Arrow Right)"
+                >
+                  ▶
+                </button>
+                <button
+                  onClick={onBack}
+                  className="flex gap-2 items-center py-2 px-4 hover:bg-neutral-100 transition-colors mr-3 cursor-pointer border border-border text-xs active:scale-95 duration-150 ease-out-quart"
+                >
+                  <BackArrowIcon />
+                  Back to Home
+                </button>
+              </div>
             </div>
 
             <div className="flex-1 p-6 overflow-y-auto space-y-6">

@@ -244,7 +244,7 @@ const FigureSelector: React.FC<FigureSelectorProps> = ({
         </div>
         {/* Overlay navigation controls */}
         <button
-          className="absolute left-2 top-1/2 -translate-y-1/2 w-14 h-32 border border-border bg-neutral-200 text-neutral-800 flex items-center justify-center hover:bg-neutral-300 shadow-sm disabled:opacity-20 disabled:pointer-events-none before:content-[''] before:absolute before:-inset-8 before:bg-transparent cursor-w-resize"
+          className="absolute left-2 top-1/2 -translate-y-1/2 w-14 h-32 border border-border bg-neutral-200 text-neutral-800 flex items-center justify-center hover:bg-neutral-300 active:scale-95 transition shadow-sm disabled:opacity-20 disabled:pointer-events-none before:content-[''] before:absolute before:-inset-8 before:bg-transparent cursor-w-resize"
           onClick={() => emblaApi?.scrollPrev()}
           disabled={!emblaApi || emblaApi.canScrollPrev() === false}
           aria-label="Previous"
@@ -254,7 +254,7 @@ const FigureSelector: React.FC<FigureSelectorProps> = ({
           </svg>
         </button>
         <button
-          className="absolute right-2 top-1/2 -translate-y-1/2 w-14 h-32 border border-border bg-neutral-200 text-neutral-800 flex items-center justify-center hover:bg-neutral-300 shadow-sm disabled:opacity-20 disabled:pointer-events-none before:content-[''] before:absolute before:-inset-8 before:bg-transparent cursor-e-resize"
+          className="absolute right-2 top-1/2 -translate-y-1/2 w-14 h-32 border border-border bg-neutral-200 text-neutral-800 flex items-center justify-center hover:bg-neutral-300 active:scale-95 transition shadow-sm disabled:opacity-20 disabled:pointer-events-none before:content-[''] before:absolute before:-inset-8 before:bg-transparent cursor-e-resize"
           onClick={() => emblaApi?.scrollNext()}
           disabled={!emblaApi || emblaApi.canScrollNext() === false}
           aria-label="Next"
