@@ -5,6 +5,7 @@ import { Figure, ChatMessage, MessageAuthor } from "../types";
 import { startChatSession, sendMessage, Chat } from "../services/apusService";
 import { aoService } from "../services/aoService";
 import TEEService from "../services/teeService";
+import ArweaveService from "../services/arweaveService";
 import Markdown from 'react-markdown'
 
 interface ChatInterfaceProps {
@@ -640,11 +641,27 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ figure, onBack }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const session = startChatSession(figure.systemPrompt);
-    setChatSession(session);
-    setMessages([
-      { id: "welcome", text: figure.welcomeMessage, author: MessageAuthor.AI },
-    ]);
+    const initializeChat = async () => {
+      let permanentPrompt = '';
+      
+      // Fetch permanent prompt if the figure has an Arweave transaction ID
+      if (figure.arweaveTxId) {
+        try {
+          permanentPrompt = await ArweaveService.fetchPermanentPrompt(figure.arweaveTxId);
+        } catch (error) {
+          console.warn('Failed to fetch permanent prompt:', error);
+          // Continue with empty permanent prompt if fetch fails
+        }
+      }
+      
+      const session = startChatSession(figure.systemPrompt, permanentPrompt);
+      setChatSession(session);
+      setMessages([
+        { id: "welcome", text: figure.welcomeMessage, author: MessageAuthor.AI },
+      ]);
+    };
+    
+    initializeChat();
   }, [figure]);
 
   useEffect(() => {

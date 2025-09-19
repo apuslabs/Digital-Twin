@@ -21,7 +21,6 @@ export const FIGURES: Figure[] = [
     arweaveTxId: 'FhD4xbfkCkCb19BGUMduQCqmtirFCIcDUAeC0fenzbE',
     config: `{
     "temperature": 0.7,
-    "max_tokens": 150,
     "top_p": 0.9
     }`,
   },

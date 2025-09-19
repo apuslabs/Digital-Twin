@@ -17,7 +17,8 @@ export interface ApusChat {
   sessionId: string;
   reference: string;
   systemInstruction: string;
-  conversationHistory: Array<{ role: 'user' | 'assistant'; content: string }>;
+  permanentPrompt: string;
+  isFirstMessage: boolean;
 }
 
 const APUS_ENDPOINT = 'https://hb.apus.network/~llamacpp@1.0/chat/serialize~json@1.0';
@@ -41,7 +42,7 @@ const generateReference = (): string => {
 };
 
 // Create a chat session compatible with the existing interface
-export const startChatSession = (systemInstruction: string): ApusChat | null => {
+export const startChatSession = (systemInstruction: string, permanentPrompt: string = ''): ApusChat | null => {
   try {
     const sessionId = generateSessionId();
     const reference = generateReference();
@@ -50,7 +51,8 @@ export const startChatSession = (systemInstruction: string): ApusChat | null => 
       sessionId,
       reference,
       systemInstruction,
-      conversationHistory: []
+      permanentPrompt,
+      isFirstMessage: true
     };
     
     return chat;
@@ -61,68 +63,56 @@ export const startChatSession = (systemInstruction: string): ApusChat | null => 
 };
 
 // Send message to APUS and return the complete response
-export const sendMessage = async (
-  chat: ApusChat,
-  message: string,
-  figureConfig?: string
-): Promise<string> => {
-  if (!chat) {
-    throw new Error("Chat session not initialized");
-  }
-
+export const sendMessage = async (chatSession: ApusChat, message: string, config: string): Promise<any> => {
   try {
-    // Add user message to conversation history
-    chat.conversationHistory.push({ role: 'user', content: message });
-    
-    // Build the full prompt with system instruction and conversation history
-    let fullPrompt = `${chat.systemInstruction}\n\n`;
-    
-    // Add conversation history
-    for (const msg of chat.conversationHistory) {
-      if (msg.role === 'user') {
-        fullPrompt += `Human: ${msg.content}\n`;
-      } else {
-        fullPrompt += `Assistant: ${msg.content}\n`;
-      }
-    }
-    
-    fullPrompt += `Assistant: `;
-    console.log("full prompt :", fullPrompt);
-    
-    // Parse figure config or use default
-    let configToUse = DEFAULT_CONFIG;
-    if (figureConfig) {
+    // Validate config
+    let validConfig = DEFAULT_CONFIG;
+    if (config) {
       try {
-        const parsedConfig = JSON.parse(figureConfig);
-        configToUse = JSON.stringify(parsedConfig);
-      } catch (error) {
-        console.warn("Failed to parse figure config, using default:", error);
+        JSON.parse(config);
+        validConfig = config;
+      } catch (e) {
+        console.warn('Invalid config provided, using default:', e);
+        validConfig = DEFAULT_CONFIG;
       }
     }
+    console.log("Using config:", validConfig);
+    // Build the prompt with system instruction on first message only
+    let prompt = message;
     
-    // Prepare the request parameters
-    const requestParams: ApusRequest = {
-      reference: chat.reference,
-      session_id: chat.sessionId,
-      prompt: fullPrompt,
-      config: configToUse, 
+    // Only send system instruction on the first message, combined with permanent prompt if available
+    if (chatSession.isFirstMessage) {
+      const combinedSystemInstruction = chatSession.permanentPrompt 
+        ? `${chatSession.permanentPrompt}\n\n${chatSession.systemInstruction}`
+        : chatSession.systemInstruction;
+      
+      prompt = `${combinedSystemInstruction}\n\n${message}`;
+      
+      // Mark as no longer first message for subsequent calls
+      chatSession.isFirstMessage = false;
+    }
+
+    // Build request parameters
+    const requestParams = {
+      reference: chatSession.reference,
+      session_id: chatSession.sessionId,
+      prompt: prompt,
+      config: validConfig
     };
 
-    // Create URL with parameters
     const url = new URL(APUS_ENDPOINT);
     url.searchParams.append('reference', requestParams.reference);
     url.searchParams.append('session_id', requestParams.session_id);
     url.searchParams.append('prompt', requestParams.prompt);
     url.searchParams.append('config', requestParams.config);
     console.log("url", url.toString());
-    
-    // Make the request to APUS
-    const response = await fetch(url, {
-      method: 'POST',
+
+    const response = await fetch(url.toString(), {
+      method: 'POST'
     });
 
     if (!response.ok) {
-      throw new Error(`APUS API error: ${response.status} ${response.statusText}`);
+      throw new Error(`Failed to send message: ${response.status} ${response.statusText}`);
     }
 
     const data: ApusResponse = await response.json();
@@ -142,36 +132,13 @@ export const sendMessage = async (
       }
     }
     
-    // Add assistant response to conversation history
-    chat.conversationHistory.push({ role: 'assistant', content: responseText });
-    
-    // Update reference if provided
-    if (data['X-Reference']) {
-      chat.reference = data['X-Reference'];
-    }
-
     return responseText;
-
   } catch (error) {
-    console.error("Error sending message to APUS:", error);
-    throw new Error("Failed to get response from APUS AI.");
+    console.error('Error in sendMessage:', error);
+    throw error;
   }
 };
 
-// Utility function to send a single message without streaming (for testing)
-export const sendSingleMessage = async (
-  systemInstruction: string,
-  userMessage: string,
-  figureConfig?: string
-): Promise<string> => {
-  const chat = startChatSession(systemInstruction);
-  if (!chat) {
-    throw new Error("Failed to create chat session");
-  }
-
-  const response = await sendMessage(chat, userMessage, figureConfig);
-  return response.trim();
-};
 
 // Export the chat type for compatibility
 export type { ApusChat as Chat };
