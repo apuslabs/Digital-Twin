@@ -152,6 +152,14 @@ const ContributionPanel: React.FC<{ figure: Figure; hideTitle?: boolean }> = ({
   const [promptSuggestion, setPromptSuggestion] = useState("");
   const [fileName, setFileName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<
+    "success" | "error" | "info"
+  >("info");
+  const [submitMsg, setSubmitMsg] = useState<{
+    title: string;
+    body: string;
+  } | null>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -165,7 +173,12 @@ const ContributionPanel: React.FC<{ figure: Figure; hideTitle?: boolean }> = ({
     e.preventDefault();
 
     if (!aoService.isWalletConnected()) {
-      alert("Please connect your Arweave wallet to submit contributions.");
+      setSubmitMsg({
+        title: "Wallet Required",
+        body: "Please connect your Arweave wallet to submit contributions.",
+      });
+      setSubmitStatus("info");
+      setIsSubmitModalOpen(true);
       return;
     }
 
@@ -197,9 +210,12 @@ const ContributionPanel: React.FC<{ figure: Figure; hideTitle?: boolean }> = ({
       }
 
       if (result?.success) {
-        alert(
-          `🎉 Success! Your contribution has been submitted to ${figure.name}'s agent process for AI evaluation.\n\nMessage ID: ${result.messageId}\n\nYour submission will be reviewed by AI agents and integrated if approved.`
-        );
+        setSubmitMsg({
+          title: "Success",
+          body: `Your contribution has been submitted to ${figure.name}'s agent process for AI evaluation.\n\nMessage ID: ${result.messageId}\n\nYour submission will be reviewed by AI agents and integrated if approved.`,
+        });
+        setSubmitStatus("success");
+        setIsSubmitModalOpen(true);
 
         // Clear form
         setPromptSuggestion("");
@@ -212,15 +228,23 @@ const ContributionPanel: React.FC<{ figure: Figure; hideTitle?: boolean }> = ({
         // Optionally trigger judge evaluation
         // await aoService.sendPromptsToJudge(figure.processId);
       } else {
-        alert(
-          `❌ Error submitting contribution: ${
+        setSubmitMsg({
+          title: "Submission Error",
+          body: `Error submitting contribution: ${
             result?.error || "Unknown error"
-          }\n\nPlease try again or check your wallet connection.`
-        );
+          }\n\nPlease try again or check your wallet connection.`,
+        });
+        setSubmitStatus("error");
+        setIsSubmitModalOpen(true);
       }
     } catch (error) {
       console.error("Contribution submission error:", error);
-      alert("❌ Unexpected error occurred. Please try again.");
+      setSubmitMsg({
+        title: "Unexpected Error",
+        body: "An unexpected error occurred. Please try again.",
+      });
+      setSubmitStatus("error");
+      setIsSubmitModalOpen(true);
     } finally {
       setIsSubmitting(false);
     }
@@ -334,6 +358,88 @@ const ContributionPanel: React.FC<{ figure: Figure; hideTitle?: boolean }> = ({
           </form>
         </div>
       </div>
+
+      {/* Submit modal for contribution panel */}
+      <Modal
+        isOpen={isSubmitModalOpen}
+        onClose={() => setIsSubmitModalOpen(false)}
+        title={submitMsg?.title || "Notice"}
+      >
+        {submitStatus === "success" ? (
+          <>
+            <div className="mb-3 p-3 border flex items-start gap-3 border-green-300 bg-green-50">
+              <span
+                className="ph ph-[check-circle] text-green-600 text-xl leading-none mt-0.5"
+                aria-hidden
+              ></span>
+              <div className="text-sm text-neutral-900">
+                <div className="font-semibold mb-1">Success</div>
+                <pre className="whitespace-pre-wrap text-[13px] text-neutral-800">
+                  {(submitMsg?.body || "").split("\n\n")[0]}
+                </pre>
+              </div>
+            </div>
+            <div className="p-3 border border-neutral-300 bg-white/80 mb-3">
+              <div className="flex items-start gap-2 mb-2">
+                <span
+                  className="ph ph-[hash-straight] text-neutral-700"
+                  aria-hidden
+                ></span>
+                <div className="text-[11px] text-neutral-500 uppercase tracking-wide">
+                  Message ID
+                </div>
+              </div>
+              <div className="font-mono text-sm text-neutral-900 break-all mb-2">
+                {(submitMsg?.body || "")
+                  .split("\n\n")[1]
+                  ?.replace(/^Message ID:\s*/, "")}
+              </div>
+              <p className="text-[13px] text-neutral-700">
+                {(submitMsg?.body || "").split("\n\n")[2] || ""}
+              </p>
+            </div>
+          </>
+        ) : (
+          <div
+            className={`mb-3 p-3 border flex items-start gap-3 ${
+              submitStatus === "error"
+                ? "border-red-300 bg-red-50"
+                : "border-neutral-300 bg-white"
+            }`}
+          >
+            <span
+              className={`ph ${
+                submitStatus === "error"
+                  ? "ph-[x-circle] text-red-600"
+                  : "ph-[info] text-neutral-700"
+              } text-xl leading-none mt-0.5`}
+              aria-hidden
+            ></span>
+            <div className="text-sm text-neutral-900">
+              <div className="font-semibold mb-1">
+                {submitMsg?.title || "Notice"}
+              </div>
+              <pre className="whitespace-pre-wrap text-[13px] text-neutral-800">
+                {submitMsg?.body}
+              </pre>
+            </div>
+          </div>
+        )}
+        <div className="flex justify-end">
+          <button
+            onClick={() => setIsSubmitModalOpen(false)}
+            className={`px-4 py-2 border text-sm active:scale-95 transition ${
+              submitStatus === "success"
+                ? "border-green-600 text-green-700 bg-white hover:bg-green-50"
+                : submitStatus === "error"
+                ? "border-red-600 text-red-700 bg-white hover:bg-red-50"
+                : "border-neutral-300 text-neutral-800 bg-white hover:bg-neutral-50"
+            }`}
+          >
+            Close
+          </button>
+        </div>
+      </Modal>
     </>
   );
 };
