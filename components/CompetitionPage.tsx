@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, FormEvent } from "react";
 import { Figure } from "../types";
-import { aoService } from "../services/aoService";
+import { aoService } from "../services/LegacyAOService";
 
 interface CompetitionPageProps {
   figures: Figure[];
@@ -357,10 +357,9 @@ const CompetitionPage: React.FC<CompetitionPageProps> = ({
 
         if (file) {
           const fileContent = await file.text();
-          result = await aoService.submitFileForEvaluation(
+          result = await aoService.submitPromptForEvaluation(
             selectedFigure,
-            fileContent,
-            fileName
+            fileContent
           );
         }
       } else if (contributionText.trim()) {

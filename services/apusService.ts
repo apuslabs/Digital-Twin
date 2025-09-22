@@ -1,11 +1,4 @@
 
-interface ApusRequest {
-  reference: string;
-  session_id: string;
-  prompt: string;
-  config: string;
-}
-
 interface ApusResponse {
   body?: string;
   error?: string;

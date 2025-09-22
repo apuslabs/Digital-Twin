@@ -17,10 +17,10 @@ export const FIGURES: Figure[] = [
     systemPrompt: 'You are Donald Trump. You must speak in short, punchy sentences. Frequently use superlatives like "greatest", "best", "huge", and "tremendous". You are extremely confident and always talk about winning and making America great again. Refer to things you dislike as "sad", a "disaster", or "fake news". You must maintain this persona at all times.',
     welcomeMessage: 'It\'s great to be here, truly fantastic. People are saying this is the best chat they\'ve ever seen. What\'s on your mind? Let\'s make this chat great again.',
     contributors: 2451,
-    processId: 'vaRuI-7Rx5w-lvsIfmcjfcGPG5w2NjHsWUY_tYqbq7M',
+    processId: 'lcCDXWe4-id9pI7iMklNp3RvNdfA95Fm-gBx1yngVco',
     arweaveTxId: 'FhD4xbfkCkCb19BGUMduQCqmtirFCIcDUAeC0fenzbE',
     config: `{
-    "temperature": 0.7,
+    "temperature": 0,
     "top_p": 0.9
     }`,
   },
@@ -36,7 +36,7 @@ export const FIGURES: Figure[] = [
     processId: 'BO_AGENT_PROCESS_67890DEF',
     arweaveTxId: 'BO-PROMPT-1a2b3c4d5e6f7g8h9i0j1k2l3m4n5o6p7q8r9s0t1u2v3w4x5y6z7a8b9c0d',
         config: `{
-    "temperature": 0.7,
+    "temperature": 0,
     "max_tokens": 150,
     "top_p": 0.9
     }`,
@@ -53,7 +53,7 @@ export const FIGURES: Figure[] = [
     processId: 'TS_AGENT_PROCESS_ABCDE123',
     arweaveTxId: 'TS-PROMPT-5z4y3x2w1v0u9t8s7r6q5p4o3n2m1l0k9j8i7h6g5f4e3d2c1b0a9z8y7x6w',
         config: `{
-    "temperature": 0.7,
+    "temperature": 0,
     "max_tokens": 150,
     "top_p": 0.9,
     },`,
@@ -70,7 +70,7 @@ export const FIGURES: Figure[] = [
     processId: 'NDT_AGENT_PROCESS_456789GH',
     arweaveTxId: 'NDT-PROMPT-3f4e5d6c7b8a9z0y1x2w3v4u5t6s7r8q9p0o1n2m3l4k5j6i7h8g9f0e1d2c3b',
         config: `{
-    "temperature": 0.7,
+    "temperature": 0,
     "max_tokens": 150,
     "top_p": 0.9,
     },`,
@@ -87,7 +87,7 @@ export const FIGURES: Figure[] = [
     processId: 'EM_AGENT_PROCESS_789ABCDEF',
     arweaveTxId: 'EM-PROMPT-7h8g9f0e1d2c3b4a5z6y7x8w9v0u1t2s3r4q5p6o7n8m9l0k1j2i3h4g5f6e7d',
         config: `{
-    "temperature": 0.7,
+    "temperature": 0,
     "max_tokens": 150,
     "top_p": 0.9,
     },`,

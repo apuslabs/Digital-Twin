@@ -4,7 +4,7 @@ import TrumpImg from "@/resources/trump.png";
 import ObamaImg from "@/resources/obama.png";
 import { Figure, ChatMessage, MessageAuthor } from "../types";
 import { startChatSession, sendMessage, Chat } from "../services/apusService";
-import { aoService } from "../services/aoService";
+import { aoService } from "../services/LegacyAOService";
 import TEEService from "../services/teeService";
 import ArweaveService from "../services/arweaveService";
 import Markdown from 'react-markdown'
@@ -182,10 +182,9 @@ const ContributionPanel: React.FC<{ figure: Figure; hideTitle?: boolean }> = ({
 
         if (file) {
           const fileContent = await file.text();
-          result = await aoService.submitFileForEvaluation(
+          result = await aoService.submitPromptForEvaluation(
             figure,
-            fileContent,
-            fileName
+            fileContent
           );
         }
       } else if (promptSuggestion.trim()) {
