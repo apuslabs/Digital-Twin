@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, FormEvent } from "react";
+import MessageComposer from "./chat/MessageComposer";
 import TrumpImg from "@/resources/trump.png";
 import ObamaImg from "@/resources/obama.png";
 import { Figure, ChatMessage, MessageAuthor } from "../types";
@@ -11,6 +12,8 @@ import Markdown from 'react-markdown'
 interface ChatInterfaceProps {
   figure: Figure;
   onBack: () => void;
+  onNextTwin?: () => void;
+  onPrevTwin?: () => void;
 }
 
 const BackArrowIcon = () => (
@@ -224,81 +227,105 @@ const ContributionPanel: React.FC<{ figure: Figure; hideTitle?: boolean }> = ({
   };
 
   return (
-    <div className="bg-white  p-6 space-y-4">
-      {!hideTitle && (
-        <h3 className="text-xl font-bold ">Improve this Digital Twin</h3>
-      )}
-      <div className="flex items-center text-sm text-slate-300">
-        <UsersIcon />
-        <span>
-          Join <strong>{figure.contributors.toLocaleString()}</strong> other
-          contributors!
-        </span>
-      </div>
-      <div className="bg-purple-600/10 border border-purple-500/20 p-3 text-sm">
-        <p className="text-purple-300 font-semibold mb-1">
-          🤖 AI-Powered Quality Control
-        </p>
-        <p className="text-slate-300 text-xs mb-2">
-          Your contributions are evaluated by AI agents for authenticity and
-          quality before being integrated.
-        </p>
-        <p className="text-slate-300 text-xs">
-          <strong>Arweave Storage:</strong> Approved contributions become part
-          of the permanent digital twin stored forever on Arweave.
-        </p>
-      </div>
+    <div className="w-full relative border border-neutral-300 bg-white p-4 self-start text-neutral-900">
+      <div
+        className="pointer-events-none absolute inset-0 opacity-10"
+        style={{
+          backgroundImage:
+            "repeating-linear-gradient(45deg,#000 0px,#000 1px,transparent 1px,transparent 8px),repeating-linear-gradient(-45deg,#000 0px,#000 1px,transparent 1px,transparent 8px)",
+          backgroundSize: "12px 12px, 12px 12px",
+        }}
+      />
 
-      <form onSubmit={handleContributionSubmit} className="space-y-4">
-        <div>
-          <label
-            htmlFor="prompt-suggestion"
-            className="block text-sm font-medium  mb-1"
+      <div className="relative space-y-3">
+        {!hideTitle && (
+          <div className="flex items-center">
+            <div className="w-2 h-2 bg-blue-500 mr-2"></div>
+            <h3 className="text-xs font-semibold tracking-wide uppercase text-neutral-700">
+              Improve this Digital Twin
+            </h3>
+          </div>
+        )}
+
+        <div className="p-3 border border-neutral-300 bg-white/80">
+          <p className="text-[11px] font-semibold mb-1 tracking-wide text-neutral-600 uppercase">
+            Community
+          </p>
+          <p className="text-sm text-neutral-800 flex items-center">
+            <UsersIcon />
+            <span>
+              Join <strong>{figure.contributors.toLocaleString()}</strong> other
+              contributors!
+            </span>
+          </p>
+        </div>
+
+        <div className="p-3 border border-pink-500/30 bg-pink-50">
+          <p className="text-[11px] font-semibold mb-1 tracking-wide text-pink-700 uppercase">
+            🤖 AI-Powered Quality Control
+          </p>
+          <p className="text-[12px] text-pink-900/90 mb-2">
+            Your contributions are evaluated by AI agents for authenticity and
+            quality before being integrated.
+          </p>
+          <p className="text-[12px] text-pink-900/90">
+            <strong className="font-semibold">Arweave Storage:</strong> Approved
+            contributions become part of the permanent digital twin stored
+            forever on Arweave.
+          </p>
+        </div>
+
+        <form onSubmit={handleContributionSubmit} className="space-y-3">
+          <div className="p-3 border border-neutral-300 bg-white/80 space-y-2">
+            <p className="text-[11px] font-semibold tracking-wide text-neutral-600 uppercase">
+              Suggest persona improvements
+            </p>
+            <textarea
+              id="prompt-suggestion"
+              rows={5}
+              className="w-full border border-neutral-300 bg-white p-2 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-300 transition-all text-sm"
+              placeholder={`e.g., "When discussing technology, ${figure.name} should reference specific innovations and speak with technical precision..."`}
+              value={promptSuggestion}
+              onChange={(e) => setPromptSuggestion(e.target.value)}
+            />
+          </div>
+
+          <div className="relative text-center text-neutral-500 text-[11px]">
+            <span className="px-2 bg-white">or</span>
+            <div className="absolute top-1/2 left-0 w-full h-px bg-neutral-300 -z-10"></div>
+          </div>
+
+          <div className="p-3 border border-neutral-300 bg-white/80">
+            <label
+              htmlFor="file-upload"
+              className="w-full cursor-pointer p-2 flex items-center justify-center text-sm font-medium text-neutral-700 bg-transparent border border-neutral-300 hover:bg-neutral-50 transition-colors"
+            >
+              <FileUploadIcon />
+              {fileName || "Upload a .txt file"}
+            </label>
+            <input
+              id="file-upload"
+              type="file"
+              className="hidden"
+              accept=".txt"
+              onChange={handleFileChange}
+            />
+          </div>
+
+          <button
+            type="submit"
+            className="w-full p-3 bg-blue-600  font-semibold disabled:bg-neutral-300 disabled:cursor-not-allowed hover:bg-blue-500 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+            disabled={(!promptSuggestion.trim() && !fileName) || isSubmitting}
           >
-            Suggest persona improvements for AI evaluation
-          </label>
-          <textarea
-            id="prompt-suggestion"
-            rows={5}
-            className="w-full bg-white p-3  placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm"
-            placeholder={`e.g., "When discussing technology, ${figure.name} should reference specific innovations and speak with technical precision..."`}
-            value={promptSuggestion}
-            onChange={(e) => setPromptSuggestion(e.target.value)}
-          />
-        </div>
-        <div className="relative text-center text-slate-400 text-sm">
-          <span className="px-2 bg-slate-800">or</span>
-          <div className="absolute top-1/2 left-0 w-full h-px bg-slate-700 -z-10"></div>
-        </div>
-        <div>
-          <label
-            htmlFor="file-upload"
-            className="w-full cursor-pointer bg-slate-700/80 hover:bg-slate-700 transition-colors p-3 flex items-center justify-center text-sm font-medium text-slate-300"
-          >
-            <FileUploadIcon />
-            {fileName || "Upload a .txt file"}
-          </label>
-          <input
-            id="file-upload"
-            type="file"
-            className="hidden"
-            accept=".txt"
-            onChange={handleFileChange}
-          />
-        </div>
-        <button
-          type="submit"
-          className="w-full p-3 bg-blue-600  font-semibold disabled:bg-slate-600 disabled:cursor-not-allowed hover:bg-blue-500 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-800"
-          disabled={(!promptSuggestion.trim() && !fileName) || isSubmitting}
-        >
-          {isSubmitting ? "Submitting to AO..." : "Submit for AI Review"}
-        </button>
-        <p className="text-xs text-slate-500 text-center">
-          {aoService.isWalletConnected()
-            ? "AI agents will evaluate and integrate approved improvements into the permanent Arweave-stored digital twin"
-            : "⚠️ Connect your Arweave wallet to submit contributions"}
-        </p>
-      </form>
+            {isSubmitting ? "Submitting to AO..." : "Submit for AI Review"}
+          </button>
+          <p className="text-[11px] text-neutral-600 text-center">
+            {aoService.isWalletConnected()
+              ? "AI agents will evaluate and integrate approved improvements into the permanent Arweave-stored digital twin"
+              : "⚠️ Connect your Arweave wallet to submit contributions"}
+          </p>
+        </form>
+      </div>
     </div>
   );
 };
@@ -631,7 +658,12 @@ const ConnectionModal: React.FC<{
   );
 };
 
-const ChatInterface: React.FC<ChatInterfaceProps> = ({ figure, onBack }) => {
+const ChatInterface: React.FC<ChatInterfaceProps> = ({
+  figure,
+  onBack,
+  onNextTwin,
+  onPrevTwin,
+}) => {
   const [chatSession, setChatSession] = useState<Chat | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [userInput, setUserInput] = useState("");
@@ -639,6 +671,10 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ figure, onBack }) => {
   const [modalPlatform, setModalPlatform] = useState<string | null>(null);
   const [shouldAutoScroll, setShouldAutoScroll] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [hotkeyActive, setHotkeyActive] = useState<"prev" | "next" | null>(
+    null
+  );
+  const hotkeyTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
     const initializeChat = async () => {
@@ -663,6 +699,39 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ figure, onBack }) => {
     
     initializeChat();
   }, [figure]);
+
+  // Hotkeys to change twin while in chat
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = document.activeElement as HTMLElement | null;
+      const isTypingContext =
+        !!target &&
+        (target.tagName === "INPUT" ||
+          target.tagName === "TEXTAREA" ||
+          (target as any).isContentEditable === true ||
+          target.tagName === "SELECT");
+      if (isTypingContext) return;
+      if (e.key === "ArrowRight") {
+        onNextTwin?.();
+        setHotkeyActive("next");
+        if (hotkeyTimerRef.current) window.clearTimeout(hotkeyTimerRef.current);
+        hotkeyTimerRef.current = window.setTimeout(
+          () => setHotkeyActive(null),
+          160
+        );
+      } else if (e.key === "ArrowLeft") {
+        onPrevTwin?.();
+        setHotkeyActive("prev");
+        if (hotkeyTimerRef.current) window.clearTimeout(hotkeyTimerRef.current);
+        hotkeyTimerRef.current = window.setTimeout(
+          () => setHotkeyActive(null),
+          160
+        );
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onNextTwin, onPrevTwin]);
 
   useEffect(() => {
     if (shouldAutoScroll) {
@@ -730,7 +799,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ figure, onBack }) => {
       <div className="max-w-[95vw] mx-auto flex flex-col xl:flex-row gap-6 animate-fade-in">
         {/* Figure*/}
         <div className="flex gap-6">
-          <div className="w-full xl:w-[400px] space-y-3 ">
+          <div className="w-full xl:w-[400px] space-y-3 bg-white">
             <img
               src={
                 figure.name === "Donald Trump"
@@ -753,14 +822,14 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ figure, onBack }) => {
             />
             <div className="border border-border bg-white p-3">
               <h2 className="text-xl font-bold">{figure.name}</h2>
-              <p className="text-sm text-slate-500">{figure.title}</p>
+              <p className="text-sm text-neutral-500">{figure.title}</p>
               <div className="flex items-center mt-1">
-                <span className="text-xs text-slate-500 mr-2">
+                <span className="text-xs text-neutral-500 mr-2">
                   Permanent Prompt:
                 </span>
                 <a
                   href="#"
-                  className="text-xs font-mono text-blue-300 hover:text-blue-200 hover:underline transition-colors"
+                  className="text-xs font-mono text-neutral-400 hover:text-blue-500 underline transition-colors"
                   title={`View ${figure.name}'s permanent prompt on Arweave: ${figure.arweaveTxId}`}
                   onClick={(e) => {
                     e.preventDefault();
@@ -778,17 +847,41 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ figure, onBack }) => {
           </div>
 
           {/* Main Chat Area */}
-          <div className="flex-1 min-w-0 h-[70vh] flex border border-border flex-col bg-white overflow-hidden">
+          <div className="flex-1 min-w-0 h-[82vh] flex border border-border flex-col bg-white overflow-hidden">
             <div className="flex items-center p-4 border-b border-border shrink-0 w-full justify-between">
               <div className="flex items-center" />
 
-              <button
-                onClick={onBack}
-                className="flex gap-2 items-center py-2 px-4 hover:bg-neutral-100 transition-colors mr-3 cursor-pointer border border-border text-xs"
-              >
-                <BackArrowIcon />
-                Go Back
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={onPrevTwin}
+                  className={`py-2 px-3 transition cursor-pointer border border-border text-xs active:scale-95 duration-150 ease-out-quart ${
+                    hotkeyActive === "prev"
+                      ? "bg-neutral-200 scale-95"
+                      : "hover:bg-neutral-100"
+                  }`}
+                  aria-label="Previous Twin (Arrow Left)"
+                >
+                  ◀
+                </button>
+                <button
+                  onClick={onNextTwin}
+                  className={`py-2 px-3 transition cursor-pointer border border-border text-xs active:scale-95 duration-150 ease-out-quart ${
+                    hotkeyActive === "next"
+                      ? "bg-neutral-200 scale-95"
+                      : "hover:bg-neutral-100"
+                  }`}
+                  aria-label="Next Twin (Arrow Right)"
+                >
+                  ▶
+                </button>
+                <button
+                  onClick={onBack}
+                  className="flex gap-2 items-center py-2 px-4 hover:bg-neutral-100 transition-colors mr-3 cursor-pointer border border-border text-xs active:scale-95 duration-150 ease-out-quart"
+                >
+                  <BackArrowIcon />
+                  Back to Home
+                </button>
+              </div>
             </div>
 
             <div className="flex-1 p-6 overflow-y-auto space-y-6">
@@ -824,73 +917,67 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ figure, onBack }) => {
                     />
                   )}
                   <div
-                    className={`max-w-2xl lg:max-w-3xl px-4 py-3 ${
+                    className={`relative max-w-2xl lg:max-w-3xl px-4 py-3 ${
                       message.author === MessageAuthor.User
-                        ? "bg-blue-600"
-                        : "bg-foreground"
+                        ? "bg-neutral-200"
+                        : "bg-blue-100"
                     }`}
                   >
-                    <p className="text-white whitespace-pre-wrap text-sm">
-                      <Markdown>{message.text}</Markdown>
-                      {message.id.endsWith("-loading") && "..."}
-                    </p>
+                    {message.author === MessageAuthor.User ? (
+                      <span
+                        className="absolute w-3 h-3 -right-2 top-4 bg-neutral-200"
+                        style={{
+                          clipPath: "polygon(100% 50%, 0 0, 0 100%)",
+                        }}
+                        aria-hidden="true"
+                      />
+                    ) : message.text.trim() !== "" ? (
+                      <span
+                        className="absolute w-3 h-3 -left-2 top-4 bg-blue-100"
+                        style={{
+                          clipPath: "polygon(0 50%, 100% 0, 100% 100%)",
+                        }}
+                        aria-hidden="true"
+                      />
+                    ) : null}
+                    <div
+                      className={`${
+                        message.author === MessageAuthor.User
+                          ? "text-foreground"
+                          : "text-blue-800"
+                      } whitespace-pre-wrap text-sm`}
+                      aria-live="polite"
+                    >
+                      {message.author === MessageAuthor.AI &&
+                      message.text.trim() === "" ? (
+                        <div
+                          className="flex items-center gap-1 py-0.5"
+                          aria-label="AI is typing"
+                        >
+                          <span className="w-2.5 h-2.5 rounded-full bg-slate-400/70 animate-pulse"></span>
+                          <span className="w-2.5 h-2.5 rounded-full bg-slate-400/70 animate-pulse [animation-delay:0.15s]"></span>
+                          <span className="w-2.5 h-2.5 rounded-full bg-slate-400/70 animate-pulse [animation-delay:0.3s]"></span>
+                        </div>
+                      ) : (
+                        <p className="whitespace-pre-wrap text-sm">
+                          <Markdown>{message.text}</Markdown>
+                        </p>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}
-              {isLoading &&
-                messages[messages.length - 1].author === MessageAuthor.User && (
-                  <div className="flex items-end gap-3 justify-start">
-                    <img
-                      src={
-                        figure.name === "Donald Trump"
-                          ? TrumpImg
-                          : figure.name === "Barack Obama"
-                          ? ObamaImg
-                          : figure.imageUrl
-                      }
-                      data-fallback={figure.imageUrl}
-                      onError={(e) => {
-                        const img = e.currentTarget as HTMLImageElement;
-                        const fallback = img.getAttribute("data-fallback");
-                        if (fallback && img.src !== fallback) {
-                          img.src = fallback;
-                          (img as any).onerror = null;
-                        }
-                      }}
-                      className="w-8 h-8 self-start"
-                      alt="figure avatar"
-                    />
-                    <div className="max-w-2xl lg:max-w-3xl px-4 py-3 bg-slate-700">
-                      <div className="flex items-center justify-center space-x-1">
-                        <div className="w-2 h-2 bg-slate-400 rounded-full animate-pulse [animation-delay:-0.3s]"></div>
-                        <div className="w-2 h-2 bg-slate-400 rounded-full animate-pulse [animation-delay:-0.15s]"></div>
-                        <div className="w-2 h-2 bg-slate-400 rounded-full animate-pulse"></div>
-                      </div>
-                    </div>
-                  </div>
-                )}
+              {/* Loading indicator is shown inline within the pending AI message */}
               <div ref={messagesEndRef} />
             </div>
 
-            <div className="p-4 border-t border-slate-700/50 shrink-0">
-              <form onSubmit={handleSubmit} className="flex items-center gap-3">
-                <input
-                  type="text"
-                  value={userInput}
-                  onChange={(e) => setUserInput(e.target.value)}
-                  placeholder={`Message ${figure.name}...`}
-                  className="flex-1 w-full bg-neutral-100 py-3 px-3  placeholder-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-                  disabled={isLoading}
-                />
-                <button
-                  type="submit"
-                  className="p-3 bg-blue-600  disabled:bg-slate-600 disabled:cursor-not-allowed hover:bg-blue-500 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-800"
-                  disabled={isLoading || !userInput.trim()}
-                >
-                  <SendIcon />
-                </button>
-              </form>
-            </div>
+            <MessageComposer
+              value={userInput}
+              onChange={setUserInput}
+              onSubmit={handleSubmit}
+              isLoading={isLoading}
+              placeholder={`Message ${figure.name}...`}
+            />
           </div>
         </div>
 
@@ -899,13 +986,13 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ figure, onBack }) => {
           <AccordionItem id="improve-twin" title="Improve this Digital Twin">
             <ContributionPanel figure={figure} hideTitle />
           </AccordionItem>
-          <AccordionItem id="connect-everywhere" title="Connect Everywhere">
+          {/* <AccordionItem id="connect-everywhere" title="Connect Everywhere">
             <ConnectionPanel
               figure={figure}
               onConnectClick={handleConnectClick}
               hideTitle
             />
-          </AccordionItem>
+          </AccordionItem> */}
         </div>
       </div>
       {modalPlatform && (

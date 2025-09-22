@@ -9,6 +9,11 @@
 
 @layer base {
 
+    /* Fluid base font-size: scales down on small screens, caps at current size */
+    html {
+        font-size: clamp(14px, 10px + 1.2vw, 16px);
+    }
+
     h1,
     h2,
     h3,

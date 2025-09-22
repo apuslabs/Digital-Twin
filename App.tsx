@@ -30,6 +30,20 @@ const App: React.FC = () => {
     setCurrentView("selector");
   };
 
+  const handleNextTwin = () => {
+    if (!selectedFigure) return;
+    const currentIndex = FIGURES.findIndex((f) => f.id === selectedFigure.id);
+    const nextIndex = (currentIndex + 1) % FIGURES.length;
+    setSelectedFigure(FIGURES[nextIndex]);
+  };
+
+  const handlePrevTwin = () => {
+    if (!selectedFigure) return;
+    const currentIndex = FIGURES.findIndex((f) => f.id === selectedFigure.id);
+    const prevIndex = (currentIndex - 1 + FIGURES.length) % FIGURES.length;
+    setSelectedFigure(FIGURES[prevIndex]);
+  };
+
   const handleNavigateToCompetition = () => {
     setCurrentView("competition");
   };
@@ -41,6 +55,8 @@ const App: React.FC = () => {
           <ChatInterface
             figure={selectedFigure!}
             onBack={handleBackToSelector}
+            onNextTwin={handleNextTwin}
+            onPrevTwin={handlePrevTwin}
           />
         );
       case "competition":
@@ -55,7 +71,7 @@ const App: React.FC = () => {
               categories={CATEGORIES}
               activeCategory={activeCategory}
               onCategoryChange={setActiveCategory}
-              figures={filteredFigures}
+              figures={FIGURES}
               onSelectFigure={handleSelectFigure}
             />
             <CompetitionBanner onNavigate={handleNavigateToCompetition} />
@@ -66,7 +82,7 @@ const App: React.FC = () => {
 
   return (
     <div className="bg-surface min-h-screen text-foreground">
-      <Header />
+      <Header onLogoClick={handleBackToSelector} />
       <main className="container mx-auto px-4 py-8 font-mono">
         {renderContent()}
       </main>
