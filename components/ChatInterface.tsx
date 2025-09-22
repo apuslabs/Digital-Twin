@@ -7,7 +7,7 @@ import { startChatSession, sendMessage, Chat } from "../services/apusService";
 import { aoService } from "../services/LegacyAOService";
 import TEEService from "../services/teeService";
 import ArweaveService from "../services/arweaveService";
-import Markdown from 'react-markdown'
+import Markdown from "react-markdown";
 
 interface ChatInterfaceProps {
   figure: Figure;
@@ -112,16 +112,16 @@ const AccordionItem: React.FC<{
   }, [isOpen, children]);
 
   return (
-    <div className="border border-border">
+    <div className="border border-border bg-white">
       <button
         type="button"
-        className="w-full flex items-center justify-between py-3 px-4 hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="w-full flex items-center justify-between py-3 px-4 hover:bg-neutral-100 focus:outline-none"
         aria-expanded={isOpen}
         aria-controls={`${id}-panel`}
         id={`${id}-header`}
         onClick={() => setIsOpen((v) => !v)}
       >
-        <span className="text-sm font-semibold">{title}</span>
+        <span className="text-xs">{title}</span>
         <span
           className={`transition-transform ${
             isOpen ? "rotate-180" : "rotate-0"
@@ -386,15 +386,15 @@ const ConnectionPanel: React.FC<{
   );
 };
 
-const TEEProtectionPanel: React.FC<{ figure: Figure; hideTitle?: boolean; sessionId: string }> = ({
-  figure,
-  hideTitle = false,
-  sessionId,
-}) => {
+const TEEProtectionPanel: React.FC<{
+  figure: Figure;
+  hideTitle?: boolean;
+  sessionId: string;
+}> = ({ figure, hideTitle = false, sessionId }) => {
   const [attestationData, setAttestationData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [pageStartTime] = useState(new Date().toISOString());
-  
+
   // Fetch TEE attestation when component mounts
   useEffect(() => {
     const fetchAttestation = async () => {
@@ -403,10 +403,10 @@ const TEEProtectionPanel: React.FC<{ figure: Figure; hideTitle?: boolean; sessio
         const attestation = await TEEService.getAttestation(sessionId);
         setAttestationData(attestation);
       } catch (error) {
-        console.error('Failed to fetch TEE attestation:', error);
+        console.error("Failed to fetch TEE attestation:", error);
         setAttestationData({
-          error: 'Failed to fetch attestation',
-          status: 'ERROR'
+          error: "Failed to fetch attestation",
+          status: "ERROR",
         });
       } finally {
         setIsLoading(false);
@@ -416,9 +416,19 @@ const TEEProtectionPanel: React.FC<{ figure: Figure; hideTitle?: boolean; sessio
     fetchAttestation();
   }, [sessionId]);
 
-  const displaySessionId = sessionId.substring(0, 16) + '...';
-  const attestationStatus = attestationData?.status === 'VERIFIED' ? '✓' : attestationData?.status === 'ERROR' ? '✗' : '⏳';
-  const statusColor = attestationData?.status === 'VERIFIED' ? 'text-green-600' : attestationData?.status === 'ERROR' ? 'text-red-600' : 'text-yellow-600';
+  const displaySessionId = sessionId.substring(0, 16) + "...";
+  const attestationStatus =
+    attestationData?.status === "VERIFIED"
+      ? "✓"
+      : attestationData?.status === "ERROR"
+      ? "✗"
+      : "⏳";
+  const statusColor =
+    attestationData?.status === "VERIFIED"
+      ? "text-green-600"
+      : attestationData?.status === "ERROR"
+      ? "text-red-600"
+      : "text-yellow-600";
 
   return (
     <div className="w-full relative border border-neutral-300 bg-white p-4 self-start text-neutral-900">
@@ -451,8 +461,12 @@ const TEEProtectionPanel: React.FC<{ figure: Figure; hideTitle?: boolean; sessio
             </p>
           ) : (
             <p className={`text-sm ${statusColor}`}>
-              {attestationStatus} {attestationData?.status === 'VERIFIED' ? 'Trusted execution environment' : 
-                 attestationData?.status === 'ERROR' ? 'Attestation failed' : 'Verifying...'}
+              {attestationStatus}{" "}
+              {attestationData?.status === "VERIFIED"
+                ? "Trusted execution environment"
+                : attestationData?.status === "ERROR"
+                ? "Attestation failed"
+                : "Verifying..."}
             </p>
           )}
         </div>
@@ -479,7 +493,9 @@ const TEEProtectionPanel: React.FC<{ figure: Figure; hideTitle?: boolean; sessio
                 TEE Provider:
               </span>
               <span className="text-[11px] text-neutral-900">
-                {isLoading ? 'Loading...' : (attestationData?.provider || 'APUS NVIDIA TEE')}
+                {isLoading
+                  ? "Loading..."
+                  : attestationData?.provider || "APUS NVIDIA TEE"}
               </span>
             </div>
           </div>
@@ -499,23 +515,31 @@ const TEEProtectionPanel: React.FC<{ figure: Figure; hideTitle?: boolean; sessio
           ) : (
             <button
               onClick={() => {
-                const fullAttestation = attestationData?.error 
+                const fullAttestation = attestationData?.error
                   ? `TEE Attestation Error:\n\n${attestationData.error}\n\nTimestamp: ${attestationData.timestamp}`
-                  : `Full TEE Attestation:\n\nSession ID: ${sessionId}\nProvider: ${attestationData?.provider}\nStatus: ${attestationData?.status}\nTimestamp: ${attestationData?.timestamp}\n\nAttestation Data:\n${attestationData?.attestation || 'No attestation data available'}`;
-                
+                  : `Full TEE Attestation:\n\nSession ID: ${sessionId}\nProvider: ${
+                      attestationData?.provider
+                    }\nStatus: ${attestationData?.status}\nTimestamp: ${
+                      attestationData?.timestamp
+                    }\n\nAttestation Data:\n${
+                      attestationData?.attestation ||
+                      "No attestation data available"
+                    }`;
+
                 alert(fullAttestation);
               }}
               className="w-full text-[11px] font-mono text-neutral-900 bg-transparent p-2 border border-neutral-300 hover:bg-neutral-50 transition-colors break-all"
               disabled={isLoading}
             >
-              {attestationData?.error ? 'Error - Click for details' : 
-               attestationData?.attestation ? 
-                 (attestationData.attestation.startsWith('eyJ') ? 
-                   `JWT: ${attestationData.attestation.substring(0, 20)}...` : 
-                   (attestationData.attestation.length > 50 ? 
-                     attestationData.attestation.substring(0, 50) + '...' : 
-                     attestationData.attestation)) :
-                 'No attestation data'}
+              {attestationData?.error
+                ? "Error - Click for details"
+                : attestationData?.attestation
+                ? attestationData.attestation.startsWith("eyJ")
+                  ? `JWT: ${attestationData.attestation.substring(0, 20)}...`
+                  : attestationData.attestation.length > 50
+                  ? attestationData.attestation.substring(0, 50) + "..."
+                  : attestationData.attestation
+                : "No attestation data"}
             </button>
           )}
         </div>
@@ -677,25 +701,31 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
 
   useEffect(() => {
     const initializeChat = async () => {
-      let permanentPrompt = '';
-      
+      let permanentPrompt = "";
+
       // Fetch permanent prompt if the figure has an Arweave transaction ID
       if (figure.arweaveTxId) {
         try {
-          permanentPrompt = await ArweaveService.fetchPermanentPrompt(figure.arweaveTxId);
+          permanentPrompt = await ArweaveService.fetchPermanentPrompt(
+            figure.arweaveTxId
+          );
         } catch (error) {
-          console.warn('Failed to fetch permanent prompt:', error);
+          console.warn("Failed to fetch permanent prompt:", error);
           // Continue with empty permanent prompt if fetch fails
         }
       }
-      
+
       const session = startChatSession(figure.systemPrompt, permanentPrompt);
       setChatSession(session);
       setMessages([
-        { id: "welcome", text: figure.welcomeMessage, author: MessageAuthor.AI },
+        {
+          id: "welcome",
+          text: figure.welcomeMessage,
+          author: MessageAuthor.AI,
+        },
       ]);
     };
-    
+
     initializeChat();
   }, [figure]);
 
@@ -769,12 +799,10 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
 
     try {
       const response = await sendMessage(chatSession, userInput, figure.config);
-      
+
       setMessages((prev) =>
         prev.map((msg) =>
-          msg.id === aiMessageId
-            ? { ...msg, text: response }
-            : msg
+          msg.id === aiMessageId ? { ...msg, text: response } : msg
         )
       );
     } catch (error) {
@@ -796,9 +824,9 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   return (
     <>
       <div className="max-w-[95vw] mx-auto flex flex-col xl:flex-row gap-6 animate-fade-in">
-        {/* Figure*/}
-        <div className="flex gap-6">
-          <div className="w-full xl:w-[400px] space-y-3 bg-white">
+        <div className="flex w-full flex-col xl:flex-row gap-6">
+          {/* Figure*/}
+          <div className="flex flex-col sm:flex-row w-full max-w-full xl:flex-col xl:space-y-3 xl:max-w-96">
             <img
               src={
                 figure.name === "Donald Trump"
@@ -817,36 +845,41 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                 }
               }}
               alt={figure.name}
-              className="w-full aspect-square object-cover border border-border"
+              className="w-full sm:w-96 aspect-square object-cover border border-border xl:w-full"
             />
-            <div className="border border-border bg-white p-3">
-              <h2 className="text-xl font-bold">{figure.name}</h2>
-              <p className="text-sm text-neutral-500">{figure.title}</p>
-              <div className="flex items-center mt-1">
-                <span className="text-xs text-neutral-500 mr-2">
-                  Permanent Prompt:
-                </span>
-                <a
-                  href="#"
-                  className="text-xs font-mono text-neutral-400 hover:text-blue-500 underline transition-colors"
-                  title={`View ${figure.name}'s permanent prompt on Arweave: ${figure.arweaveTxId}`}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    window.open(
-                      `https://arweave.net/${figure.arweaveTxId}`,
-                      "_blank"
-                    );
-                  }}
-                >
-                  {figure.arweaveTxId.substring(0, 12)}...
-                </a>
+            <div className="flex w-full flex-col">
+              <div className="border border-border bg-white p-3 w-full xl:w-auto">
+                <h2 className="text-xl font-bold">{figure.name}</h2>
+                <p className="text-sm text-neutral-500">{figure.title}</p>
+                <div className="flex items-center mt-1">
+                  <span className="text-xs text-neutral-500 mr-2">
+                    Permanent Prompt:
+                  </span>
+                  <a
+                    href="#"
+                    className="text-xs font-mono text-neutral-400 hover:text-blue-500 underline transition-colors"
+                    title={`View ${figure.name}'s permanent prompt on Arweave: ${figure.arweaveTxId}`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      window.open(
+                        `https://arweave.net/${figure.arweaveTxId}`,
+                        "_blank"
+                      );
+                    }}
+                  >
+                    {figure.arweaveTxId.substring(0, 12)}...
+                  </a>
+                </div>
               </div>
+              <TEEProtectionPanel
+                figure={figure}
+                sessionId={chatSession?.sessionId || "loading"}
+              />
             </div>
-            <TEEProtectionPanel figure={figure} sessionId={chatSession?.sessionId || 'loading'} />
           </div>
 
           {/* Main Chat Area */}
-          <div className="flex-1 min-w-0 h-[82vh] flex border border-border flex-col bg-white overflow-hidden">
+          <div className="w-full h-[82vh] flex border border-border flex-col bg-white overflow-hidden">
             <div className="flex items-center p-4 border-b border-border shrink-0 w-full justify-between">
               <div className="flex items-center" />
 
@@ -981,7 +1014,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
         </div>
 
         {/* Right Sidebar - Collapsible Panels (TEE moved under image) */}
-        <div className="w-full xl:max-w-xs xl:w-80 space-y-3 self-start">
+        <div className="w-full xl:max-w-xs xl:w-88 space-y-3 self-start">
           <AccordionItem id="improve-twin" title="Improve this Digital Twin">
             <ContributionPanel figure={figure} hideTitle />
           </AccordionItem>

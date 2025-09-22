@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@plugin 'phosphor-icons-tailwindcss';
 
 @theme {
     --color-surface: rgb(244 244 244);
