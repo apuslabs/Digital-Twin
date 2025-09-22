@@ -95,7 +95,10 @@ const WinnersHistory: React.FC<{ onWinnerClick: (winner: Winner) => void }> = ({
   onWinnerClick,
 }) => (
   <div className="rounded-none border border-neutral-300 bg-white p-6 h-full text-neutral-900">
-    <h3 className="text-base font-semibold mb-2">🏆 AI‑Approved Winners</h3>
+    <h3 className="text-base font-semibold mb-2 flex items-center gap-2">
+      <span className="ph ph-[trophy]"></span>
+      AI‑Approved Winners
+    </h3>
     <p className="text-[11px] text-neutral-500 mb-4">
       Top contributions rated by AI agents
     </p>
@@ -121,7 +124,10 @@ const WinnersHistory: React.FC<{ onWinnerClick: (winner: Winner) => void }> = ({
                 )}
               </p>
             </div>
-            <span className="text-[11px] text-green-600">✓ AI Approved</span>
+            <span className="text-[11px] text-green-600 flex items-center gap-1">
+              <span className="ph ph-[check]"></span>
+              AI Approved
+            </span>
           </div>
           <div className="flex justify-between items-center mb-2">
             <p className="text-[11px] text-neutral-600">
@@ -137,8 +143,9 @@ const WinnersHistory: React.FC<{ onWinnerClick: (winner: Winner) => void }> = ({
               : winner.contribution}
             "
           </blockquote>
-          <p className="text-[11px] text-neutral-600 mt-2">
-            📦 Stored permanently on Arweave
+          <p className="text-[11px] text-neutral-600 mt-2 flex items-center gap-1">
+            <span className="ph ph-[archive-box]"></span>
+            Stored permanently on Arweave
           </p>
           <p className="text-[11px] text-neutral-800 mt-1">
             Click to view details →
@@ -268,8 +275,9 @@ const WinnerDetailModal: React.FC<{ winner: Winner; onClose: () => void }> = ({
           <div className="border border-neutral-300 p-4 bg-white">
             <div className="flex items-center mb-2">
               <div className="w-2 h-2 bg-green-500 mr-2"></div>
-              <p className="text-neutral-800 font-semibold text-sm">
-                🔒 TEE Protected Attestation
+              <p className="text-neutral-800 font-semibold text-sm inline-flex items-center gap-1">
+                <span className="ph ph-[lock]"></span>
+                TEE Protected Attestation
               </p>
             </div>
             <p className="text-[11px] text-neutral-600 mb-2">
@@ -423,8 +431,9 @@ const CompetitionPage: React.FC<CompetitionPageProps> = ({
           <div className="lg:col-span-2">
             <div className="border border-neutral-300 bg-white p-6 sm:p-8">
               <div className="border border-neutral-300 bg-white p-4 mb-6">
-                <h4 className="text-xs font-semibold tracking-wide uppercase text-neutral-700 mb-2">
-                  🤖 How AI Judging Works
+                <h4 className="text-xs font-semibold tracking-wide uppercase text-neutral-700 mb-2 flex items-center gap-2">
+                  <span className="ph ph-[robot]"></span>
+                  How AI Judging Works
                 </h4>
                 <p className="text-sm text-neutral-800 mb-2">
                   Advanced AI agents evaluate submissions based on authenticity,

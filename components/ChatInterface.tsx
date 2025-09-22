@@ -260,8 +260,9 @@ const ContributionPanel: React.FC<{ figure: Figure; hideTitle?: boolean }> = ({
         </div>
 
         <div className="p-3 border border-pink-500/30 bg-pink-50">
-          <p className="text-[11px] font-semibold mb-1 tracking-wide text-pink-700 uppercase">
-            🤖 AI-Powered Quality Control
+          <p className="text-[11px] font-semibold mb-1 tracking-wide text-pink-700 uppercase flex items-center gap-2">
+            <span className="ph ph-[robot]"></span>
+            AI-Powered Quality Control
           </p>
           <p className="text-[12px] text-pink-900/90 mb-2">
             Your contributions are evaluated by AI agents for authenticity and
@@ -319,9 +320,14 @@ const ContributionPanel: React.FC<{ figure: Figure; hideTitle?: boolean }> = ({
             {isSubmitting ? "Submitting to AO..." : "Submit for AI Review"}
           </button>
           <p className="text-[11px] text-neutral-600 text-center">
-            {aoService.isWalletConnected()
-              ? "AI agents will evaluate and integrate approved improvements into the permanent Arweave-stored digital twin"
-              : "⚠️ Connect your Arweave wallet to submit contributions"}
+            {aoService.isWalletConnected() ? (
+              "AI agents will evaluate and integrate approved improvements into the permanent Arweave-stored digital twin"
+            ) : (
+              <span className="inline-flex items-center gap-1">
+                <span className="ph ph-[warning]"></span>Connect your Arweave
+                wallet to submit contributions
+              </span>
+            )}
           </p>
         </form>
       </div>
@@ -549,8 +555,12 @@ const TEEProtectionPanel: React.FC<{
             Your conversation is secure
           </p>
           <div className="flex justify-center items-center mt-2 space-x-4 text-[11px] text-neutral-800">
-            <span>🛡️ Tamper‑proof</span>
-            <span>✅ Verified</span>
+            <span className="inline-flex items-center gap-1">
+              <span className="ph ph-[shield]"></span>Tamper‑proof
+            </span>
+            <span className="inline-flex items-center gap-1">
+              <span className="ph ph-[check]"></span>Verified
+            </span>
           </div>
         </div>
       </div>
