@@ -8,6 +8,7 @@ import { aoService } from "../services/LegacyAOService";
 import TEEService from "../services/teeService";
 import ArweaveService from "../services/arweaveService";
 import Markdown from "react-markdown";
+import Modal from "./dialog/Modal";
 
 interface ChatInterfaceProps {
   figure: Figure;
@@ -226,112 +227,114 @@ const ContributionPanel: React.FC<{ figure: Figure; hideTitle?: boolean }> = ({
   };
 
   return (
-    <div className="w-full relative border border-neutral-300 bg-white p-4 self-start text-neutral-900">
-      <div
-        className="pointer-events-none absolute inset-0 opacity-10"
-        style={{
-          backgroundImage:
-            "repeating-linear-gradient(45deg,#000 0px,#000 1px,transparent 1px,transparent 8px),repeating-linear-gradient(-45deg,#000 0px,#000 1px,transparent 1px,transparent 8px)",
-          backgroundSize: "12px 12px, 12px 12px",
-        }}
-      />
+    <>
+      <div className="w-full relative border border-neutral-300 bg-white p-4 self-start text-neutral-900">
+        <div
+          className="pointer-events-none absolute inset-0 opacity-10"
+          style={{
+            backgroundImage:
+              "repeating-linear-gradient(45deg,#000 0px,#000 1px,transparent 1px,transparent 8px),repeating-linear-gradient(-45deg,#000 0px,#000 1px,transparent 1px,transparent 8px)",
+            backgroundSize: "12px 12px, 12px 12px",
+          }}
+        />
 
-      <div className="relative space-y-3">
-        {!hideTitle && (
-          <div className="flex items-center">
-            <div className="w-2 h-2 bg-blue-500 mr-2"></div>
-            <h3 className="text-xs font-semibold tracking-wide uppercase text-neutral-700">
-              Improve this Digital Twin
-            </h3>
-          </div>
-        )}
-
-        <div className="p-3 border border-neutral-300 bg-white/80">
-          <p className="text-[11px] font-semibold mb-1 tracking-wide text-neutral-600 uppercase">
-            Community
-          </p>
-          <p className="text-sm text-neutral-800 flex items-center">
-            <UsersIcon />
-            <span>
-              Join <strong>{figure.contributors.toLocaleString()}</strong> other
-              contributors!
-            </span>
-          </p>
-        </div>
-
-        <div className="p-3 border border-pink-500/30 bg-pink-50">
-          <p className="text-[11px] font-semibold mb-1 tracking-wide text-pink-700 uppercase flex items-center gap-2">
-            <span className="ph ph-[robot]"></span>
-            AI-Powered Quality Control
-          </p>
-          <p className="text-[12px] text-pink-900/90 mb-2">
-            Your contributions are evaluated by AI agents for authenticity and
-            quality before being integrated.
-          </p>
-          <p className="text-[12px] text-pink-900/90">
-            <strong className="font-semibold">Arweave Storage:</strong> Approved
-            contributions become part of the permanent digital twin stored
-            forever on Arweave.
-          </p>
-        </div>
-
-        <form onSubmit={handleContributionSubmit} className="space-y-3">
-          <div className="p-3 border border-neutral-300 bg-white/80 space-y-2">
-            <p className="text-[11px] font-semibold tracking-wide text-neutral-600 uppercase">
-              Suggest persona improvements
-            </p>
-            <textarea
-              id="prompt-suggestion"
-              rows={5}
-              className="w-full border border-neutral-300 bg-white p-2 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-300 transition-all text-sm"
-              placeholder={`e.g., "When discussing technology, ${figure.name} should reference specific innovations and speak with technical precision..."`}
-              value={promptSuggestion}
-              onChange={(e) => setPromptSuggestion(e.target.value)}
-            />
-          </div>
-
-          <div className="relative text-center text-neutral-500 text-[11px]">
-            <span className="px-2 bg-white">or</span>
-            <div className="absolute top-1/2 left-0 w-full h-px bg-neutral-300 -z-10"></div>
-          </div>
+        <div className="relative space-y-3">
+          {!hideTitle && (
+            <div className="flex items-center">
+              <div className="w-2 h-2 bg-blue-500 mr-2"></div>
+              <h3 className="text-xs font-semibold tracking-wide uppercase text-neutral-700">
+                Improve this Digital Twin
+              </h3>
+            </div>
+          )}
 
           <div className="p-3 border border-neutral-300 bg-white/80">
-            <label
-              htmlFor="file-upload"
-              className="w-full cursor-pointer p-2 flex items-center justify-center text-sm font-medium text-neutral-700 bg-transparent border border-neutral-300 hover:bg-neutral-50 transition-colors"
-            >
-              <FileUploadIcon />
-              {fileName || "Upload a .txt file"}
-            </label>
-            <input
-              id="file-upload"
-              type="file"
-              className="hidden"
-              accept=".txt"
-              onChange={handleFileChange}
-            />
+            <p className="text-[11px] font-semibold mb-1 tracking-wide text-neutral-600 uppercase">
+              Community
+            </p>
+            <p className="text-sm text-neutral-800 flex items-center">
+              <UsersIcon />
+              <span>
+                Join <strong>{figure.contributors.toLocaleString()}</strong>{" "}
+                other contributors!
+              </span>
+            </p>
           </div>
 
-          <button
-            type="submit"
-            className="w-full p-3 bg-blue-600  font-semibold disabled:bg-neutral-300 disabled:cursor-not-allowed hover:bg-blue-500 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
-            disabled={(!promptSuggestion.trim() && !fileName) || isSubmitting}
-          >
-            {isSubmitting ? "Submitting to AO..." : "Submit for AI Review"}
-          </button>
-          <p className="text-[11px] text-neutral-600 text-center">
-            {aoService.isWalletConnected() ? (
-              "AI agents will evaluate and integrate approved improvements into the permanent Arweave-stored digital twin"
-            ) : (
-              <span className="inline-flex items-center gap-1">
-                <span className="ph ph-[warning]"></span>Connect your Arweave
-                wallet to submit contributions
-              </span>
-            )}
-          </p>
-        </form>
+          <div className="p-3 border border-pink-500/30 bg-pink-50">
+            <p className="text-[11px] font-semibold mb-1 tracking-wide text-pink-700 uppercase flex items-center gap-2">
+              <span className="ph ph-[robot]"></span>
+              AI-Powered Quality Control
+            </p>
+            <p className="text-[12px] text-pink-900/90 mb-2">
+              Your contributions are evaluated by AI agents for authenticity and
+              quality before being integrated.
+            </p>
+            <p className="text-[12px] text-pink-900/90">
+              <strong className="font-semibold">Arweave Storage:</strong>{" "}
+              Approved contributions become part of the permanent digital twin
+              stored forever on Arweave.
+            </p>
+          </div>
+
+          <form onSubmit={handleContributionSubmit} className="space-y-3">
+            <div className="p-3 border border-neutral-300 bg-white/80 space-y-2">
+              <p className="text-[11px] font-semibold tracking-wide text-neutral-600 uppercase">
+                Suggest persona improvements
+              </p>
+              <textarea
+                id="prompt-suggestion"
+                rows={5}
+                className="w-full border border-neutral-300 bg-white p-2 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-300 transition-all text-sm"
+                placeholder={`e.g., "When discussing technology, ${figure.name} should reference specific innovations and speak with technical precision..."`}
+                value={promptSuggestion}
+                onChange={(e) => setPromptSuggestion(e.target.value)}
+              />
+            </div>
+
+            <div className="relative text-center text-neutral-500 text-[11px]">
+              <span className="px-2 bg-white">or</span>
+              <div className="absolute top-1/2 left-0 w-full h-px bg-neutral-300 -z-10"></div>
+            </div>
+
+            <div className="p-3 border border-neutral-300 bg-white/80">
+              <label
+                htmlFor="file-upload"
+                className="w-full cursor-pointer p-2 flex items-center justify-center text-sm font-medium text-neutral-700 bg-transparent border border-neutral-300 hover:bg-neutral-50 transition-colors"
+              >
+                <FileUploadIcon />
+                {fileName || "Upload a .txt file"}
+              </label>
+              <input
+                id="file-upload"
+                type="file"
+                className="hidden"
+                accept=".txt"
+                onChange={handleFileChange}
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="w-full p-3 bg-blue-600 text-white font-semibold disabled:bg-neutral-300 disabled:cursor-not-allowed hover:bg-blue-500 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+              disabled={(!promptSuggestion.trim() && !fileName) || isSubmitting}
+            >
+              {isSubmitting ? "Submitting to AO..." : "Submit for AI Review"}
+            </button>
+            <p className="text-[11px] text-neutral-600 text-center">
+              {aoService.isWalletConnected() ? (
+                "AI agents will evaluate and integrate approved improvements into the permanent Arweave-stored digital twin"
+              ) : (
+                <span className="inline-flex items-center gap-1">
+                  <span className="ph ph-[warning]"></span>Connect your Arweave
+                  wallet to submit contributions
+                </span>
+              )}
+            </p>
+          </form>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 
@@ -400,6 +403,7 @@ const TEEProtectionPanel: React.FC<{
   const [attestationData, setAttestationData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [pageStartTime] = useState(new Date().toISOString());
+  const [isAttestationModalOpen, setIsAttestationModalOpen] = useState(false);
 
   // Fetch TEE attestation when component mounts
   useEffect(() => {
@@ -437,134 +441,185 @@ const TEEProtectionPanel: React.FC<{
       : "text-yellow-600";
 
   return (
-    <div className="w-full relative border border-neutral-300 bg-white p-4 self-start text-neutral-900">
-      <div
-        className="pointer-events-none absolute inset-0 opacity-10"
-        style={{
-          backgroundImage:
-            "repeating-linear-gradient(45deg,#000 0px,#000 1px,transparent 1px,transparent 8px),repeating-linear-gradient(-45deg,#000 0px,#000 1px,transparent 1px,transparent 8px)",
-          backgroundSize: "12px 12px, 12px 12px",
-        }}
-      />
+    <>
+      <div className="w-full relative border border-neutral-300 bg-white p-4 self-start text-neutral-900">
+        <div
+          className="pointer-events-none absolute inset-0 opacity-10"
+          style={{
+            backgroundImage:
+              "repeating-linear-gradient(45deg,#000 0px,#000 1px,transparent 1px,transparent 8px),repeating-linear-gradient(-45deg,#000 0px,#000 1px,transparent 1px,transparent 8px)",
+            backgroundSize: "12px 12px, 12px 12px",
+          }}
+        />
 
-      <div className="relative space-y-3">
-        {!hideTitle && (
-          <div className="flex items-center">
-            <div className="w-2 h-2 bg-green-500 mr-2"></div>
-            <h3 className="text-xs font-semibold tracking-wide uppercase text-neutral-700">
-              TEE Protection
-            </h3>
-          </div>
-        )}
-
-        <div className="p-3 border border-neutral-300 bg-white/80">
-          <p className="text-[11px] font-semibold mb-1 tracking-wide text-neutral-600 uppercase">
-            Security Status
-          </p>
-          {isLoading ? (
-            <p className="text-sm text-neutral-500">
-              ⏳ Verifying trusted execution environment...
-            </p>
-          ) : (
-            <p className={`text-sm ${statusColor}`}>
-              {attestationStatus}{" "}
-              {attestationData?.status === "VERIFIED"
-                ? "Trusted execution environment"
-                : attestationData?.status === "ERROR"
-                ? "Attestation failed"
-                : "Verifying..."}
-            </p>
+        <div className="relative space-y-3">
+          {!hideTitle && (
+            <div className="flex items-center">
+              <div className="w-2 h-2 bg-green-500 mr-2"></div>
+              <h3 className="text-xs font-semibold tracking-wide uppercase text-neutral-700">
+                TEE Protection
+              </h3>
+            </div>
           )}
-        </div>
 
-        <div className="p-3 border border-neutral-300 bg-white/80">
-          <p className="text-[11px] font-semibold mb-2 tracking-wide text-neutral-600 uppercase">
-            Session Attestation
-          </p>
-          <div className="space-y-1">
-            <div className="flex justify-between">
-              <span className="text-[11px] text-neutral-500">Session ID:</span>
-              <span className="text-[11px] font-mono text-neutral-900">
-                {displaySessionId}
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-[11px] text-neutral-500">Started:</span>
-              <span className="text-[11px] text-neutral-800">
-                {pageStartTime.substring(11, 19)}
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-[11px] text-neutral-500">
-                TEE Provider:
-              </span>
-              <span className="text-[11px] text-neutral-900">
-                {isLoading
-                  ? "Loading..."
-                  : attestationData?.provider || "APUS NVIDIA TEE"}
-              </span>
-            </div>
+          <div className="p-3 border border-neutral-300 bg-white/80">
+            <p className="text-[11px] font-semibold mb-1 tracking-wide text-neutral-600 uppercase">
+              Security Status
+            </p>
+            {isLoading ? (
+              <p className="text-sm text-neutral-500">
+                ⏳ Verifying trusted execution environment...
+              </p>
+            ) : (
+              <p className={`text-sm ${statusColor}`}>
+                {attestationStatus}{" "}
+                {attestationData?.status === "VERIFIED"
+                  ? "Trusted execution environment"
+                  : attestationData?.status === "ERROR"
+                  ? "Attestation failed"
+                  : "Verifying..."}
+              </p>
+            )}
           </div>
-        </div>
 
-        <div className="p-3 border border-neutral-300 bg-white/80">
-          <p className="text-[11px] font-semibold mb-2 tracking-wide text-neutral-600 uppercase">
-            Full Attestation
-          </p>
-          {isLoading ? (
-            <div className="w-full text-[11px] text-neutral-500 bg-transparent p-2 border border-neutral-300">
-              <div className="flex items-center justify-center space-x-2">
-                <div className="animate-spin rounded-full h-3 w-3 border-b border-neutral-400"></div>
-                <span>Fetching attestation...</span>
+          <div className="p-3 border border-neutral-300 bg-white/80">
+            <p className="text-[11px] font-semibold mb-2 tracking-wide text-neutral-600 uppercase">
+              Session Attestation
+            </p>
+            <div className="space-y-1">
+              <div className="flex justify-between">
+                <span className="text-[11px] text-neutral-500">
+                  Session ID:
+                </span>
+                <span className="text-[11px] font-mono text-neutral-900">
+                  {displaySessionId}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-[11px] text-neutral-500">Started:</span>
+                <span className="text-[11px] text-neutral-800">
+                  {pageStartTime.substring(11, 19)}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-[11px] text-neutral-500">
+                  TEE Provider:
+                </span>
+                <span className="text-[11px] text-neutral-900">
+                  {isLoading
+                    ? "Loading..."
+                    : attestationData?.provider || "APUS NVIDIA TEE"}
+                </span>
               </div>
             </div>
-          ) : (
-            <button
-              onClick={() => {
-                const fullAttestation = attestationData?.error
-                  ? `TEE Attestation Error:\n\n${attestationData.error}\n\nTimestamp: ${attestationData.timestamp}`
-                  : `Full TEE Attestation:\n\nSession ID: ${sessionId}\nProvider: ${
-                      attestationData?.provider
-                    }\nStatus: ${attestationData?.status}\nTimestamp: ${
-                      attestationData?.timestamp
-                    }\n\nAttestation Data:\n${
-                      attestationData?.attestation ||
-                      "No attestation data available"
-                    }`;
+          </div>
 
-                alert(fullAttestation);
-              }}
-              className="w-full text-[11px] font-mono text-neutral-900 bg-transparent p-2 border border-neutral-300 hover:bg-neutral-50 transition-colors break-all"
-              disabled={isLoading}
-            >
-              {attestationData?.error
-                ? "Error - Click for details"
-                : attestationData?.attestation
-                ? attestationData.attestation.startsWith("eyJ")
-                  ? `JWT: ${attestationData.attestation.substring(0, 20)}...`
-                  : attestationData.attestation.length > 50
-                  ? attestationData.attestation.substring(0, 50) + "..."
-                  : attestationData.attestation
-                : "No attestation data"}
-            </button>
-          )}
-        </div>
+          <div className="p-3 border border-neutral-300 bg-white/80">
+            <p className="text-[11px] font-semibold mb-2 tracking-wide text-neutral-600 uppercase">
+              Full Attestation
+            </p>
+            {isLoading ? (
+              <div className="w-full text-[11px] text-neutral-500 bg-transparent p-2 border border-neutral-300">
+                <div className="flex items-center justify-center space-x-2">
+                  <div className="animate-spin rounded-full h-3 w-3 border-b border-neutral-400"></div>
+                  <span>Fetching attestation...</span>
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={() => setIsAttestationModalOpen(true)}
+                className="w-full text-[11px] font-mono text-neutral-900 bg-transparent p-2 border border-neutral-300 hover:bg-neutral-50 transition-colors break-all"
+                disabled={isLoading}
+              >
+                {attestationData?.error
+                  ? "Error - Click for details"
+                  : attestationData?.attestation
+                  ? attestationData.attestation.startsWith("eyJ")
+                    ? `JWT: ${attestationData.attestation.substring(0, 20)}...`
+                    : attestationData.attestation.length > 50
+                    ? attestationData.attestation.substring(0, 50) + "..."
+                    : attestationData.attestation
+                  : "No attestation data"}
+              </button>
+            )}
+          </div>
 
-        <div className="text-center">
-          <p className="text-[11px] text-neutral-600">
-            Your conversation is secure
-          </p>
-          <div className="flex justify-center items-center mt-2 space-x-4 text-[11px] text-neutral-800">
-            <span className="inline-flex items-center gap-1">
-              <span className="ph ph-[shield]"></span>Tamper‑proof
-            </span>
-            <span className="inline-flex items-center gap-1">
-              <span className="ph ph-[check]"></span>Verified
-            </span>
+          <div className="text-center">
+            <p className="text-[11px] text-neutral-600">
+              Your conversation is secure
+            </p>
+            <div className="flex justify-center items-center mt-2 space-x-4 text-[11px] text-neutral-800">
+              <span className="inline-flex items-center gap-1">
+                <span className="ph ph-[shield--duotone] text-green-500"></span>
+                Tamper‑proof
+              </span>
+              <span className="inline-flex items-center gap-1">
+                <span className="ph ph-[check--duotone] text-green-500"></span>
+                Verified
+              </span>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+
+      <Modal
+        isOpen={isAttestationModalOpen}
+        onClose={() => setIsAttestationModalOpen(false)}
+        title="TEE Attestation Details"
+      >
+        {isLoading ? (
+          <div className="flex items-center justify-center py-6">
+            <div className="animate-spin rounded-full h-5 w-5 border-b border-neutral-400" />
+            <span className="ml-2 text-sm text-neutral-600">Loading…</span>
+          </div>
+        ) : attestationData?.error ? (
+          <div className="space-y-3">
+            <p className="text-sm text-red-700">{attestationData.error}</p>
+            <div className="text-[11px] text-neutral-500">
+              Timestamp: {attestationData.timestamp}
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <div>
+                <div className="text-neutral-500">Session ID</div>
+                <div className="font-mono text-neutral-900 break-all">
+                  {sessionId}
+                </div>
+              </div>
+              <div>
+                <div className="text-neutral-500">Provider</div>
+                <div className="text-neutral-900">
+                  {attestationData?.provider || "Unknown"}
+                </div>
+              </div>
+              <div>
+                <div className="text-neutral-500">Status</div>
+                <div className="text-neutral-900">
+                  {attestationData?.status}
+                </div>
+              </div>
+              <div>
+                <div className="text-neutral-500">Timestamp</div>
+                <div className="text-neutral-900">
+                  {attestationData?.timestamp}
+                </div>
+              </div>
+            </div>
+            <div>
+              <div className="text-neutral-500 text-sm mb-1">
+                Attestation Data
+              </div>
+              <pre className="whitespace-pre-wrap break-words text-[11px] p-3 border border-neutral-300 bg-neutral-50 max-h-64 overflow-auto">
+                {attestationData?.attestation ||
+                  "No attestation data available"}
+              </pre>
+            </div>
+          </div>
+        )}
+      </Modal>
+    </>
   );
 };
 

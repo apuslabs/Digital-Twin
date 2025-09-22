@@ -27,6 +27,10 @@
     p {
         @apply text-xs;
     }
+
+    button {
+        @apply cursor-pointer;
+    }
 }
 
 @layer utilities {
