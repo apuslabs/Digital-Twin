@@ -99,7 +99,7 @@ export class LegacyAOService {
     
     // Get status from tags
     const statusTag = message.Tags?.find((tag: any) => tag.name === "status");
-    const status = statusTag ? statusTag.value : "unknown";
+    let status = statusTag ? statusTag.value : "unknown";
     
     // Get reference from tags
     const referenceTag = message.Tags?.find((tag: any) => tag.name === "X-Reference");
@@ -118,8 +118,10 @@ export class LegacyAOService {
         }
       }
     } catch (e) {
-      console.log("Failed to parse Data as JSON, using raw data");
+      console.log("Failed to parse Data as JSON, using raw data - treating as processing state");
       parsedData = message.Data;
+      // When JSON parsing fails, it likely means the task is still processing
+      status = "processing";
     }
     
     return {

@@ -644,6 +644,14 @@ const CompetitionPage: React.FC<CompetitionPageProps> = ({
             </div>
           )}
 
+          {queryResult.status === "processing" && (
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              <p className="text-neutral-600">Evaluation in progress...</p>
+              <p className="text-sm text-neutral-500 mt-2">The AI agent is currently processing your submission.</p>
+            </div>
+          )}
+
           {queryResult.status === "done" && !getEvaluationResult(queryResult) && (
             <div className="space-y-4">
               <p className="text-neutral-600">Evaluation completed but results could not be parsed.</p>
