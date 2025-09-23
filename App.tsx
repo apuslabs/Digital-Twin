@@ -73,6 +73,7 @@ const App: React.FC = () => {
               onCategoryChange={setActiveCategory}
               figures={FIGURES}
               onSelectFigure={handleSelectFigure}
+              onNavigateToCompetition={handleNavigateToCompetition}
             />
             <CompetitionBanner onNavigate={handleNavigateToCompetition} />
           </div>

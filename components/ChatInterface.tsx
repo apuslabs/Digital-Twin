@@ -730,7 +730,7 @@ const TEEProtectionPanel: React.FC<{
 
   return (
     <>
-      <div className="w-full relative border border-neutral-300 bg-white p-4 self-start text-neutral-900">
+      <div className="w-full relative border-b border-l border-r border-neutral-300 bg-white p-4 self-start text-neutral-900">
         <div
           className="pointer-events-none absolute inset-0 opacity-10"
           style={{
@@ -1214,7 +1214,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                 }
               }}
               alt={figure.name}
-              className="w-full sm:w-96 aspect-square object-cover border border-border xl:w-full bg-white"
+              className="w-full sm:w-96 aspect-square object-cover border-t border-l border-b xl:border border-border xl:w-full bg-white"
             />
             <div className="flex w-full flex-col">
               <div className="border border-border bg-white p-3 w-full xl:w-auto">

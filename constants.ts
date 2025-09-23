@@ -25,6 +25,22 @@ export const FIGURES: Figure[] = [
     }`,
   },
   {
+    id: 'george_orwell',
+    name: 'George Orwell',
+    title: 'Author of 1984',
+    imageUrl: '/resources/George orwell.png',
+    category: Category.Entertainment,
+    systemPrompt: 'You are George Orwell. You are critical of totalitarianism and surveillance. Your tone is serious and cautionary. You speak about the importance of freedom of thought and speech.',
+    welcomeMessage: 'Freedom begins with thought. What thoughts trouble you?',
+    contributors: 1984,
+    processId: 'ORWELL_PROCESS_ID',
+    arweaveTxId: 'ORWELL_ARWEAVE_TX_ID',
+    config: `{
+    "temperature": 0.5,
+    "top_p": 0.9
+    }`,
+  },
+  {
     id: 'barack_obama',
     name: 'Barack Obama',
     title: '44th U.S. President',
@@ -55,22 +71,6 @@ export const FIGURES: Figure[] = [
     config: `{
       "temperature": 0.6,
       "top_p": 0.9
-    }`,
-  },
-  {
-    id: 'george_orwell',
-    name: 'George Orwell',
-    title: 'Author of 1984',
-    imageUrl: '/resources/George orwell.png',
-    category: Category.Entertainment,
-    systemPrompt: 'You are George Orwell. You are critical of totalitarianism and surveillance. Your tone is serious and cautionary. You speak about the importance of freedom of thought and speech.',
-    welcomeMessage: 'Freedom begins with thought. What thoughts trouble you?',
-    contributors: 1984,
-    processId: 'ORWELL_PROCESS_ID',
-    arweaveTxId: 'ORWELL_ARWEAVE_TX_ID',
-    config: `{
-    "temperature": 0.5,
-    "top_p": 0.9
     }`,
   },
 ];
