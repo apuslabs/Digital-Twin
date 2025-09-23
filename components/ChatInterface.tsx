@@ -3,7 +3,7 @@ import MessageComposer from "./chat/MessageComposer";
 
 import { Figure, ChatMessage, MessageAuthor } from "../types";
 import { startChatSession, sendMessage, Chat } from "../services/apusService";
-import { aoService } from "../services/LegacyAOService";
+import { aoService, QueryResult } from "../services/LegacyAOService";
 import TEEService from "../services/teeService";
 import ArweaveService from "../services/arweaveService";
 import Markdown from "react-markdown";
@@ -176,7 +176,24 @@ const ContributionPanel: React.FC<{ figure: Figure; hideTitle?: boolean }> = ({
     }
     try {
       const result = await aoService.queryTaskResult(figure.processId, lastReference);
-      alert("Query Result:\n" + JSON.stringify(result, null, 2));
+      
+      if (!result.success) {
+        alert(`Error: ${result.error || 'Failed to query task result'}`);
+        return;
+      }
+      
+      if (result.status !== "done") {
+        alert(result.message || `Task is still processing. Status: ${result.status}. Please try querying again in a moment.`);
+        return;
+      }
+      
+      // Show the final result
+      if (result.data && result.data.result) {
+        alert(`Task Completed!\n\nAI Evaluation Result:\n${result.data.result}`);
+      } else {
+        alert(`Task Completed!\n\nResult:\n${JSON.stringify(result.data, null, 2)}`);
+      }
+
     } catch (error) {
       console.error("Error querying task result:", error);
       alert("Failed to query task result. See console for details.");

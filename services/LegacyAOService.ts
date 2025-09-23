@@ -1,5 +1,6 @@
 import { message, createDataItemSigner, dryrun } from "@permaweb/aoconnect";
 import { Figure } from '../types';
+import { JudgePrompt } from './prompts';
 
 export interface PromptSubmission {
   data: string;
@@ -12,6 +13,15 @@ export interface AOResponse {
   messageId?: string;
   error?: string;
   reference?: string;
+}
+
+export interface QueryResult {
+  success: boolean;
+  status: string;
+  reference: string;
+  data?: any;
+  error?: string;
+  message?: string;
 }
 
 /**
@@ -35,6 +45,13 @@ export class LegacyAOService {
     try {
       console.log(`Submitting prompt to ${figure.name}'s agent: ${figure.processId}`);
       const reference = `${figure.id}-${Date.now()}`;
+       
+      // Combine judge prompt with character-specific information and user's prompt data
+      const judgePromptWithData = JudgePrompt
+        .replace('{{characterName}}', figure.name)
+        .replace('{{characterBackground}}', figure.systemPrompt)
+        .replace('{{promptData}}', promptData);
+      
       const result = await message({
         process: figure.processId,
         tags: [
@@ -43,7 +60,7 @@ export class LegacyAOService {
           { name: "X-Reference", value: reference },
         ],
         signer: this.signer,
-        data: promptData,
+        data: judgePromptWithData,
       });
 
       console.log(`Prompt submitted successfully. Message ID: ${result}`);
@@ -63,18 +80,92 @@ export class LegacyAOService {
   }
 
   /**
+   * Parse AO dryrun results
+   * @param result - The result from AO dryrun
+   * @returns Parsed result with status, reference, and data
+   */
+  private parseAOResult(result: any): QueryResult {
+    if (!result.Messages || result.Messages.length === 0) {
+      return {
+        success: false,
+        error: "No messages found in result",
+        status: "error",
+        reference: "unknown",
+        data: null
+      };
+    }
+
+    const message = result.Messages[0];
+    
+    // Get status from tags
+    const statusTag = message.Tags?.find((tag: any) => tag.name === "status");
+    const status = statusTag ? statusTag.value : "unknown";
+    
+    // Get reference from tags
+    const referenceTag = message.Tags?.find((tag: any) => tag.name === "X-Reference");
+    const reference = referenceTag ? referenceTag.value : "unknown";
+    
+    // Parse the data (it's JSON stringified)
+    let parsedData = null;
+    try {
+      parsedData = JSON.parse(message.Data);
+      
+      // If the data contains AI evaluation results, parse them
+      if (parsedData && parsedData.result) {
+        const evaluationResult = this.parseEvaluationResult(parsedData.result);
+        if (evaluationResult) {
+          parsedData.evaluation = evaluationResult;
+        }
+      }
+    } catch (e) {
+      console.log("Failed to parse Data as JSON, using raw data");
+      parsedData = message.Data;
+    }
+    
+    return {
+      success: true,
+      status: status,
+      reference: reference,
+      data: parsedData
+    };
+  }
+
+  /**
+   * Parse AI evaluation result from JSON data
+   * @param resultText - The result text containing JSON in markdown format
+   * @returns Parsed evaluation with score and reasoning, or null if parsing fails
+   */
+  private parseEvaluationResult(resultText: string): { score: number; reasoning: string } | null {
+    try {
+      // Extract JSON from markdown code block
+      const jsonMatch = resultText.match(/```json\n([\s\S]*?)\n```/);
+      
+      if (jsonMatch && jsonMatch[1]) {
+        const evaluationData = JSON.parse(jsonMatch[1]);
+        return {
+          score: evaluationData.score || 0,
+          reasoning: evaluationData.reasoning || "No reasoning provided"
+        };
+      }
+      return null;
+    } catch (error) {
+      console.error("Failed to parse evaluation result:", error);
+      return null;
+    }
+  }
+
+  /**
    * Query the result of a submitted task using dryrun
    * @param processId - The process ID to query (can be agent or worker)
    * @param reference - The reference ID of the task to query
-   * @returns Promise with the task result
+   * @returns Promise with the parsed task result
    */
-  async queryTaskResult(processId: string, reference: string): Promise<any> {
+  async queryTaskResult(processId: string, reference: string): Promise<QueryResult> {
     try {
       console.log(`Querying task result for reference: ${reference} from process: ${processId}`);
       
       const result = await dryrun({
         process: processId,
-        data: '',
         tags: [
           {
             name: "Action",
@@ -85,14 +176,34 @@ export class LegacyAOService {
             value: reference
           }
         ],
-        anchor: Date.now().toString(), // Use timestamp as anchor
       });
 
       console.log(`Task result query completed for reference: ${reference}`);
-      return result;
+      
+      // Parse the result using the helper function
+      const parsed = this.parseAOResult(result);
+      
+      // Add user-friendly messages based on status
+      if (!parsed.success) {
+        return parsed;
+      }
+      
+      if (parsed.status !== "done") {
+        return {
+          ...parsed,
+          message: `Task is still processing. Status: ${parsed.status}. Please try querying again in a moment.`
+        };
+      }
+      
+      return parsed;
     } catch (error) {
       console.error('Error querying task result:', error);
-      throw error;
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error occurred',
+        status: "error",
+        reference: reference
+      };
     }
   }
 
