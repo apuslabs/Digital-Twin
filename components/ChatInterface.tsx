@@ -573,9 +573,17 @@ const TEEProtectionPanel: React.FC<{
               Security Status
             </p>
             {isLoading ? (
-              <p className="text-sm text-neutral-500">
-                ⏳ Verifying trusted execution environment...
-              </p>
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center justify-center w-4 h-4 animate-spin duration-1000 ease-in-out-quart">
+                  <span
+                    className="ph ph-[hourglass] text-neutral-600 text-[10px]"
+                    aria-hidden
+                  ></span>
+                </span>
+                <span className="text-sm text-neutral-500">
+                  Verifying trusted execution environment...
+                </span>
+              </div>
             ) : (
               <p className={`text-sm ${statusColor}`}>
                 {attestationStatus}{" "}
