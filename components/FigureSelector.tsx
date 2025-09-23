@@ -80,11 +80,11 @@ const FigureSelector: React.FC<FigureSelectorProps> = ({
   });
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [scrollSnaps, setScrollSnaps] = useState<number[]>([]);
-  const tweenFactor = useRef(0.84);
+  const tweenFactor = useRef(0.3);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   const setTweenFactor = useCallback((api: any) => {
-    tweenFactor.current = 0.5 * api.scrollSnapList().length;
+    tweenFactor.current = 0.3 * api.scrollSnapList().length;
   }, []);
 
   const numberWithinRange = (n: number, min: number, max: number) =>
