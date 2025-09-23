@@ -1,12 +1,30 @@
-import { result } from "@permaweb/aoconnect";
+import { result,message,createDataItemSigner } from "@permaweb/aoconnect";
+import { readFileSync } from "fs";
 
-let { Messages, Spawns, Output, Error } = await result({
-  // the arweave TxID of the message
-  message: "kVX6Rnnv3HZU7e0sZYsTkWpo04mSjdXK9FKDTfnhfV8",
-  // the arweave TxID of the process
-  process: "lcCDXWe4-id9pI7iMklNp3RvNdfA95Fm-gBx1yngVco",
+let jwk;
+try {
+  jwk = JSON.parse(readFileSync("wallet.json"), "utf-8");
+} catch (e) {
+  console.error("Error reading wallet.json:", e);
+  process.exit(1);
+}
+
+const mid = await message({
+  process: "bI6_qOobuHJBHMEubTLv3lmLHUfK043S4-kN0q_wt3E",
+  tags: [{ name: "Action", value: "Get-Task" }],
+  signer: createDataItemSigner(jwk),
 });
-console.log("Messages:", Messages);
-console.log("Spawns:", Spawns);
-console.log("Output:", Output);
-console.log("Error:", Error);
+
+console.log(mid);
+
+const res = await result({
+  process: "bI6_qOobuHJBHMEubTLv3lmLHUfK043S4-kN0q_wt3E",
+  message: mid,
+});
+
+console.log(res);
+
+let result_ = JSON.parse(res.Messages?.[0]?.Data || "{}");
+
+console.log("Result:   \n");
+console.log(result_.prompt);
