@@ -2,8 +2,6 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Category, Figure } from "../types";
 import useEmblaCarousel from "embla-carousel-react";
 import TwinLogoMark from "@/resources/Twin_LogoMark.svg";
-import TrumpImg from "@/resources/trump.png";
-import ObamaImg from "@/resources/obama.png";
 
 interface FigureSelectorProps {
   categories: Category[];
@@ -47,13 +45,7 @@ const FigureCard: React.FC<{
     </div>
     <div className="relative">
       <img
-        src={
-          figure.name === "Donald Trump"
-            ? TrumpImg
-            : figure.name === "Barack Obama"
-            ? ObamaImg
-            : figure.imageUrl
-        }
+        src={figure.imageUrl}
         data-fallback={figure.imageUrl}
         onError={(e) => {
           const img = e.currentTarget as HTMLImageElement;

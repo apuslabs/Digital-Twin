@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef, FormEvent } from "react";
 import MessageComposer from "./chat/MessageComposer";
-import TrumpImg from "@/resources/trump.png";
-import ObamaImg from "@/resources/obama.png";
+
 import { Figure, ChatMessage, MessageAuthor } from "../types";
 import { startChatSession, sendMessage, Chat } from "../services/apusService";
 import { aoService } from "../services/LegacyAOService";
@@ -1021,13 +1020,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
           {/* Figure*/}
           <div className="flex flex-col sm:flex-row w-full max-w-full xl:flex-col xl:space-y-3 xl:max-w-96">
             <img
-              src={
-                figure.name === "Donald Trump"
-                  ? TrumpImg
-                  : figure.name === "Barack Obama"
-                  ? ObamaImg
-                  : figure.imageUrl
-              }
+              src={figure.imageUrl}
               data-fallback={figure.imageUrl}
               onError={(e) => {
                 const img = e.currentTarget as HTMLImageElement;
@@ -1121,13 +1114,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                 >
                   {message.author === MessageAuthor.AI && (
                     <img
-                      src={
-                        figure.name === "Donald Trump"
-                          ? TrumpImg
-                          : figure.name === "Barack Obama"
-                          ? ObamaImg
-                          : figure.imageUrl
-                      }
+                      src={figure.imageUrl}
                       data-fallback={figure.imageUrl}
                       onError={(e) => {
                         const img = e.currentTarget as HTMLImageElement;
