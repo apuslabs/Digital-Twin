@@ -159,12 +159,27 @@ const ContributionPanel: React.FC<{ figure: Figure; hideTitle?: boolean }> = ({
     title: string;
     body: string;
   } | null>(null);
+  const [lastReference, setLastReference] = useState<string | null>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       setFileName(e.target.files[0].name);
     } else {
       setFileName("");
+    }
+  };
+
+  const handleQueryResult = async () => {
+    if (!lastReference) {
+      alert("No submission found to query.");
+      return;
+    }
+    try {
+      const result = await aoService.queryTaskResult(figure.processId, lastReference);
+      alert("Query Result:\n" + JSON.stringify(result, null, 2));
+    } catch (error) {
+      console.error("Error querying task result:", error);
+      alert("Failed to query task result. See console for details.");
     }
   };
 
@@ -209,6 +224,7 @@ const ContributionPanel: React.FC<{ figure: Figure; hideTitle?: boolean }> = ({
       }
 
       if (result?.success) {
+        setLastReference(result.reference || null);
         setSubmitMsg({
           title: "Success",
           body: `Your contribution has been submitted to ${figure.name}'s agent process for AI evaluation.\n\nMessage ID: ${result.messageId}\n\nYour submission will be reviewed by AI agents and integrated if approved.`,
@@ -424,7 +440,15 @@ const ContributionPanel: React.FC<{ figure: Figure; hideTitle?: boolean }> = ({
             </div>
           </div>
         )}
-        <div className="flex justify-end">
+        <div className="flex justify-end gap-2">
+          {submitStatus === "success" && (
+            <button
+              onClick={handleQueryResult}
+              className="px-4 py-2 border text-sm active:scale-95 transition border-blue-600 text-blue-700 bg-white hover:bg-blue-50"
+            >
+              Query Result
+            </button>
+          )}
           <button
             onClick={() => setIsSubmitModalOpen(false)}
             className={`px-4 py-2 border text-sm active:scale-95 transition ${

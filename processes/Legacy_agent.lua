@@ -18,31 +18,21 @@ Handlers.add(
             return
         end
         
-        local reference = msg["X-Reference"] or msg.Reference or msg.Id
+        local reference = msg["X-Reference"] or msg.Reference 
         
         local NewTask = {
-            from = msg.From,
             prompt = prompt_data,
+            contributor = msg.From ,
+            created_at = msg.Timestamp,
             reference = reference,
-            created_at = os.time(),
-            contributor = msg.From or "unknown",
-            timestamp = msg.Timestamp,
             status = "pending"
         }
-
-        if msg["X-Options"] then
-            NewTask.config = msg["X-Options"]
-        end
 
         Tasks[reference] = NewTask
         table.insert(TaskQueue, reference)
 
         print("[INFERENCE-QUEUED]" .. reference)
 
-        msg.reply({
-            Success = "Prompt received successfully",
-            Character = Character,
-        })
     end
 )
 
@@ -61,11 +51,12 @@ Handlers.add("Get-Task", "Get-Task",
 
             if task then
                 print("[GET-TASK] Assigned task " .. task.reference)
-                task.status = "processing"
-                task.started_at = os.time()
+
                 msg.reply({
                     Data = json.encode(task)
                 })
+                task.status = "processing"
+                task.started_at = os.time()
             else
                 print("[GET-TASK-ERR] Task with ref " .. task_ref .. " not found in Tasks table.")
             end
@@ -91,8 +82,29 @@ Handlers.add(
         print("[RES] Task: " .. task_ref .. " | Result: " .. string.sub(msg.Data, 1, 20))
 
         -- Update the task with the result
-        task.result = msg.Data
+        task.result = msg.Data 
         task.status = "done"
-        task.finished_at = os.time()
+    end
+)
+-- query task results
+
+Handlers.add(
+    "Query-Task-Result",
+    Handlers.utils.hasMatchingTag("Action", "Query-Task-Result"),
+    function(msg)
+        local task_ref = msg["X-Reference"] or msg.Reference
+        local task = Tasks[task_ref]
+        
+        if not task then
+            msg.reply({
+                Error = "Task not found for reference: " .. (task_ref or "nil")
+            })
+            return
+        end
+        
+        msg.reply({
+            status = task.status,
+            Data = task.result or "",
+        })
     end
 )

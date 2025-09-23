@@ -337,9 +337,31 @@ const CompetitionPage: React.FC<CompetitionPageProps> = ({
     title: string;
     body: string;
   } | null>(null);
-  const [submitStatus, setSubmitStatus] = useState<
-    "success" | "error" | "info"
-  >("info");
+  const [submitStatus, setSubmitStatus] = useState<"success" | "error" | "info">("info");
+  const [lastReference, setLastReference] = useState<string | null>(null);
+
+  const handleQueryResult = async () => {
+    const selectedFigure = figures.find((f) => f.id === selectedFigureId);
+    if (!selectedFigure) {
+      alert("Please select a valid figure.");
+      return;
+    }
+    if (!lastReference) {
+      alert("No submission found to query.");
+      return;
+    }
+    try {
+      const result = await aoService.queryTaskResult(
+        selectedFigure.processId,
+        lastReference
+      );
+      alert("Query Result:\n" + JSON.stringify(result, null, 2));
+    } catch (error) {
+      console.error("Error querying task result:", error);
+      alert("Failed to query task result. See console for details.");
+    }
+  };
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       setFileName(e.target.files[0].name);
@@ -402,6 +424,7 @@ const CompetitionPage: React.FC<CompetitionPageProps> = ({
       }
 
       if (result?.success) {
+        setLastReference(result.reference || null);
         setSubmitMsg({
           title: "Success",
           body: `Your contribution for ${selectedFigure.name} has been submitted to their agent process.\n\nMessage ID: ${result.messageId}\n\nSubmission will be evaluated by AI agents for quality and authenticity.`,
@@ -655,7 +678,15 @@ const CompetitionPage: React.FC<CompetitionPageProps> = ({
             </div>
           </div>
         )}
-        <div className="flex justify-end">
+        <div className="flex justify-end gap-2">
+          {submitStatus === "success" && (
+            <button
+              onClick={handleQueryResult}
+              className="px-4 py-2 border text-sm active:scale-95 transition border-blue-600 text-blue-700 bg-white hover:bg-blue-50"
+            >
+              Query Result
+            </button>
+          )}
           <button
             onClick={() => setIsSubmitModalOpen(false)}
             className={`px-4 py-2 border text-sm active:scale-95 transition ${
