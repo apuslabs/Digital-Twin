@@ -867,7 +867,9 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   onPrevTwin,
 }) => {
   const [chatSession, setChatSession] = useState<Chat | null>(null);
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>([
+    { id: "welcome", text: "", author: MessageAuthor.AI },
+  ]);
   const [userInput, setUserInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [modalPlatform, setModalPlatform] = useState<string | null>(null);
@@ -896,13 +898,25 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
 
       const session = startChatSession(figure.systemPrompt, permanentPrompt);
       setChatSession(session);
+      // Show typing state first for the initial AI message, then reveal welcome text
+      const welcomeId = "welcome";
       setMessages([
         {
-          id: "welcome",
-          text: figure.welcomeMessage,
+          id: welcomeId,
+          text: "",
           author: MessageAuthor.AI,
         },
       ]);
+      setShouldAutoScroll(true);
+      const typingTimer = window.setTimeout(() => {
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === welcomeId ? { ...m, text: figure.welcomeMessage } : m
+          )
+        );
+      }, 700);
+      // Cleanup on figure change
+      return () => window.clearTimeout(typingTimer);
     };
 
     initializeChat();
