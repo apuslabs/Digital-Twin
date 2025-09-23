@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, FormEvent } from "react";
 import { Figure } from "../types";
 import { aoService } from "../services/LegacyAOService";
+import Modal from "./dialog/Modal";
 
 interface CompetitionPageProps {
   figures: Figure[];
@@ -94,9 +95,19 @@ const CloseIcon = () => (
 const WinnersHistory: React.FC<{ onWinnerClick: (winner: Winner) => void }> = ({
   onWinnerClick,
 }) => (
-  <div className="rounded-none border border-neutral-300 bg-white p-6 h-full text-neutral-900">
-    <h3 className="text-base font-semibold mb-2">🏆 AI‑Approved Winners</h3>
-    <p className="text-[11px] text-neutral-500 mb-4">
+  <div className="relative rounded-none border border-neutral-300 bg-white p-6 h-fit text-neutral-900">
+    <div
+      className="pointer-events-none absolute inset-0 opacity-5"
+      style={{
+        backgroundImage:
+          "repeating-linear-gradient(45deg,#000 0px,#000 1px,transparent 1px,transparent 8px),repeating-linear-gradient(-45deg,#000 0px,#000 1px,transparent 1px,transparent 8px)",
+        backgroundSize: "12px 12px, 12px 12px",
+      }}
+    />
+    <h3 className="text-base font-semibold mb-2 inline-flex items-center gap-2 bg-white ">
+      <span className="ph ph-[trophy]"></span>AI‑Approved Winners
+    </h3>
+    <p className="text-[11px] text-neutral-500 mb-4 bg-white">
       Top contributions rated by AI agents
     </p>
     <div className="space-y-3 max-h-[calc(100vh-250px)] overflow-y-auto pr-2 custom-scrollbar">
@@ -121,7 +132,9 @@ const WinnersHistory: React.FC<{ onWinnerClick: (winner: Winner) => void }> = ({
                 )}
               </p>
             </div>
-            <span className="text-[11px] text-green-600">✓ AI Approved</span>
+            <span className="text-[11px] text-green-600 inline-flex items-center gap-1">
+              <span className="ph ph-[check]"></span>AI Approved
+            </span>
           </div>
           <div className="flex justify-between items-center mb-2">
             <p className="text-[11px] text-neutral-600">
@@ -137,8 +150,9 @@ const WinnersHistory: React.FC<{ onWinnerClick: (winner: Winner) => void }> = ({
               : winner.contribution}
             "
           </blockquote>
-          <p className="text-[11px] text-neutral-600 mt-2">
-            📦 Stored permanently on Arweave
+          <p className="text-[11px] text-neutral-600 mt-2 inline-flex items-center gap-1">
+            <span className="ph ph-[archive-box]"></span>Stored permanently on
+            Arweave
           </p>
           <p className="text-[11px] text-neutral-800 mt-1">
             Click to view details →
@@ -180,7 +194,7 @@ const WinnerDetailModal: React.FC<{ winner: Winner; onClose: () => void }> = ({
       aria-labelledby="modal-title"
     >
       <div
-        className="bg-white border border-neutral-300 p-6 m-4 max-w-2xl w-full transform transition-all duration-300 animate-slide-up text-neutral-900"
+        className="relative bg-white border border-neutral-300 p-6 m-4 max-w-2xl w-full transform transition-all duration-300 animate-slide-up text-neutral-900"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-between items-center mb-4 pb-4 border-b border-neutral-300">
@@ -220,7 +234,7 @@ const WinnerDetailModal: React.FC<{ winner: Winner; onClose: () => void }> = ({
           </div>
 
           <div className="flex flex-col sm:flex-row items-stretch gap-4">
-            <div className="flex-1 p-4 border border-neutral-300 bg-white flex flex-col items-center justify-center text-center">
+            <div className="flex-1 p-4 border border-neutral-300 bg-white/80 flex flex-col items-center justify-center text-center">
               <p className="text-sm text-neutral-600 mb-1">
                 AI Evaluated Score
               </p>
@@ -228,7 +242,7 @@ const WinnerDetailModal: React.FC<{ winner: Winner; onClose: () => void }> = ({
                 {winner.aiScore}
               </p>
             </div>
-            <div className="flex-1 p-4 border border-neutral-300 bg-white">
+            <div className="flex-1 p-4 border border-neutral-300 bg-white/80">
               <p className="text-sm text-neutral-600 mb-2">
                 Arweave Transaction ID
               </p>
@@ -243,7 +257,7 @@ const WinnerDetailModal: React.FC<{ winner: Winner; onClose: () => void }> = ({
                 {winner.arweaveTxId.substring(0, 18)}...
               </a>
             </div>
-            <div className="flex-1 p-4 border border-neutral-300 bg-white">
+            <div className="flex-1 p-4 border border-neutral-300 bg-white/80">
               <p className="text-sm text-neutral-600 mb-2">AO Message ID</p>
               <p className="text-[11px] text-neutral-500 mb-1">
                 Judge verification link
@@ -259,17 +273,18 @@ const WinnerDetailModal: React.FC<{ winner: Winner; onClose: () => void }> = ({
           </div>
           <div>
             <p className="text-neutral-600 mb-2 text-sm">Contribution Data</p>
-            <div className="max-h-48 overflow-y-auto border border-neutral-300 bg-white p-4 custom-scrollbar">
+            <div className="max-h-48 overflow-y-auto border border-neutral-300 bg-white/80 p-4 custom-scrollbar">
               <p className="text-neutral-900 whitespace-pre-wrap font-light">
                 {winner.contribution}
               </p>
             </div>
           </div>
-          <div className="border border-neutral-300 p-4 bg-white">
+          <div className="border border-neutral-300 p-4 bg-white/80">
             <div className="flex items-center mb-2">
               <div className="w-2 h-2 bg-green-500 mr-2"></div>
-              <p className="text-neutral-800 font-semibold text-sm">
-                🔒 TEE Protected Attestation
+              <p className="text-neutral-800 font-semibold text-sm inline-flex items-center gap-1">
+                <span className="ph ph-[lock]"></span>
+                TEE Protected Attestation
               </p>
             </div>
             <p className="text-[11px] text-neutral-600 mb-2">
@@ -278,9 +293,17 @@ const WinnerDetailModal: React.FC<{ winner: Winner; onClose: () => void }> = ({
             <p className="text-xs font-mono text-neutral-900 bg-transparent p-2 border border-neutral-300 break-all">
               {winner.attestation}
             </p>
-            <p className="text-[11px] text-neutral-600 mt-2">
-              ✓ Cryptographically verified • ✓ Tamper-proof evaluation • ✓
-              Privacy preserved
+            <p className="text-[11px] text-neutral-600 mt-2 inline-flex items-center gap-2 flex-wrap">
+              <span className="inline-flex items-center gap-1">
+                <span className="ph ph-[check]"></span>Cryptographically
+                verified
+              </span>
+              <span className="inline-flex items-center gap-1">
+                <span className="ph ph-[shield]"></span>Tamper‑proof evaluation
+              </span>
+              <span className="inline-flex items-center gap-1">
+                <span className="ph ph-[check]"></span>Privacy preserved
+              </span>
             </p>
           </div>
         </div>
@@ -309,6 +332,14 @@ const CompetitionPage: React.FC<CompetitionPageProps> = ({
   const [fileName, setFileName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedWinner, setSelectedWinner] = useState<Winner | null>(null);
+  const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
+  const [submitMsg, setSubmitMsg] = useState<{
+    title: string;
+    body: string;
+  } | null>(null);
+  const [submitStatus, setSubmitStatus] = useState<
+    "success" | "error" | "info"
+  >("info");
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       setFileName(e.target.files[0].name);
@@ -371,9 +402,12 @@ const CompetitionPage: React.FC<CompetitionPageProps> = ({
       }
 
       if (result?.success) {
-        alert(
-          `🎉 Success! Your contribution for ${selectedFigure.name} has been submitted to their agent process.\n\nMessage ID: ${result.messageId}\n\nSubmission will be evaluated by AI agents for quality and authenticity.`
-        );
+        setSubmitMsg({
+          title: "Success",
+          body: `Your contribution for ${selectedFigure.name} has been submitted to their agent process.\n\nMessage ID: ${result.messageId}\n\nSubmission will be evaluated by AI agents for quality and authenticity.`,
+        });
+        setSubmitStatus("success");
+        setIsSubmitModalOpen(true);
 
         // Clear form
         setContributionText("");
@@ -383,15 +417,23 @@ const CompetitionPage: React.FC<CompetitionPageProps> = ({
         ) as HTMLInputElement;
         if (fileInput) fileInput.value = "";
       } else {
-        alert(
-          `❌ Error submitting contribution: ${
+        setSubmitMsg({
+          title: "Submission Error",
+          body: `Error submitting contribution: ${
             result?.error || "Unknown error"
-          }\n\nPlease try again or check your wallet connection.`
-        );
+          }\n\nPlease try again or check your wallet connection.`,
+        });
+        setSubmitStatus("error");
+        setIsSubmitModalOpen(true);
       }
     } catch (error) {
       console.error("Competition submission error:", error);
-      alert("❌ Unexpected error occurred. Please try again.");
+      setSubmitMsg({
+        title: "Unexpected Error",
+        body: "An unexpected error occurred. Please try again.",
+      });
+      setSubmitStatus("error");
+      setIsSubmitModalOpen(true);
     } finally {
       setIsSubmitting(false);
     }
@@ -402,12 +444,13 @@ const CompetitionPage: React.FC<CompetitionPageProps> = ({
   return (
     <>
       <div className="max-w-6xl mx-auto animate-fade-in text-neutral-900">
-        <div className="flex items-center mb-6">
+        <div className="flex items-center mb-6 gap-4">
           <button
             onClick={onBack}
-            className="p-2 border border-neutral-300 hover:bg-neutral-50 transition-colors mr-3"
+            className="flex gap-2 items-center p-2 bg-white border cursor-pointer border-border hover:bg-neutral-50 transition-colors mr-3 text-xs"
           >
             <BackArrowIcon />
+            Back to Home
           </button>
           <div>
             <h2 className="text-xl font-semibold">
@@ -421,29 +464,36 @@ const CompetitionPage: React.FC<CompetitionPageProps> = ({
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2">
-            <div className="border border-neutral-300 bg-white p-6 sm:p-8">
-              <div className="border border-neutral-300 bg-white p-4 mb-6">
-                <h4 className="text-xs font-semibold tracking-wide uppercase text-neutral-700 mb-2">
-                  🤖 How AI Judging Works
+            <div className="relative border border-neutral-300 bg-white p-6 sm:p-8 text-neutral-900">
+              <div className="border border-pink-500/30 bg-pink-50 p-4 mb-6 relative">
+                <h4 className="text-xs font-semibold tracking-wide uppercase mb-2 inline-flex items-center gap-2 text-pink-700">
+                  <span className="ph ph-[robot] text-pink-700"></span>How AI
+                  Judging Works
                 </h4>
-                <p className="text-sm text-neutral-800 mb-2">
+                <p className="text-sm text-pink-600 mb-2">
                   Advanced AI agents evaluate submissions based on authenticity,
                   quality, and relevance to the digital twin's persona.
                 </p>
-                <p className="text-sm text-neutral-800">
-                  <strong>Arweave Permanent Storage:</strong> All approved
-                  contributions are permanently stored on the Arweave
-                  blockchain, ensuring your data remains accessible forever.
+                <p className="text-sm text-pink-600">
+                  <strong className="text-pink-700">
+                    Arweave Permanent Storage:
+                  </strong>{" "}
+                  All approved contributions are permanently stored on the
+                  Arweave blockchain, ensuring your data remains accessible
+                  forever.
                 </p>
               </div>
 
-              <p className="text-neutral-700 mb-6 text-sm">
+              <p className="text-neutral-700 mb-6 text-sm bg-white/80 relative">
                 Submit high-quality persona data to improve digital twins. AI
                 agents score submissions automatically, and top contributors
                 earn APUS token rewards.
               </p>
 
-              <form onSubmit={handleContributionSubmit} className="space-y-6">
+              <form
+                onSubmit={handleContributionSubmit}
+                className="relative space-y-6"
+              >
                 <div>
                   <label
                     htmlFor="figure-select"
@@ -506,7 +556,7 @@ const CompetitionPage: React.FC<CompetitionPageProps> = ({
 
                 <button
                   type="submit"
-                  className="w-full p-3 border border-neutral-300 bg-white text-neutral-900 disabled:bg-neutral-100 disabled:cursor-not-allowed hover:bg-neutral-50 transition-colors"
+                  className="w-full p-3 border bg-blue-200 border-blue-600 text-blue-600 disabled:bg-neutral-100 disabled:cursor-not-allowed disabled:text-neutral-300 disabled:border-neutral-300 hover:bg-neutral-50 transition-colors"
                   disabled={!isSubmittable || isSubmitting}
                 >
                   {isSubmitting
@@ -514,9 +564,14 @@ const CompetitionPage: React.FC<CompetitionPageProps> = ({
                     : "Submit for AI Evaluation"}
                 </button>
                 <p className="text-[11px] text-neutral-600 text-center mt-2">
-                  {aoService.isWalletConnected()
-                    ? "Submissions will be automatically evaluated by AI agents and stored on Arweave if approved"
-                    : "⚠️ Connect your Arweave wallet to submit contributions"}
+                  {aoService.isWalletConnected() ? (
+                    "Submissions will be automatically evaluated by AI agents and stored on Arweave if approved"
+                  ) : (
+                    <span className="inline-flex items-center gap-1">
+                      <span className="ph ph-[warning]"></span>Connect your
+                      Arweave wallet to submit contributions
+                    </span>
+                  )}
                 </p>
               </form>
             </div>
@@ -532,6 +587,89 @@ const CompetitionPage: React.FC<CompetitionPageProps> = ({
           onClose={() => setSelectedWinner(null)}
         />
       )}
+
+      <Modal
+        isOpen={isSubmitModalOpen}
+        onClose={() => setIsSubmitModalOpen(false)}
+        title={submitMsg?.title || "Notice"}
+      >
+        {submitStatus === "success" ? (
+          <>
+            <div className="mb-3 p-3 border flex items-start gap-3 border-green-300 bg-green-50">
+              <span
+                className="ph ph-[check-circle] text-green-600 text-xl leading-none mt-0.5"
+                aria-hidden
+              ></span>
+              <div className="text-sm text-neutral-900">
+                <div className="font-semibold mb-1">
+                  {submitMsg?.title || "Success"}
+                </div>
+                <pre className="whitespace-pre-wrap text-[13px] text-neutral-800">
+                  {(submitMsg?.body || "").split("\n\n")[0]}
+                </pre>
+              </div>
+            </div>
+            <div className="p-3 border border-neutral-300 bg-white/80 mb-3">
+              <div className="flex items-start gap-2 mb-2">
+                <span
+                  className="ph ph-[hash-straight] text-neutral-700"
+                  aria-hidden
+                ></span>
+                <div className="text-[11px] text-neutral-500 uppercase tracking-wide">
+                  Message ID
+                </div>
+              </div>
+              <div className="font-mono text-sm text-neutral-900 break-all mb-2">
+                {(submitMsg?.body || "")
+                  .split("\n\n")[1]
+                  ?.replace(/^Message ID:\s*/, "")}
+              </div>
+              <p className="text-[13px] text-neutral-700">
+                {(submitMsg?.body || "").split("\n\n")[2] || ""}
+              </p>
+            </div>
+          </>
+        ) : (
+          <div
+            className={`mb-3 p-3 border flex items-start gap-3 ${
+              submitStatus === "error"
+                ? "border-red-300 bg-red-50"
+                : "border-neutral-300 bg-white"
+            }`}
+          >
+            <span
+              className={`ph ${
+                submitStatus === "error"
+                  ? "ph-[x-circle] text-red-600"
+                  : "ph-[info] text-neutral-700"
+              } text-xl leading-none mt-0.5`}
+              aria-hidden
+            ></span>
+            <div className="text-sm text-neutral-900">
+              <div className="font-semibold mb-1">
+                {submitMsg?.title || "Notice"}
+              </div>
+              <pre className="whitespace-pre-wrap text-[13px] text-neutral-800">
+                {submitMsg?.body}
+              </pre>
+            </div>
+          </div>
+        )}
+        <div className="flex justify-end">
+          <button
+            onClick={() => setIsSubmitModalOpen(false)}
+            className={`px-4 py-2 border text-sm active:scale-95 transition ${
+              submitStatus === "success"
+                ? "border-green-600 text-green-700 bg-white hover:bg-green-50"
+                : submitStatus === "error"
+                ? "border-red-600 text-red-700 bg-white hover:bg-red-50"
+                : "border-neutral-300 text-neutral-800 bg-white hover:bg-neutral-50"
+            }`}
+          >
+            Close
+          </button>
+        </div>
+      </Modal>
     </>
   );
 };

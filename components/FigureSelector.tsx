@@ -216,7 +216,7 @@ const FigureSelector: React.FC<FigureSelectorProps> = ({
       </div>
 
       <div className="embla w-full mx-auto relative">
-        <div className="embla__viewport overflow-hidden" ref={emblaRef}>
+        <div className="embla__viewport overflow-hidden p-4" ref={emblaRef}>
           <div className="embla__container flex -ml-4 touch-pan-y">
             {figures.map((figure, index) => (
               <div
