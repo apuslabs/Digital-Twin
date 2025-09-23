@@ -1,5 +1,8 @@
 @import "tailwindcss";
-@plugin 'phosphor-icons-tailwindcss';
+
+@plugin 'phosphor-icons-tailwindcss' {
+    default-weight: duotone;
+}
 
 @theme {
     --color-surface: rgb(244 244 244);
