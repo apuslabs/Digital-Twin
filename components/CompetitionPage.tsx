@@ -188,7 +188,9 @@ const CompetitionPage: React.FC<CompetitionPageProps> = ({
     title: string;
     body: string;
   } | null>(null);
-  const [submitStatus, setSubmitStatus] = useState<"success" | "error" | "info">("info");
+  const [submitStatus, setSubmitStatus] = useState<
+    "success" | "error" | "info"
+  >("info");
   const [lastReference, setLastReference] = useState<string | null>(null);
   const [lastProcessId, setLastProcessId] = useState<string | null>(null);
   const [lastMessageId, setLastMessageId] = useState<string | null>(null);
@@ -200,19 +202,23 @@ const CompetitionPage: React.FC<CompetitionPageProps> = ({
   const getEvaluationResult = (queryResult: QueryResult) => {
     const evaluation = queryResult.data?.evaluation;
     // Ensure evaluation has required properties
-    if (evaluation && typeof evaluation.score === 'number' && evaluation.reasoning) {
+    if (
+      evaluation &&
+      typeof evaluation.score === "number" &&
+      evaluation.reasoning
+    ) {
       return evaluation;
     }
     return null;
   };
 
-    const handleQueryResult = async () => {
+  const handleQueryResult = async () => {
     if (!lastReference || !lastProcessId) {
       setQueryResult({
         success: false,
         status: "error",
         reference: "",
-        error: "No process ID or reference available to query"
+        error: "No process ID or reference available to query",
       });
       setIsResultModalOpen(true);
       return;
@@ -222,9 +228,9 @@ const CompetitionPage: React.FC<CompetitionPageProps> = ({
       // Fetch both the task result and TEE attestation in parallel
       const [result, attestation] = await Promise.all([
         aoService.queryTaskResult(lastProcessId, lastReference),
-        TEEService.getAttestation(lastReference) // Use reference as session ID for attestation
+        TEEService.getAttestation(lastReference), // Use reference as session ID for attestation
       ]);
-      
+
       setQueryResult(result);
       setAttestationData(attestation);
       setIsResultModalOpen(true);
@@ -232,13 +238,14 @@ const CompetitionPage: React.FC<CompetitionPageProps> = ({
       console.error("Failed to query result:", error);
       setQueryResult({
         success: false,
-        status: "error", 
+        status: "error",
         reference: lastReference,
-        error: error instanceof Error ? error.message : "Unknown error occurred"
+        error:
+          error instanceof Error ? error.message : "Unknown error occurred",
       });
       setAttestationData({
         error: "Failed to fetch attestation",
-        status: "error"
+        status: "error",
       });
       setIsResultModalOpen(true);
     }
@@ -463,7 +470,7 @@ const CompetitionPage: React.FC<CompetitionPageProps> = ({
 
                 <button
                   type="submit"
-                  className="w-full p-3 border bg-blue-200 border-blue-600 text-blue-600 disabled:bg-neutral-100 disabled:cursor-not-allowed disabled:text-neutral-300 disabled:border-neutral-300 hover:bg-neutral-50 transition-colors"
+                  className="w-full p-3 border bg-blue-600 text-white disabled:bg-neutral-100 disabled:cursor-not-allowed disabled:text-neutral-300 disabled:border-neutral-300 hover:opacity-50 transition-colors"
                   disabled={!isSubmittable || isSubmitting}
                 >
                   {isSubmitting
@@ -502,7 +509,7 @@ const CompetitionPage: React.FC<CompetitionPageProps> = ({
             aoMessageId: selectedWinner.aoMessageId,
             contribution: selectedWinner.contribution,
             attestation: selectedWinner.attestation,
-            teeStatus: "verified"
+            teeStatus: "verified",
           }}
           mode="winner"
         />
@@ -600,89 +607,112 @@ const CompetitionPage: React.FC<CompetitionPageProps> = ({
       </Modal>
 
       {/* Query Result using ContributionDetailCard */}
-      {queryResult && queryResult.status === "done" && (() => {
-        const evaluation = getEvaluationResult(queryResult);
-        // Only show ContributionDetailCard if we have valid evaluation data
-        if (evaluation && typeof evaluation.score === 'number' && evaluation.reasoning) {
-          return (
-            <ContributionDetailCard
-              isOpen={isResultModalOpen}
-              onClose={() => setIsResultModalOpen(false)}
-              title="Evaluation Result"
-              data={{
-                figureName: figures.find(f => f.processId === lastProcessId)?.name || "Unknown Figure",
-                date: new Date().toLocaleDateString(),
-                aiScore: evaluation.score,
-                aoMessageId: lastMessageId || "",
-                reasoning: evaluation.reasoning,
-                attestation: attestationData?.attestation,
-                teeStatus: attestationData?.error ? "failed" : 
-                          attestationData?.attestation ? "verified" : "verifying"
-              }}
-              mode="evaluation"
-            />
-          );
-        }
-        // If evaluation data is incomplete, fall back to regular modal
-        return null;
-      })()}
+      {queryResult &&
+        queryResult.status === "done" &&
+        (() => {
+          const evaluation = getEvaluationResult(queryResult);
+          // Only show ContributionDetailCard if we have valid evaluation data
+          if (
+            evaluation &&
+            typeof evaluation.score === "number" &&
+            evaluation.reasoning
+          ) {
+            return (
+              <ContributionDetailCard
+                isOpen={isResultModalOpen}
+                onClose={() => setIsResultModalOpen(false)}
+                title="Evaluation Result"
+                data={{
+                  figureName:
+                    figures.find((f) => f.processId === lastProcessId)?.name ||
+                    "Unknown Figure",
+                  date: new Date().toLocaleDateString(),
+                  aiScore: evaluation.score,
+                  aoMessageId: lastMessageId || "",
+                  reasoning: evaluation.reasoning,
+                  attestation: attestationData?.attestation,
+                  teeStatus: attestationData?.error
+                    ? "failed"
+                    : attestationData?.attestation
+                    ? "verified"
+                    : "verifying",
+                }}
+                mode="evaluation"
+              />
+            );
+          }
+          // If evaluation data is incomplete, fall back to regular modal
+          return null;
+        })()}
 
       {/* Fallback modal for pending/error states or incomplete evaluation data */}
-      {queryResult && (queryResult.status !== "done" || 
-        (queryResult.status === "done" && (!getEvaluationResult(queryResult) || 
-          !getEvaluationResult(queryResult)?.score || !getEvaluationResult(queryResult)?.reasoning))) && (
-        <Modal
-          isOpen={isResultModalOpen}
-          onClose={() => setIsResultModalOpen(false)}
-          title="Evaluation Status"
-        >
-          {queryResult.status === "pending" && (
-            <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-              <p className="text-neutral-600">Evaluation in progress...</p>
-              <p className="text-sm text-neutral-500 mt-2">The AI agent is currently processing your submission.</p>
-            </div>
-          )}
+      {queryResult &&
+        (queryResult.status !== "done" ||
+          (queryResult.status === "done" &&
+            (!getEvaluationResult(queryResult) ||
+              !getEvaluationResult(queryResult)?.score ||
+              !getEvaluationResult(queryResult)?.reasoning))) && (
+          <Modal
+            isOpen={isResultModalOpen}
+            onClose={() => setIsResultModalOpen(false)}
+            title="Evaluation Status"
+          >
+            {queryResult.status === "pending" && (
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                <p className="text-neutral-600">Evaluation in progress...</p>
+                <p className="text-sm text-neutral-500 mt-2">
+                  The AI agent is currently processing your submission.
+                </p>
+              </div>
+            )}
 
-          {queryResult.status === "processing" && (
-            <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-              <p className="text-neutral-600">Evaluation in progress...</p>
-              <p className="text-sm text-neutral-500 mt-2">The AI agent is currently processing your submission.</p>
-            </div>
-          )}
+            {queryResult.status === "processing" && (
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                <p className="text-neutral-600">Evaluation in progress...</p>
+                <p className="text-sm text-neutral-500 mt-2">
+                  The AI agent is currently processing your submission.
+                </p>
+              </div>
+            )}
 
-          {queryResult.status === "done" && !getEvaluationResult(queryResult) && (
-            <div className="space-y-4">
-              <p className="text-neutral-600">Evaluation completed but results could not be parsed.</p>
+            {queryResult.status === "done" &&
+              !getEvaluationResult(queryResult) && (
+                <div className="space-y-4">
+                  <p className="text-neutral-600">
+                    Evaluation completed but results could not be parsed.
+                  </p>
+                  <div>
+                    <span className="text-sm font-medium">Raw Data:</span>
+                    <div className="mt-1 p-3 bg-gray-50 rounded text-sm">
+                      <pre className="whitespace-pre-wrap">
+                        {JSON.stringify(queryResult.data, null, 2)}
+                      </pre>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+            {queryResult.error && (
               <div>
-                <span className="text-sm font-medium">Raw Data:</span>
-                <div className="mt-1 p-3 bg-gray-50 rounded text-sm">
-                  <pre className="whitespace-pre-wrap">{JSON.stringify(queryResult.data, null, 2)}</pre>
+                <span className="text-sm font-medium text-red-600">Error:</span>
+                <div className="mt-1 p-2 bg-red-50 rounded text-sm text-red-800">
+                  {queryResult.error}
                 </div>
               </div>
+            )}
+
+            <div className="flex justify-end mt-6">
+              <button
+                onClick={() => setIsResultModalOpen(false)}
+                className="px-4 py-2 border border-neutral-300 text-neutral-800 bg-white hover:bg-neutral-50 text-sm active:scale-95 transition"
+              >
+                Close
+              </button>
             </div>
-          )}
-          
-          {queryResult.error && (
-            <div>
-              <span className="text-sm font-medium text-red-600">Error:</span>
-              <div className="mt-1 p-2 bg-red-50 rounded text-sm text-red-800">
-                {queryResult.error}
-              </div>
-            </div>
-          )}
-          
-          <div className="flex justify-end mt-6">
-            <button
-              onClick={() => setIsResultModalOpen(false)}
-              className="px-4 py-2 border border-neutral-300 text-neutral-800 bg-white hover:bg-neutral-50 text-sm active:scale-95 transition"
-            >
-              Close
-            </button>
-          </div>
-        </Modal>
-      )}
+          </Modal>
+        )}
     </>
   );
 };
