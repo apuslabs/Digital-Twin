@@ -1,30 +1,38 @@
-import { result,message,createDataItemSigner } from "@permaweb/aoconnect";
-import { readFileSync } from "fs";
 
-let jwk;
-try {
-  jwk = JSON.parse(readFileSync("wallet.json"), "utf-8");
-} catch (e) {
-  console.error("Error reading wallet.json:", e);
-  process.exit(1);
+import { message, createDataItemSigner, dryrun } from "@permaweb/aoconnect";
+import { parseAOResult } from "./parseAOResult.js";
+
+const result = await dryrun({
+  process: "bI6_qOobuHJBHMEubTLv3lmLHUfK043S4-kN0q_wt3E",
+  tags: [
+    {
+      name: "Action",
+      value: "Query-Task-Result"
+    },
+    {
+      name: "X-Reference", 
+      value: "donald_trump-1758610847033"
+    }
+  ],
+});
+
+console.log(`Raw Result: ${JSON.stringify(result)}`);
+console.log("\n" + "=".repeat(50));
+
+// Parse the result using helper function
+const parsed = parseAOResult(result);
+
+if (parsed.success) {
+  console.log(`Status: ${parsed.status}`);
+  console.log(`Reference: ${parsed.reference}`);
+  
+  if (parsed.data && parsed.data.result) {
+    console.log("\n=== AI RESPONSE ===");
+    console.log(parsed.data.result);
+  } else {
+    console.log("\n=== RAW DATA ===");
+    console.log(JSON.stringify(parsed.data, null, 2));
+  }
+} else {
+  console.log(`Error: ${parsed.error}`);
 }
-
-const mid = await message({
-  process: "bI6_qOobuHJBHMEubTLv3lmLHUfK043S4-kN0q_wt3E",
-  tags: [{ name: "Action", value: "Get-Task" }],
-  signer: createDataItemSigner(jwk),
-});
-
-console.log(mid);
-
-const res = await result({
-  process: "bI6_qOobuHJBHMEubTLv3lmLHUfK043S4-kN0q_wt3E",
-  message: mid,
-});
-
-console.log(res);
-
-let result_ = JSON.parse(res.Messages?.[0]?.Data || "{}");
-
-console.log("Result:   \n");
-console.log(result_.prompt);

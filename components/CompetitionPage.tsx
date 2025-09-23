@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useRef, FormEvent } from "react";
 import { Figure } from "../types";
-import { aoService } from "../services/LegacyAOService";
+import { aoService, QueryResult } from "../services/LegacyAOService";
+import TEEService from "../services/teeService";
 import Modal from "./dialog/Modal";
+import Markdown from "react-markdown";
+import ContributionDetailCard from "./ContributionDetailCard";
 
 interface CompetitionPageProps {
   figures: Figure[];
@@ -169,158 +172,6 @@ const WinnersHistory: React.FC<{ onWinnerClick: (winner: Winner) => void }> = ({
   </div>
 );
 
-const WinnerDetailModal: React.FC<{ winner: Winner; onClose: () => void }> = ({
-  winner,
-  onClose,
-}) => {
-  useEffect(() => {
-    const handleEsc = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        onClose();
-      }
-    };
-    window.addEventListener("keydown", handleEsc);
-    return () => {
-      window.removeEventListener("keydown", handleEsc);
-    };
-  }, [onClose]);
-
-  return (
-    <div
-      className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in"
-      onClick={onClose}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="modal-title"
-    >
-      <div
-        className="relative bg-white border border-neutral-300 p-6 m-4 max-w-2xl w-full transform transition-all duration-300 animate-slide-up text-neutral-900"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex justify-between items-center mb-4 pb-4 border-b border-neutral-300">
-          <h2 id="modal-title" className="text-lg font-semibold">
-            Contribution Details
-          </h2>
-          <button
-            onClick={onClose}
-            className="p-2 border border-neutral-300 hover:bg-neutral-50 transition-colors"
-            aria-label="Close modal"
-          >
-            <CloseIcon />
-          </button>
-        </div>
-
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-            <div>
-              <p className="text-neutral-500">Winner Address</p>
-              <p
-                className="text-neutral-900 font-mono break-all"
-                title={winner.walletAddress}
-              >
-                {winner.walletAddress}
-              </p>
-            </div>
-            <div>
-              <p className="text-neutral-500">Contribution For</p>
-              <p className="text-neutral-900 font-semibold">
-                {winner.figureName}
-              </p>
-            </div>
-            <div>
-              <p className="text-neutral-500">Date</p>
-              <p className="text-neutral-900">{winner.date}</p>
-            </div>
-          </div>
-
-          <div className="flex flex-col sm:flex-row items-stretch gap-4">
-            <div className="flex-1 p-4 border border-neutral-300 bg-white/80 flex flex-col items-center justify-center text-center">
-              <p className="text-sm text-neutral-600 mb-1">
-                AI Evaluated Score
-              </p>
-              <p className="text-3xl font-bold text-neutral-900">
-                {winner.aiScore}
-              </p>
-            </div>
-            <div className="flex-1 p-4 border border-neutral-300 bg-white/80">
-              <p className="text-sm text-neutral-600 mb-2">
-                Arweave Transaction ID
-              </p>
-              <p className="text-[11px] text-neutral-500 mb-1">
-                Contribution data storage
-              </p>
-              <a
-                href="#"
-                className="text-sm font-mono text-neutral-900 break-all hover:underline"
-                title={winner.arweaveTxId}
-              >
-                {winner.arweaveTxId.substring(0, 18)}...
-              </a>
-            </div>
-            <div className="flex-1 p-4 border border-neutral-300 bg-white/80">
-              <p className="text-sm text-neutral-600 mb-2">AO Message ID</p>
-              <p className="text-[11px] text-neutral-500 mb-1">
-                Judge verification link
-              </p>
-              <a
-                href="#"
-                className="text-sm font-mono text-neutral-900 break-all hover:underline"
-                title={winner.aoMessageId}
-              >
-                {winner.aoMessageId.substring(0, 18)}...
-              </a>
-            </div>
-          </div>
-          <div>
-            <p className="text-neutral-600 mb-2 text-sm">Contribution Data</p>
-            <div className="max-h-48 overflow-y-auto border border-neutral-300 bg-white/80 p-4 custom-scrollbar">
-              <p className="text-neutral-900 whitespace-pre-wrap font-light">
-                {winner.contribution}
-              </p>
-            </div>
-          </div>
-          <div className="border border-neutral-300 p-4 bg-white/80">
-            <div className="flex items-center mb-2">
-              <div className="w-2 h-2 bg-green-500 mr-2"></div>
-              <p className="text-neutral-800 font-semibold text-sm inline-flex items-center gap-1">
-                <span className="ph ph-[lock]"></span>
-                TEE Protected Attestation
-              </p>
-            </div>
-            <p className="text-[11px] text-neutral-600 mb-2">
-              This evaluation was verified in a Trusted Execution Environment
-            </p>
-            <p className="text-xs font-mono text-neutral-900 bg-transparent p-2 border border-neutral-300 break-all">
-              {winner.attestation}
-            </p>
-            <p className="text-[11px] text-neutral-600 mt-2 inline-flex items-center gap-2 flex-wrap">
-              <span className="inline-flex items-center gap-1">
-                <span className="ph ph-[check]"></span>Cryptographically
-                verified
-              </span>
-              <span className="inline-flex items-center gap-1">
-                <span className="ph ph-[shield]"></span>Tamper‑proof evaluation
-              </span>
-              <span className="inline-flex items-center gap-1">
-                <span className="ph ph-[check]"></span>Privacy preserved
-              </span>
-            </p>
-          </div>
-        </div>
-
-        <div className="mt-6 pt-4 border-t border-neutral-300 text-right">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 border border-neutral-300 bg-white text-neutral-900 hover:bg-neutral-50 transition-colors"
-          >
-            Close
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
 const CompetitionPage: React.FC<CompetitionPageProps> = ({
   figures,
   onBack,
@@ -339,26 +190,57 @@ const CompetitionPage: React.FC<CompetitionPageProps> = ({
   } | null>(null);
   const [submitStatus, setSubmitStatus] = useState<"success" | "error" | "info">("info");
   const [lastReference, setLastReference] = useState<string | null>(null);
+  const [lastProcessId, setLastProcessId] = useState<string | null>(null);
+  const [lastMessageId, setLastMessageId] = useState<string | null>(null);
+  const [queryResult, setQueryResult] = useState<QueryResult | null>(null);
+  const [isResultModalOpen, setIsResultModalOpen] = useState(false);
+  const [attestationData, setAttestationData] = useState<any>(null);
 
-  const handleQueryResult = async () => {
-    const selectedFigure = figures.find((f) => f.id === selectedFigureId);
-    if (!selectedFigure) {
-      alert("Please select a valid figure.");
+  // Get parsed evaluation result from the service
+  const getEvaluationResult = (queryResult: QueryResult) => {
+    const evaluation = queryResult.data?.evaluation;
+    // Ensure evaluation has required properties
+    if (evaluation && typeof evaluation.score === 'number' && evaluation.reasoning) {
+      return evaluation;
+    }
+    return null;
+  };
+
+    const handleQueryResult = async () => {
+    if (!lastReference || !lastProcessId) {
+      setQueryResult({
+        success: false,
+        status: "error",
+        reference: "",
+        error: "No process ID or reference available to query"
+      });
+      setIsResultModalOpen(true);
       return;
     }
-    if (!lastReference) {
-      alert("No submission found to query.");
-      return;
-    }
+
     try {
-      const result = await aoService.queryTaskResult(
-        selectedFigure.processId,
-        lastReference
-      );
-      alert("Query Result:\n" + JSON.stringify(result, null, 2));
+      // Fetch both the task result and TEE attestation in parallel
+      const [result, attestation] = await Promise.all([
+        aoService.queryTaskResult(lastProcessId, lastReference),
+        TEEService.getAttestation(lastReference) // Use reference as session ID for attestation
+      ]);
+      
+      setQueryResult(result);
+      setAttestationData(attestation);
+      setIsResultModalOpen(true);
     } catch (error) {
-      console.error("Error querying task result:", error);
-      alert("Failed to query task result. See console for details.");
+      console.error("Failed to query result:", error);
+      setQueryResult({
+        success: false,
+        status: "error", 
+        reference: lastReference,
+        error: error instanceof Error ? error.message : "Unknown error occurred"
+      });
+      setAttestationData({
+        error: "Failed to fetch attestation",
+        status: "error"
+      });
+      setIsResultModalOpen(true);
     }
   };
 
@@ -425,6 +307,8 @@ const CompetitionPage: React.FC<CompetitionPageProps> = ({
 
       if (result?.success) {
         setLastReference(result.reference || null);
+        setLastProcessId(selectedFigure.processId);
+        setLastMessageId(result.messageId || null);
         setSubmitMsg({
           title: "Success",
           body: `Your contribution for ${selectedFigure.name} has been submitted to their agent process.\n\nMessage ID: ${result.messageId}\n\nSubmission will be evaluated by AI agents for quality and authenticity.`,
@@ -605,9 +489,22 @@ const CompetitionPage: React.FC<CompetitionPageProps> = ({
         </div>
       </div>
       {selectedWinner && (
-        <WinnerDetailModal
-          winner={selectedWinner}
+        <ContributionDetailCard
+          isOpen={true}
           onClose={() => setSelectedWinner(null)}
+          title="Contribution Details"
+          data={{
+            walletAddress: selectedWinner.walletAddress,
+            figureName: selectedWinner.figureName,
+            date: selectedWinner.date,
+            aiScore: selectedWinner.aiScore,
+            arweaveTxId: selectedWinner.arweaveTxId,
+            aoMessageId: selectedWinner.aoMessageId,
+            contribution: selectedWinner.contribution,
+            attestation: selectedWinner.attestation,
+            teeStatus: "verified"
+          }}
+          mode="winner"
         />
       )}
 
@@ -701,6 +598,83 @@ const CompetitionPage: React.FC<CompetitionPageProps> = ({
           </button>
         </div>
       </Modal>
+
+      {/* Query Result using ContributionDetailCard */}
+      {queryResult && queryResult.status === "done" && (() => {
+        const evaluation = getEvaluationResult(queryResult);
+        // Only show ContributionDetailCard if we have valid evaluation data
+        if (evaluation && typeof evaluation.score === 'number' && evaluation.reasoning) {
+          return (
+            <ContributionDetailCard
+              isOpen={isResultModalOpen}
+              onClose={() => setIsResultModalOpen(false)}
+              title="Evaluation Result"
+              data={{
+                figureName: figures.find(f => f.processId === lastProcessId)?.name || "Unknown Figure",
+                date: new Date().toLocaleDateString(),
+                aiScore: evaluation.score,
+                aoMessageId: lastMessageId || "",
+                reasoning: evaluation.reasoning,
+                attestation: attestationData?.attestation,
+                teeStatus: attestationData?.error ? "failed" : 
+                          attestationData?.attestation ? "verified" : "verifying"
+              }}
+              mode="evaluation"
+            />
+          );
+        }
+        // If evaluation data is incomplete, fall back to regular modal
+        return null;
+      })()}
+
+      {/* Fallback modal for pending/error states or incomplete evaluation data */}
+      {queryResult && (queryResult.status !== "done" || 
+        (queryResult.status === "done" && (!getEvaluationResult(queryResult) || 
+          !getEvaluationResult(queryResult)?.score || !getEvaluationResult(queryResult)?.reasoning))) && (
+        <Modal
+          isOpen={isResultModalOpen}
+          onClose={() => setIsResultModalOpen(false)}
+          title="Evaluation Status"
+        >
+          {queryResult.status === "pending" && (
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              <p className="text-neutral-600">Evaluation in progress...</p>
+              <p className="text-sm text-neutral-500 mt-2">The AI agent is currently processing your submission.</p>
+            </div>
+          )}
+
+          {queryResult.status === "done" && !getEvaluationResult(queryResult) && (
+            <div className="space-y-4">
+              <p className="text-neutral-600">Evaluation completed but results could not be parsed.</p>
+              <div>
+                <span className="text-sm font-medium">Raw Data:</span>
+                <div className="mt-1 p-3 bg-gray-50 rounded text-sm">
+                  <pre className="whitespace-pre-wrap">{JSON.stringify(queryResult.data, null, 2)}</pre>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {queryResult.error && (
+            <div>
+              <span className="text-sm font-medium text-red-600">Error:</span>
+              <div className="mt-1 p-2 bg-red-50 rounded text-sm text-red-800">
+                {queryResult.error}
+              </div>
+            </div>
+          )}
+          
+          <div className="flex justify-end mt-6">
+            <button
+              onClick={() => setIsResultModalOpen(false)}
+              className="px-4 py-2 border border-neutral-300 text-neutral-800 bg-white hover:bg-neutral-50 text-sm active:scale-95 transition"
+            >
+              Close
+            </button>
+          </div>
+        </Modal>
+      )}
     </>
   );
 };
