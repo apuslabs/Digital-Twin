@@ -1055,6 +1055,24 @@ const ScoreCardModal: React.FC<{
   const rightPanelRef = useRef<HTMLDivElement>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const shareSoundRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    const shareAudio = new Audio("/resources/sounds/share.wav");
+    shareAudio.preload = "auto";
+    shareSoundRef.current = shareAudio;
+  }, []);
+
+  const playShareSound = () => {
+    const audio = shareSoundRef.current;
+    if (!audio) return;
+    try {
+      audio.currentTime = 0;
+      void audio.play();
+    } catch (_) {
+      // Ignore playback errors
+    }
+  };
 
   // Generate mock conversation highlights
   const stripMarkdown = (input: string): string => {
@@ -1217,6 +1235,9 @@ const ScoreCardModal: React.FC<{
 
   const handleSaveScoreCard = async () => {
     if (!scoreCardRef.current) return;
+
+    // Play share sound on click
+    playShareSound();
 
     setIsSaving(true);
     setSaveError(null);
@@ -1594,6 +1615,32 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   const hotkeyTimerRef = useRef<number | null>(null);
   const [isScoreCardOpen, setIsScoreCardOpen] = useState(false);
   const [attestationData, setAttestationData] = useState<any>(null);
+  const [shareHintVisible, setShareHintVisible] = useState(false);
+  const sendSoundRef = useRef<HTMLAudioElement | null>(null);
+  const receiveSoundRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    // Preload send/receive sounds
+    const sendAudio = new Audio("/resources/sounds/message-send.wav");
+    const receiveAudio = new Audio("/resources/sounds/message-receive.wav");
+    sendAudio.preload = "auto";
+    receiveAudio.preload = "auto";
+    sendSoundRef.current = sendAudio;
+    receiveSoundRef.current = receiveAudio;
+  }, []);
+
+  const playSound = (
+    audioRef: React.MutableRefObject<HTMLAudioElement | null>
+  ) => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    try {
+      audio.currentTime = 0;
+      void audio.play();
+    } catch (_) {
+      // Ignore playback errors (e.g., autoplay restrictions)
+    }
+  };
 
   useEffect(() => {
     const initializeChat = async () => {
@@ -1717,6 +1764,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
     };
 
     setMessages((prev) => [...prev, userMessage]);
+    // Play send sound when the user submits a message
+    playSound(sendSoundRef);
     setUserInput("");
     setIsLoading(true);
     setShouldAutoScroll(true); // Enable auto-scroll when user sends a message
@@ -1735,6 +1784,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
           msg.id === aiMessageId ? { ...msg, text: response } : msg
         )
       );
+      // Play receive sound when the AI's message is finalized
+      playSound(receiveSoundRef);
     } catch (error) {
       setMessages((prev) =>
         prev.map((msg) =>
@@ -1746,6 +1797,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
             : msg
         )
       );
+      // Still play receive sound on error to indicate response completion
+      playSound(receiveSoundRef);
     } finally {
       setIsLoading(false);
     }
@@ -1830,16 +1883,65 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                 >
                   ▶
                 </button>
-                <button
-                  onClick={() => setIsScoreCardOpen(true)}
-                  className="relative flex gap-2 items-center py-2 px-4 border border-amber-300 bg-amber-100 text-neutral-800 hover:bg-neutral-50 transition-colors active:scale-95 cursor-pointer text-xs overflow-hidden"
-                >
-                  <span className="relative z-10 inline-flex items-center gap-2">
-                    <div className="ph ph-[star--duotone] text-amber-400" />
-                    Share Your Score Card
-                  </span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-400 to-transparent opacity-20 transform -skew-x-12 -translate-x-full animate-shimmer"></div>
-                </button>
+                {/* Share Score Card (disabled until 2+ user messages) */}
+                {(() => {
+                  const userMessageCount = messages.filter(
+                    (m) => m.author === MessageAuthor.User
+                  ).length;
+                  const canShare = userMessageCount >= 2;
+                  const showHint = () => {
+                    setShareHintVisible(true);
+                    window.setTimeout(() => setShareHintVisible(false), 2200);
+                  };
+                  return (
+                    <div className="relative">
+                      <button
+                        onClick={() => canShare && setIsScoreCardOpen(true)}
+                        disabled={!canShare}
+                        aria-disabled={!canShare}
+                        title={
+                          canShare
+                            ? "Share your score card"
+                            : `Send at least 2 messages with ${figure.name} to share your score card`
+                        }
+                        className={`relative flex gap-2 items-center py-2 px-4 border text-neutral-800 transition-colors text-xs overflow-hidden active:scale-95 ${
+                          canShare
+                            ? "cursor-pointer border-amber-300 bg-amber-100 hover:bg-neutral-50"
+                            : "cursor-not-allowed border-neutral-300 bg-neutral-100 opacity-70"
+                        }`}
+                      >
+                        <span className="relative z-10 inline-flex items-center gap-2">
+                          <div
+                            className={`ph ph-[star--duotone] ${
+                              canShare ? "text-amber-400" : "text-neutral-400"
+                            }`}
+                          />
+                          Share Your Score Card
+                        </span>
+                        <div
+                          className={`absolute inset-0 bg-gradient-to-r ${
+                            canShare
+                              ? "from-transparent via-amber-400"
+                              : "from-transparent via-neutral-400"
+                          } to-transparent opacity-20 transform -skew-x-12 -translate-x-full animate-shimmer`}
+                        ></div>
+                      </button>
+                      {!canShare && (
+                        <button
+                          type="button"
+                          onClick={showHint}
+                          aria-label="Share score card disabled overlay"
+                          className="absolute inset-0 bg-transparent"
+                        />
+                      )}
+                      {!canShare && shareHintVisible && (
+                        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2 py-1 text-xs bg-white border border-neutral-300 shadow z-50 whitespace-nowrap">
+                          Please send at least 2 messages with {figure.name}.
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
                 <button
                   onClick={onBack}
                   className="flex gap-2 items-center py-2 px-4 hover:bg-neutral-100 transition-colors mr-3 cursor-pointer border border-border text-xs active:scale-95 duration-150 ease-out-quart"
