@@ -40,6 +40,7 @@ const CompetitionBanner: React.FC<CompetitionBannerProps> = ({
           backdrop-blur
           transition-colors duration-200 ease-out-quart"
           >
+            <span className="ph ph-[arrow-up-right] mr-2" aria-hidden></span>
             Join the Competition
           </div>
         </div>

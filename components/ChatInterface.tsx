@@ -161,7 +161,7 @@ const ContributionPanel: React.FC<{ figure: Figure; hideTitle?: boolean }> = ({
     body: string;
   } | null>(null);
   const [lastReference, setLastReference] = useState<string | null>(null);
-  
+
   // Query result modal state
   const [queryResult, setQueryResult] = useState<QueryResult | null>(null);
   const [isResultModalOpen, setIsResultModalOpen] = useState(false);
@@ -187,12 +187,15 @@ const ContributionPanel: React.FC<{ figure: Figure; hideTitle?: boolean }> = ({
       alert("No submission found to query.");
       return;
     }
-    
+
     try {
-      const result = await aoService.queryTaskResult(figure.processId, lastReference);
-      
+      const result = await aoService.queryTaskResult(
+        figure.processId,
+        lastReference
+      );
+
       if (!result.success) {
-        alert(`Error: ${result.error || 'Failed to query task result'}`);
+        alert(`Error: ${result.error || "Failed to query task result"}`);
         return;
       }
 
@@ -202,18 +205,25 @@ const ContributionPanel: React.FC<{ figure: Figure; hideTitle?: boolean }> = ({
       // If evaluation is complete with proper data, show ContributionDetailCard
       if (result.status === "done") {
         const evaluationResult = getEvaluationResult(result);
-        
-        if (evaluationResult && evaluationResult.score && evaluationResult.reasoning) {
+
+        if (
+          evaluationResult &&
+          evaluationResult.score &&
+          evaluationResult.reasoning
+        ) {
           // Fetch TEE attestation and wallet address in parallel
           const attestationPromise = TEEService.getAttestation(lastReference);
           const walletPromise = aoService.getWalletAddress();
-          
+
           // Show ContributionDetailCard
           setIsResultModalOpen(true);
-          
+
           // Update TEE status and wallet when ready
           try {
-            const [attestationResult, walletAddr] = await Promise.all([attestationPromise, walletPromise]);
+            const [attestationResult, walletAddr] = await Promise.all([
+              attestationPromise,
+              walletPromise,
+            ]);
             setAttestationData(attestationResult);
             setWalletAddress(walletAddr || "");
           } catch (error) {
@@ -221,14 +231,13 @@ const ContributionPanel: React.FC<{ figure: Figure; hideTitle?: boolean }> = ({
             const errorData = { error: "Failed to fetch attestation data" };
             setAttestationData(errorData);
           }
-          
+
           return;
         }
       }
-      
+
       // For all other cases (pending, processing, incomplete evaluation), show modal
       setIsResultModalOpen(true);
-
     } catch (error) {
       console.error("Error querying task result:", error);
       alert("Failed to query task result. See console for details.");
@@ -518,83 +527,101 @@ const ContributionPanel: React.FC<{ figure: Figure; hideTitle?: boolean }> = ({
       </Modal>
 
       {/* ContributionDetailCard for complete evaluation results */}
-      {queryResult && queryResult.status === "done" && getEvaluationResult(queryResult) && 
-        getEvaluationResult(queryResult)?.score && getEvaluationResult(queryResult)?.reasoning && (
-        <ContributionDetailCard
-          isOpen={isResultModalOpen}
-          onClose={() => setIsResultModalOpen(false)}
-          title="Evaluation Result"
-          data={{
-            figureName: figure.name,
-            date: new Date().toLocaleDateString(),
-            aiScore: getEvaluationResult(queryResult)?.score,
-            aoMessageId: lastMessageId || "",
-            reasoning: getEvaluationResult(queryResult)?.reasoning,
-            walletAddress: walletAddress,
-            attestation: attestationData?.attestation,
-            teeStatus: attestationData?.error ? "failed" : 
-                      attestationData?.attestation ? "verified" : "verifying"
-          }}
-          mode="evaluation"
-        />
-      )}
+      {queryResult &&
+        queryResult.status === "done" &&
+        getEvaluationResult(queryResult) &&
+        getEvaluationResult(queryResult)?.score &&
+        getEvaluationResult(queryResult)?.reasoning && (
+          <ContributionDetailCard
+            isOpen={isResultModalOpen}
+            onClose={() => setIsResultModalOpen(false)}
+            title="Evaluation Result"
+            data={{
+              figureName: figure.name,
+              date: new Date().toLocaleDateString(),
+              aiScore: getEvaluationResult(queryResult)?.score,
+              aoMessageId: lastMessageId || "",
+              reasoning: getEvaluationResult(queryResult)?.reasoning,
+              walletAddress: walletAddress,
+              attestation: attestationData?.attestation,
+              teeStatus: attestationData?.error
+                ? "failed"
+                : attestationData?.attestation
+                ? "verified"
+                : "verifying",
+            }}
+            mode="evaluation"
+          />
+        )}
 
       {/* Fallback modal for pending/error states or incomplete evaluation data */}
-      {queryResult && (queryResult.status !== "done" || 
-        (queryResult.status === "done" && (!getEvaluationResult(queryResult) || 
-          !getEvaluationResult(queryResult)?.score || !getEvaluationResult(queryResult)?.reasoning))) && (
-        <Modal
-          isOpen={isResultModalOpen}
-          onClose={() => setIsResultModalOpen(false)}
-          title="Evaluation Status"
-        >
-          {queryResult.status === "pending" && (
-            <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-              <p className="text-neutral-600">Evaluation in progress...</p>
-              <p className="text-sm text-neutral-500 mt-2">The AI agent is currently processing your submission.</p>
-            </div>
-          )}
+      {queryResult &&
+        (queryResult.status !== "done" ||
+          (queryResult.status === "done" &&
+            (!getEvaluationResult(queryResult) ||
+              !getEvaluationResult(queryResult)?.score ||
+              !getEvaluationResult(queryResult)?.reasoning))) && (
+          <Modal
+            isOpen={isResultModalOpen}
+            onClose={() => setIsResultModalOpen(false)}
+            title="Evaluation Status"
+          >
+            {queryResult.status === "pending" && (
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                <p className="text-neutral-600">Evaluation in progress...</p>
+                <p className="text-sm text-neutral-500 mt-2">
+                  The AI agent is currently processing your submission.
+                </p>
+              </div>
+            )}
 
-          {queryResult.status === "processing" && (
-            <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-              <p className="text-neutral-600">Evaluation in progress...</p>
-              <p className="text-sm text-neutral-500 mt-2">The AI agent is currently processing your submission.</p>
-            </div>
-          )}
+            {queryResult.status === "processing" && (
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                <p className="text-neutral-600">Evaluation in progress...</p>
+                <p className="text-sm text-neutral-500 mt-2">
+                  The AI agent is currently processing your submission.
+                </p>
+              </div>
+            )}
 
-          {queryResult.status === "done" && !getEvaluationResult(queryResult) && (
-            <div className="space-y-4">
-              <p className="text-neutral-600">Evaluation completed but results could not be parsed.</p>
+            {queryResult.status === "done" &&
+              !getEvaluationResult(queryResult) && (
+                <div className="space-y-4">
+                  <p className="text-neutral-600">
+                    Evaluation completed but results could not be parsed.
+                  </p>
+                  <div>
+                    <span className="text-sm font-medium">Raw Data:</span>
+                    <div className="mt-1 p-3 bg-gray-50 rounded text-sm">
+                      <pre className="whitespace-pre-wrap">
+                        {JSON.stringify(queryResult.data, null, 2)}
+                      </pre>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+            {queryResult.error && (
               <div>
-                <span className="text-sm font-medium">Raw Data:</span>
-                <div className="mt-1 p-3 bg-gray-50 rounded text-sm">
-                  <pre className="whitespace-pre-wrap">{JSON.stringify(queryResult.data, null, 2)}</pre>
+                <span className="text-sm font-medium text-red-600">Error:</span>
+                <div className="mt-1 p-2 bg-red-50 rounded text-sm text-red-800">
+                  {queryResult.error}
                 </div>
               </div>
+            )}
+
+            <div className="flex justify-end mt-6">
+              <button
+                onClick={() => setIsResultModalOpen(false)}
+                className="px-4 py-2 border border-neutral-300 text-neutral-800 bg-white hover:bg-neutral-50 text-sm active:scale-95 transition"
+              >
+                Close
+              </button>
             </div>
-          )}
-          
-          {queryResult.error && (
-            <div>
-              <span className="text-sm font-medium text-red-600">Error:</span>
-              <div className="mt-1 p-2 bg-red-50 rounded text-sm text-red-800">
-                {queryResult.error}
-              </div>
-            </div>
-          )}
-          
-          <div className="flex justify-end mt-6">
-            <button
-              onClick={() => setIsResultModalOpen(false)}
-              className="px-4 py-2 border border-neutral-300 text-neutral-800 bg-white hover:bg-neutral-50 text-sm active:scale-95 transition"
-            >
-              Close
-            </button>
-          </div>
-        </Modal>
-      )}
+          </Modal>
+        )}
     </>
   );
 };
@@ -703,7 +730,7 @@ const TEEProtectionPanel: React.FC<{
 
   return (
     <>
-      <div className="w-full relative border border-neutral-300 bg-white p-4 self-start text-neutral-900">
+      <div className="w-full relative border-b border-l border-r border-neutral-300 bg-white p-4 self-start text-neutral-900">
         <div
           className="pointer-events-none absolute inset-0 opacity-10"
           style={{
@@ -1187,7 +1214,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                 }
               }}
               alt={figure.name}
-              className="w-full sm:w-96 aspect-square object-cover border border-border xl:w-full"
+              className="w-full sm:w-96 aspect-square object-cover border-t border-l border-b xl:border border-border xl:w-full bg-white"
             />
             <div className="flex w-full flex-col">
               <div className="border border-border bg-white p-3 w-full xl:w-auto">

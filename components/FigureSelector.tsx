@@ -9,6 +9,7 @@ interface FigureSelectorProps {
   onCategoryChange: (category: Category) => void;
   figures: Figure[];
   onSelectFigure: (figure: Figure) => void;
+  onNavigateToCompetition: () => void;
 }
 
 // Tabs removed per new design (carousel only)
@@ -35,10 +36,10 @@ const FigureCard: React.FC<{
   >
     <div className="flex justify-between">
       <div>
-        <h3 className="text-lg font-bold">{figure.name}</h3>
-        <p className="text-sm text-neutral-500">{figure.title}</p>
+        <h3 className="text-base sm:text-lg font-bold">{figure.name}</h3>
+        <p className="text-xs sm:text-sm text-neutral-500">{figure.title}</p>
       </div>
-      <div className="flex items-center text-xs text-neutral-500">
+      <div className="flex items-start text-[8px] sm:text-xs text-neutral-500">
         <UsersIcon />
         <span>{figure.contributors.toLocaleString()} contributors</span>
       </div>
@@ -56,12 +57,12 @@ const FigureCard: React.FC<{
           }
         }}
         alt={figure.name}
-        className="w-full h-48 sm:h-[50vh] object-cover object-top"
+        className="w-full h-96 sm:h-[50vh] object-cover object-top"
       />
       <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-white/100 to-transparent group-hover:opacity-50 transition-opacity duration-1000 ease-out-circ h-48"></div>
       {showEnterHint && (
         <div className="pointer-events-none absolute bottom-4 left-1/2 -translate-x-1/2 flex justify-center">
-          <span className="px-3 py-1 border border-border bg-white text-neutral-900 text-xs">
+          <span className="px-3 py-1 border border-border bg-white text-neutral-900 text-[8px] sm:text-xs w-fit">
             ⏎ Enter to Start Chat
           </span>
         </div>
@@ -73,6 +74,7 @@ const FigureCard: React.FC<{
 const FigureSelector: React.FC<FigureSelectorProps> = ({
   figures,
   onSelectFigure,
+  onNavigateToCompetition,
 }) => {
   const [emblaRef, emblaApi] = useEmblaCarousel({
     align: "center",
@@ -80,11 +82,11 @@ const FigureSelector: React.FC<FigureSelectorProps> = ({
   });
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [scrollSnaps, setScrollSnaps] = useState<number[]>([]);
-  const tweenFactor = useRef(0.84);
+  const tweenFactor = useRef(0.3);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   const setTweenFactor = useCallback((api: any) => {
-    tweenFactor.current = 0.5 * api.scrollSnapList().length;
+    tweenFactor.current = 0.3 * api.scrollSnapList().length;
   }, []);
 
   const numberWithinRange = (n: number, min: number, max: number) =>
@@ -203,12 +205,21 @@ const FigureSelector: React.FC<FigureSelectorProps> = ({
               aria-hidden="true"
               className="h-4 w-auto"
             />
-            <span className="scale-y-125 font-bold">Choose a Digital Twin</span>
+            <span className="scale-y-125 font-bold text-sm sm:text-base">
+              Choose a Digital Twin
+            </span>
           </h2>
-          <p className="mb-8 max-w-2xl">
+          <p className="mb-8 max-w-2xl text-xs sm:text-sm">
             Select a public figure to chat with their permanent digital twin,
             built on Arweave.{" "}
-            <a href="/competition" className="underline hover:opacity-70">
+            <a
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                onNavigateToCompetition();
+              }}
+              className="underline hover:opacity-70"
+            >
               Join the community to help improve their AI persona.
             </a>
           </p>
@@ -223,7 +234,7 @@ const FigureSelector: React.FC<FigureSelectorProps> = ({
                 key={figure.id}
                 onMouseEnter={() => setHoveredIndex(index)}
                 onMouseLeave={() => setHoveredIndex(null)}
-                className="embla__slide translate-z-0 shrink-0 basis-[50%] min-w-0 pl-4"
+                className="embla__slide translate-z-0 shrink-0 basis-full sm:basis-[50%] min-w-0 pl-4"
               >
                 <FigureCard
                   figure={figure}
@@ -236,7 +247,7 @@ const FigureSelector: React.FC<FigureSelectorProps> = ({
         </div>
         {/* Overlay navigation controls */}
         <button
-          className="absolute -left-7 top-1/2 -translate-y-1/2 z-10 w-14 h-32 border border-border bg-white text-neutral-800 flex items-center justify-center shadow-xl hover:bg-neutral-100 active:scale-95 transition disabled:opacity-20 disabled:pointer-events-none before:content-[''] before:absolute before:-inset-8 before:bg-transparent cursor-w-resize"
+          className="absolute -left-2 sm:-left-7 top-1/2 -translate-y-1/2 z-10 w-14 h-32 border border-border bg-white text-neutral-800 flex items-center justify-center shadow-xl hover:bg-neutral-100 active:scale-95 transition disabled:opacity-20 disabled:pointer-events-none before:content-[''] before:absolute before:-inset-8 before:bg-transparent cursor-w-resize"
           onClick={() => emblaApi?.scrollPrev()}
           disabled={!emblaApi || emblaApi.canScrollPrev() === false}
           aria-label="Previous"
@@ -246,7 +257,7 @@ const FigureSelector: React.FC<FigureSelectorProps> = ({
           </svg>
         </button>
         <button
-          className="absolute -right-7 top-1/2 -translate-y-1/2 z-10 w-14 h-32 border border-border bg-white text-neutral-800 flex items-center justify-center shadow-xl hover:bg-neutral-100 active:scale-95 transition disabled:opacity-20 disabled:pointer-events-none before:content-[''] before:absolute before:-inset-8 before:bg-transparent cursor-e-resize"
+          className="absolute -right-2 sm:-right-7 top-1/2 -translate-y-1/2 z-10 w-14 h-32 border border-border bg-white text-neutral-800 flex items-center justify-center shadow-xl hover:bg-neutral-100 active:scale-95 transition disabled:opacity-20 disabled:pointer-events-none before:content-[''] before:absolute before:-inset-8 before:bg-transparent cursor-e-resize"
           onClick={() => emblaApi?.scrollNext()}
           disabled={!emblaApi || emblaApi.canScrollNext() === false}
           aria-label="Next"
