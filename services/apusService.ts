@@ -14,7 +14,7 @@ export interface ApusChat {
   isFirstMessage: boolean;
 }
 
-const APUS_ENDPOINT = 'https://hb.apus.network/~llamacpp@1.0/chat/serialize~json@1.0';
+const APUS_ENDPOINT = 'https://hb.apus.network/~llamacpp@1.0/completion/serialize~json@1.0';
 
 // Default configuration for APUS
 const DEFAULT_CONFIG = JSON.stringify({ max_tokens: 3000 });
@@ -74,17 +74,18 @@ export const sendMessage = async (chatSession: ApusChat, message: string, config
     let prompt = message;
     
     // Only send system instruction on the first message, combined with permanent prompt if available
-    if (chatSession.isFirstMessage) {
-      const combinedSystemInstruction = chatSession.permanentPrompt 
-        ? `${chatSession.permanentPrompt}\n\n${chatSession.systemInstruction}`
-        : chatSession.systemInstruction;
+    // if (chatSession.isFirstMessage) {
+    //   const combinedSystemInstruction = chatSession.permanentPrompt 
+    //     ? `${chatSession.permanentPrompt}\n\n${chatSession.systemInstruction}`
+    //     : chatSession.systemInstruction;
       
-      prompt = `${combinedSystemInstruction}\n\n${message}`;
+    //   prompt = `${combinedSystemInstruction}\n\n${message}`;
       
-      // Mark as no longer first message for subsequent calls
-      chatSession.isFirstMessage = false;
-    }
-
+    //   // Mark as no longer first message for subsequent calls
+    //   chatSession.isFirstMessage = false;
+    // }
+    prompt = `${chatSession.systemInstruction}\n\n${message}`;
+    console.log("Final prompt sent to APUS:", prompt);
     // Build request parameters
     const requestParams = {
       reference: chatSession.reference,

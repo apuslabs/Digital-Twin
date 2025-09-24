@@ -418,18 +418,22 @@ const ContributionPanel: React.FC<{ figure: Figure; hideTitle?: boolean }> = ({
             <button
               type="submit"
               className="w-full p-3 bg-blue-600 text-white font-semibold disabled:bg-neutral-300 disabled:cursor-not-allowed hover:bg-blue-500 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
-              disabled={(!promptSuggestion.trim() && !fileName) || isSubmitting}
+              disabled={(!promptSuggestion.trim() && !fileName) || isSubmitting || !figure.processId}
             >
               {isSubmitting ? "Submitting to AO..." : "Submit for AI Review"}
             </button>
             <p className="text-[11px] text-neutral-600 text-center">
-              {aoService.isWalletConnected() ? (
-                "AI agents will evaluate and integrate approved improvements into the permanent Arweave-stored digital twin"
-              ) : (
+              {!figure.processId ? (
+                <span className="inline-flex items-center gap-1 text-red-600">
+                  <span className="ph ph-[warning]"></span>This figure is not available for contributions yet
+                </span>
+              ) : !aoService.isWalletConnected() ? (
                 <span className="inline-flex items-center gap-1">
                   <span className="ph ph-[warning]"></span>Connect your Arweave
                   wallet to submit contributions
                 </span>
+              ) : (
+                "AI agents will evaluate and integrate approved improvements into the permanent Arweave-stored digital twin"
               )}
             </p>
           </form>

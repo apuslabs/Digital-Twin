@@ -353,7 +353,8 @@ const CompetitionPage: React.FC<CompetitionPageProps> = ({
     }
   };
 
-  const isSubmittable = contributionText.trim().length > 0 || fileName !== "";
+  const selectedFigure = figures.find((f) => f.id === selectedFigureId);
+  const isSubmittable = (contributionText.trim().length > 0 || fileName !== "") && selectedFigure?.processId;
 
   return (
     <>
@@ -423,7 +424,7 @@ const CompetitionPage: React.FC<CompetitionPageProps> = ({
                   >
                     {figures.map((figure) => (
                       <option key={figure.id} value={figure.id}>
-                        {figure.name} - {figure.title}
+                        {figure.name} - {figure.title}{!figure.processId ? ' (Not Available)' : ''}
                       </option>
                     ))}
                   </select>
@@ -478,13 +479,17 @@ const CompetitionPage: React.FC<CompetitionPageProps> = ({
                     : "Submit for AI Evaluation"}
                 </button>
                 <p className="text-[11px] text-neutral-600 text-center mt-2">
-                  {aoService.isWalletConnected() ? (
-                    "Submissions will be automatically evaluated by AI agents and stored on Arweave if approved"
-                  ) : (
+                  {!selectedFigure?.processId ? (
+                    <span className="inline-flex items-center gap-1 text-red-600">
+                      <span className="ph ph-[warning]"></span>This figure is not available for contributions yet
+                    </span>
+                  ) : !aoService.isWalletConnected() ? (
                     <span className="inline-flex items-center gap-1">
                       <span className="ph ph-[warning]"></span>Connect your
                       Arweave wallet to submit contributions
                     </span>
+                  ) : (
+                    "Submissions will be automatically evaluated by AI agents and stored on Arweave if approved"
                   )}
                 </p>
               </form>
