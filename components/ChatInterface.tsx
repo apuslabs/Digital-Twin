@@ -1579,10 +1579,19 @@ const ScoreCardModal: React.FC<{
               <div className="inset-0 z-20">
                 <img
                   crossOrigin="anonymous"
-                  src={getMoodImage(highlights.mood) || figure.imageUrl}
+                  src={
+                    isEvaluating
+                      ? figure.imageUrl
+                      : getMoodImage(highlights.mood) || figure.imageUrl
+                  }
                   alt={figure.name}
                   className="inset-0 w-full h-full translate-x-4 object-cover object-left"
                 />
+                {isEvaluating && (
+                  <div className="absolute inset-0 pointer-events-none z-10">
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent opacity-60 transform -skew-x-12 animate-shimmer"></div>
+                  </div>
+                )}
                 <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-white/100 to-transparent group-hover:opacity-50 transition-opacity duration-1000 ease-out-circ h-96"></div>
 
                 {/* Info on name and title */}
