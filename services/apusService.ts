@@ -133,7 +133,23 @@ export const sendMessage = async (chatSession: ApusChat, message: string, config
         responseText = data.body;
       }
     }
-    
+    // Normalize odd leading artifacts sometimes returned by the model
+    // - Strip BOM/zero-width no-break space
+    // - Remove a leading standalone '.' line
+    // - Trim only left side to keep user's intended trailing whitespace/newlines
+    if (responseText) {
+      // Remove BOM/ZWNBSP if present
+      responseText = responseText.replace(/^\uFEFF/, "");
+      // Remove a leading line that is just a period
+      const lines = responseText.split(/\r?\n/);
+      if (lines.length > 0 && lines[0].trim() === '.') {
+        lines.shift();
+        responseText = lines.join('\n');
+      }
+      // Avoid accidental extra leading blank lines
+      responseText = responseText.replace(/^\s*\n/, '');
+    }
+
     return responseText;
   } catch (error) {
     console.error('Error in sendMessage:', error);
