@@ -3,7 +3,13 @@ import MessageComposer from "./chat/MessageComposer";
 import ContributionDetailCard from "./ContributionDetailCard";
 
 import { Figure, ChatMessage, MessageAuthor } from "../types";
-import { startChatSession, sendMessage, Chat, evaluateConversation, formatConversationForEvaluation } from "../services/apusService";
+import {
+  startChatSession,
+  sendMessage,
+  Chat,
+  evaluateConversation,
+  formatConversationForEvaluation,
+} from "../services/apusService";
 import { aoService, QueryResult } from "../services/LegacyAOService";
 import TEEService from "../services/teeService";
 import ArweaveService from "../services/arweaveService";
@@ -28,10 +34,8 @@ type EvaluationData = {
   suggestions?: string[];
 };
 
-const isFigureAuthor = (
-  author: MessageAuthor | string,
-  figureName: string
-) => author === MessageAuthor.AI || author === figureName;
+const isFigureAuthor = (author: MessageAuthor | string, figureName: string) =>
+  author === MessageAuthor.AI || author === figureName;
 
 const BackArrowIcon = () => (
   <svg
@@ -434,14 +438,19 @@ const ContributionPanel: React.FC<{ figure: Figure; hideTitle?: boolean }> = ({
             <button
               type="submit"
               className="w-full p-3 bg-blue-600 text-white font-semibold disabled:bg-neutral-300 disabled:cursor-not-allowed hover:bg-blue-500 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
-              disabled={(!promptSuggestion.trim() && !fileName) || isSubmitting || !figure.processId}
+              disabled={
+                (!promptSuggestion.trim() && !fileName) ||
+                isSubmitting ||
+                !figure.processId
+              }
             >
               {isSubmitting ? "Submitting to AO..." : "Submit for AI Review"}
             </button>
             <p className="text-[11px] text-neutral-600 text-center">
               {!figure.processId ? (
                 <span className="inline-flex items-center gap-1 text-red-600">
-                  <span className="ph ph-[warning]"></span>This figure is not available for contributions yet
+                  <span className="ph ph-[warning]"></span>This figure is not
+                  available for contributions yet
                 </span>
               ) : !aoService.isWalletConnected() ? (
                 <span className="inline-flex items-center gap-1">
@@ -1097,35 +1106,41 @@ const ScoreCardModal: React.FC<{
       const runEvaluation = async () => {
         setIsEvaluating(true);
         setEvaluationError(null);
-        
+
         try {
           // Convert ChatMessage[] to the expected format
           const formattedMessages = messages
-            .filter(msg => msg.text.trim() !== '') // Filter out empty messages
-            .map(msg => ({
-              author: msg.author === MessageAuthor.User ? 'User' : figure.name,
-              content: msg.text
+            .filter((msg) => msg.text.trim() !== "") // Filter out empty messages
+            .map((msg) => ({
+              author: msg.author === MessageAuthor.User ? "User" : figure.name,
+              content: msg.text,
             }));
-          
-          const conversationData = formatConversationForEvaluation(formattedMessages);
+
+          const conversationData =
+            formatConversationForEvaluation(formattedMessages);
           const characterName = figure.name;
-          const characterBackground = figure.systemPrompt || figure.title || `${figure.name} is a digital twin character.`;
-          
+          const characterBackground =
+            figure.systemPrompt ||
+            figure.title ||
+            `${figure.name} is a digital twin character.`;
+
           const result = await evaluateConversation(
             characterName,
             characterBackground,
             conversationData
           );
-          
+
           setEvaluationData(result);
         } catch (error) {
-          console.error('Failed to evaluate conversation:', error);
-          setEvaluationError(error instanceof Error ? error.message : 'Evaluation failed');
+          console.error("Failed to evaluate conversation:", error);
+          setEvaluationError(
+            error instanceof Error ? error.message : "Evaluation failed"
+          );
         } finally {
           setIsEvaluating(false);
         }
       };
-      
+
       runEvaluation();
     }
   }, [isOpen, messages, figure, evaluationData, isEvaluating]);
@@ -1275,13 +1290,33 @@ const ScoreCardModal: React.FC<{
   };
 
   const getMoodImage = (mood: string) => {
+    // Get the figure name to determine the correct mood folder
+    const figureName = figure.name.toLowerCase().replace(/\s+/g, "");
+    let moodFolder = "Rand"; // Default fallback
+
+    // Map figure names to their corresponding mood folders
+    if (figureName.includes("obama")) {
+      moodFolder = "Obama";
+    } else if (figureName.includes("orwell")) {
+      moodFolder = "Orwell";
+    } else if (figureName.includes("trump")) {
+      moodFolder = "Trump";
+    } else if (figureName.includes("rand")) {
+      moodFolder = "Rand";
+    }
+
     switch (mood) {
       case "Happy":
-        return "/resources/moods/Rand/rand_happy.webp";
+        // Trump uses "smile" instead of "happy"
+        const happyFileName =
+          moodFolder === "Trump"
+            ? "trump_smile.webp"
+            : `${moodFolder.toLowerCase()}_happy.webp`;
+        return `/resources/moods/${moodFolder}/${happyFileName}`;
       case "Sad":
-        return "/resources/moods/Rand/rand_sad.webp";
+        return `/resources/moods/${moodFolder}/${moodFolder.toLowerCase()}_sad.webp`;
       case "Angry":
-        return "/resources/moods/Rand/rand_angry.webp";
+        return `/resources/moods/${moodFolder}/${moodFolder.toLowerCase()}_angry.webp`;
       default:
         return "";
     }
@@ -1684,9 +1719,7 @@ const ScoreCardModal: React.FC<{
         {evaluationError && (
           <div className="mt-3 p-3 border border-yellow-300 bg-yellow-50 text-yellow-800 text-sm break-words">
             <div className="font-semibold mb-1">Evaluation error</div>
-            <p className="text-sm leading-snug">
-              {evaluationError}
-            </p>
+            <p className="text-sm leading-snug">{evaluationError}</p>
             <p className="text-xs mt-2 opacity-75">
               The score card is showing mock data due to evaluation failure.
             </p>
