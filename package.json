@@ -18,7 +18,10 @@
     "@arweave-wallet-kit/webwallet-strategy": "^0.0.1-beta.4",
     "@google/genai": "^1.16.0",
     "@permaweb/aoconnect": "^0.0.90",
+    "@types/html2canvas": "^1.0.0",
     "embla-carousel-react": "^8.6.0",
+    "html-to-image": "1.11.13",
+    "html2canvas": "^1.4.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-markdown": "^10.1.0"

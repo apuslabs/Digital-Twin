@@ -1046,6 +1046,558 @@ const ConnectionModal: React.FC<{
   );
 };
 
+const ScoreCardModal: React.FC<{
+  figure: Figure;
+  messages: ChatMessage[];
+  attestationData: any;
+  isOpen: boolean;
+  onClose: () => void;
+}> = ({ figure, messages, attestationData, isOpen, onClose }) => {
+  const scoreCardRef = useRef<HTMLDivElement>(null);
+  const aspectRef = useRef<HTMLDivElement>(null);
+  const blurUnderlayRef = useRef<HTMLDivElement>(null);
+  const rightPanelRef = useRef<HTMLDivElement>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const shareSoundRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    const shareAudio = new Audio("/resources/sounds/share.wav");
+    shareAudio.preload = "auto";
+    shareSoundRef.current = shareAudio;
+  }, []);
+
+  const playShareSound = () => {
+    const audio = shareSoundRef.current;
+    if (!audio) return;
+    try {
+      audio.currentTime = 0;
+      void audio.play();
+    } catch (_) {
+      // Ignore playback errors
+    }
+  };
+
+  // Generate mock conversation highlights
+  const stripMarkdown = (input: string): string => {
+    let output = input || "";
+    // remove code fences
+    output = output.replace(/```[\s\S]*?```/g, "");
+    // remove inline code
+    output = output.replace(/`[^`]*`/g, "");
+    // remove images ![alt](url)
+    output = output.replace(/!\[[^\]]*\]\([^\)]*\)/g, "");
+    // remove links [text](url)
+    output = output.replace(/\[([^\]]*)\]\([^\)]*\)/g, "$1");
+    // remove bold/italic markers
+    output = output.replace(/[*_]{1,3}([^*_]+)[*_]{1,3}/g, "$1");
+    // collapse whitespace
+    output = output.replace(/\s+/g, " ").trim();
+    return output;
+  };
+
+  const pickFirstSentence = (text: string): string => {
+    const normalized = (text || "").replace(/\s+/g, " ").trim();
+    if (!normalized) return "";
+    const match = normalized.match(/^[\s\S]*?[.!?](?=\s|$)/);
+    return match ? match[0].trim() : normalized;
+  };
+
+  const ellipsize = (text: string, maxLen = 160): string => {
+    if (!text) return "";
+    if (text.length <= maxLen) return text;
+    return text.slice(0, maxLen - 1).trimEnd() + "…";
+  };
+
+  const getFirstAiReplySentence = (): string => {
+    if (!messages || messages.length === 0) return "";
+    // Find first user message index
+    const firstUserIdx = messages.findIndex(
+      (m) => m.author === MessageAuthor.User
+    );
+    // Find first AI message with non-empty text after that user message
+    let candidateText = "";
+    if (firstUserIdx >= 0) {
+      const after = messages.slice(firstUserIdx + 1);
+      const aiReply = after.find(
+        (m) => m.author === MessageAuthor.AI && (m.text || "").trim() !== ""
+      );
+      candidateText = aiReply?.text || "";
+    }
+    // Fallback: first non-empty AI message anywhere
+    if (!candidateText) {
+      const anyAi = messages.find(
+        (m) => m.author === MessageAuthor.AI && (m.text || "").trim() !== ""
+      );
+      candidateText = anyAi?.text || "";
+    }
+    const clean = stripMarkdown(candidateText);
+    const sentence = pickFirstSentence(clean);
+    return ellipsize(sentence, 160);
+  };
+  const getConversationHighlights = () => {
+    const userMessages = messages.filter(
+      (m) => m.author === MessageAuthor.User
+    );
+    const aiMessages = messages.filter(
+      (m) => m.author === MessageAuthor.AI && m.text.trim() !== ""
+    );
+
+    const mood = getRandomMood();
+    const rating = Math.floor(60 + Math.random() * 41); // 60–100 mock
+    const judgement = getMockJudgement(figure.name, rating, mood);
+
+    return {
+      messageCount: messages.length - 1, // Exclude welcome message
+      userMessages: userMessages.length,
+      aiMessages: aiMessages.length,
+      conversationDuration: Math.max(5, Math.floor(Math.random() * 30) + 10), // Mock duration in minutes
+      mood,
+      rating,
+      quote: judgement,
+    };
+  };
+
+  const getRandomMood = () => {
+    const moods = ["Happy", "Sad", "Angry"];
+    return moods[Math.floor(Math.random() * moods.length)];
+  };
+  const getMoodColorClass = (mood: string) => {
+    switch (mood) {
+      case "Happy":
+        return "text-emerald-400";
+      case "Sad":
+        return "text-blue-300";
+      case "Angry":
+        return "text-red-400";
+      default:
+        return "text-foreground";
+    }
+  };
+
+  const getMoodIconClass = (mood: string) => {
+    switch (mood) {
+      case "Happy":
+        return "ph ph-[smiley--duotone]";
+      case "Sad":
+        return "ph ph-[smiley-sad--duotone]";
+      case "Angry":
+        return "ph ph-[smiley-angry--duotone]";
+      default:
+        return "ph ph-[star--duotone]";
+    }
+  };
+
+  const getMoodImage = (mood: string) => {
+    switch (mood) {
+      case "Happy":
+        return "/resources/moods/Rand/rand_happy.webp";
+      case "Sad":
+        return "/resources/moods/Rand/rand_sad.webp";
+      case "Angry":
+        return "/resources/moods/Rand/rand_angry.webp";
+      default:
+        return "";
+    }
+  };
+
+  const getMockJudgement = (name: string, rating: number, mood: string) => {
+    const templates = [
+      `${name} found your conversation ${
+        rating >= 85
+          ? "insightful and engaging"
+          : rating >= 70
+          ? "balanced and constructive"
+          : "a bit uneven, but promising"
+      }`,
+      `${
+        rating >= 85
+          ? "Strong signal"
+          : rating >= 70
+          ? "Solid effort"
+          : "Needs polish"
+      }—clear ideas and a ${mood.toLowerCase()} tone.`,
+      `Overall, ${name} rates this exchange ${rating}/100 and ${
+        rating >= 85
+          ? "would continue the thread"
+          : rating >= 70
+          ? "sees room to go deeper"
+          : "suggests refining your prompts"
+      }.`,
+    ];
+    const first = templates[Math.floor(Math.random() * templates.length)];
+    const second =
+      rating >= 85
+        ? "Great flow and clarity."
+        : rating >= 70
+        ? "Good direction; a few details could be sharper."
+        : "Try focusing the next question more narrowly.";
+    const includeSecond = Math.random() > 0.5;
+    const result = includeSecond ? `${first} ${second}` : first;
+    return ellipsize(result, 210);
+  };
+
+  const handleSaveScoreCard = async () => {
+    if (!scoreCardRef.current) return;
+
+    // Play share sound on click
+    playShareSound();
+
+    setIsSaving(true);
+    setSaveError(null);
+
+    const errors: string[] = [];
+
+    const downloadBlob = (blob: Blob, fileName: string) => {
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    };
+
+    const dataUrlToBlob = async (dataUrl: string) => {
+      const res = await fetch(dataUrl);
+      return await res.blob();
+    };
+
+    const fileName = `${figure.name.replace(/\s+/g, "_")}_ScoreCard_${
+      new Date().toISOString().split("T")[0]
+    }.png`;
+
+    // Strategy A: html2canvas
+    const attemptHtml2Canvas = async () => {
+      const html2canvas = await import("html2canvas").then((m) => m.default);
+
+      // Ensure explicit pixel height for the 16:9 box (avoid zero-height capture)
+      let previousAspectHeight = "";
+      if (aspectRef.current) {
+        previousAspectHeight = aspectRef.current.style.height;
+        const width =
+          aspectRef.current.clientWidth || scoreCardRef.current!.clientWidth;
+        if (width) {
+          aspectRef.current.style.height = `${Math.round((width * 9) / 16)}px`;
+        }
+      }
+      // Temporarily disable effects that html2canvas struggles with
+      const previousUnderlayDisplay =
+        blurUnderlayRef.current?.style.display || "";
+      const previousBackdropFilter =
+        rightPanelRef.current?.style.backdropFilter || "";
+      const previousBg = rightPanelRef.current?.style.backgroundColor || "";
+      if (blurUnderlayRef.current)
+        blurUnderlayRef.current.style.display = "none";
+      if (rightPanelRef.current) {
+        rightPanelRef.current.style.backdropFilter = "none";
+        rightPanelRef.current.style.backgroundColor = "rgba(255,255,255,0.95)";
+      }
+
+      try {
+        const canvasElement = await html2canvas(scoreCardRef.current!, {
+          backgroundColor: "#ffffff",
+          scale: Math.max(2, Math.ceil(window.devicePixelRatio || 1)),
+          useCORS: true,
+          allowTaint: false,
+          logging: false,
+          imageTimeout: 0,
+          removeContainer: true,
+        });
+
+        const blob: Blob | null = await new Promise((resolve) =>
+          canvasElement.toBlob((b) => resolve(b), "image/png")
+        );
+
+        if (blob) {
+          downloadBlob(blob, fileName);
+          return true;
+        } else {
+          // Fallback to data URL path
+          const dataUrl = canvasElement.toDataURL("image/png");
+          const blobFromDataUrl = await dataUrlToBlob(dataUrl);
+          downloadBlob(blobFromDataUrl, fileName);
+          return true;
+        }
+      } finally {
+        // Restore styles
+        if (blurUnderlayRef.current)
+          blurUnderlayRef.current.style.display = previousUnderlayDisplay;
+        if (rightPanelRef.current) {
+          rightPanelRef.current.style.backdropFilter = previousBackdropFilter;
+          rightPanelRef.current.style.backgroundColor = previousBg;
+        }
+        if (aspectRef.current) {
+          aspectRef.current.style.height = previousAspectHeight;
+        }
+      }
+    };
+
+    // Strategy B: html-to-image (foreignObject based)
+    const attemptHtmlToImage = async () => {
+      const { toPng } = await import("html-to-image");
+
+      const filter = (node: HTMLElement) => {
+        // Skip elements likely to cause tainting or rendering issues
+        if (node instanceof HTMLImageElement) {
+          try {
+            const srcUrl = new URL(node.src, window.location.href);
+            if (srcUrl.origin !== window.location.origin) return false;
+          } catch {}
+        }
+        if (node.dataset && node.dataset.captureIgnore === "true") return false;
+        // Exclude elements using backdrop-filter
+        if (node.nodeType === 1) {
+          const el = node as Element;
+          const style = window.getComputedStyle(el);
+          if (style.backdropFilter && style.backdropFilter !== "none")
+            return false;
+        }
+        return true;
+      };
+
+      const width = scoreCardRef.current!.clientWidth;
+      const height = scoreCardRef.current!.clientHeight;
+      const pixelRatio = Math.max(2, Math.ceil(window.devicePixelRatio || 1));
+
+      const dataUrl = await toPng(scoreCardRef.current!, {
+        cacheBust: true,
+        backgroundColor: "#ffffff",
+        pixelRatio,
+        width,
+        height,
+        filter: filter as any,
+      });
+
+      const blob = await dataUrlToBlob(dataUrl);
+      downloadBlob(blob, fileName);
+      return true;
+    };
+
+    try {
+      const okA = await attemptHtml2Canvas().catch((err) => {
+        errors.push(`html2canvas failed: ${err?.message || String(err)}`);
+        return false;
+      });
+      if (okA) return;
+
+      const okB = await attemptHtmlToImage().catch((err) => {
+        errors.push(`html-to-image failed: ${err?.message || String(err)}`);
+        return false;
+      });
+      if (okB) return;
+
+      const errorText = errors.join("\n");
+      console.error("Failed to save score card:", errorText);
+      setSaveError(
+        `${errorText}\n\nTips: If the twin image is remote without CORS, remove it or host locally. Avoid CSS filters/backdrop-filter on captured nodes.`
+      );
+      alert("Failed to save score card. See details in the modal.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const highlights = getConversationHighlights();
+  const sessionId = attestationData?.sessionId || "loading...";
+  const displaySessionId =
+    sessionId.length > 16 ? sessionId.substring(0, 16) + "..." : sessionId;
+  const pairLabel = `${figure.name.split(" ")[0].toUpperCase()}/MOOD`;
+  const headlinePercent = (() => {
+    const total = Math.max(0, highlights.messageCount);
+    return `+${total.toLocaleString(undefined, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}%`;
+  })();
+
+  if (!isOpen) return null;
+
+  return (
+    <div
+      className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="score-card-title"
+    >
+      <div
+        className="relative bg-white p-6 m-4 max-w-md md:max-w-5xl w-full max-h-[90vh] overflow-y-auto transform transition-all duration-300 animate-slide-up border border-neutral-300"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div
+          className="pointer-events-none absolute inset-0 opacity-10"
+          style={{
+            backgroundImage:
+              "repeating-linear-gradient(45deg,#000 0px,#000 1px,transparent 1px,transparent 8px),repeating-linear-gradient(-45deg,#000 0px,#000 1px,transparent 1px,transparent 8px)",
+            backgroundSize: "12px 12px, 12px 12px",
+          }}
+        />
+        <div className="relative">
+          <div className="flex justify-between items-center mb-6">
+            <button
+              onClick={onClose}
+              className="p-2 hover:bg-neutral-100 transition-colors"
+              aria-label="Close score card"
+            >
+              <CloseIcon />
+            </button>
+          </div>
+
+          {/* Score Card Content - 16:9 split layout */}
+          <div
+            ref={scoreCardRef}
+            className="relative w-full border border-neutral-300 bg-white"
+          >
+            <div
+              ref={aspectRef}
+              className="aspect-[16/9] relative flex overflow-hidden"
+            >
+              {/* Background visual - covers entire card */}
+              <div className="inset-0 z-20">
+                <img
+                  crossOrigin="anonymous"
+                  src={getMoodImage(highlights.mood) || figure.imageUrl}
+                  alt={figure.name}
+                  className="inset-0 w-full h-full translate-x-4 object-cover object-left"
+                />
+                <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-white/100 to-transparent group-hover:opacity-50 transition-opacity duration-1000 ease-out-circ h-96"></div>
+
+                {/* Info on name and title */}
+                <div className="absolute bottom-0 right-0 inset-x-0 p-4">
+                  <div className="text-xl font-black tracking-wide uppercase">
+                    {figure.name}
+                  </div>
+                  <div className="text-sm opacity-90">{figure.title}</div>
+                </div>
+                {/* Top-right TEE badge (absolute) */}
+                <div className="absolute bottom-0 right-0 p-4 z-20">
+                  <div
+                    className={`px-2 py-1.5 border bg-white/80 text-[11px] ${
+                      attestationData?.status === "VERIFIED"
+                        ? "border-green-600 text-green-700"
+                        : attestationData?.error
+                        ? "border-red-600 text-red-700"
+                        : "border-yellow-600 text-yellow-700"
+                    }`}
+                    title={displaySessionId}
+                  >
+                    <div className="flex items-center gap-1">
+                      <span
+                        className="ph ph-[shield-check--duotone]"
+                        aria-hidden
+                      ></span>
+                      <span>
+                        {attestationData?.status === "VERIFIED"
+                          ? "TEE Verified"
+                          : attestationData?.error
+                          ? "TEE Error"
+                          : "TEE Verifying"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                {/* Bottom-right Twin logo */}
+                <div className="absolute top-0 p-4 z-20">
+                  <img
+                    src="/resources/Twin_Logo.svg"
+                    alt="Twin"
+                    className="w-24"
+                  />
+                </div>
+              </div>
+
+              {/* Floating light right panel */}
+              <div
+                ref={rightPanelRef}
+                className="inset-y-0 right-0 w-[40%] min-w-[280px] max-w-[520px] p-5 md:p-7 flex flex-col overflow-hidden "
+              >
+                {/* Diagonal overlay */}
+                <div
+                  className="pointer-events-none absolute -inset-y-8 w-[1000px] h-[1000px] rotate-32 opacity-15 -translate-y-10 -translate-x-20 z-0"
+                  style={{
+                    backgroundImage:
+                      "repeating-linear-gradient(135deg, rgba(0,0,0,0.35) 0px, rgba(0,0,0,0.35) 1px, transparent 1px, transparent 8px)",
+                    backgroundSize: "12px 12px",
+                  }}
+                />
+                {/* (badge moved to absolute top-right) */}
+                {/* Rating */}
+                <div>
+                  <div
+                    className={`flex items-center gap-2 text-6xl mt-12 tabular-nums ${getMoodColorClass(
+                      highlights.mood
+                    )}`}
+                  >
+                    <span
+                      className={`w-16 h-16 ${getMoodIconClass(
+                        highlights.mood
+                      )}`}
+                    ></span>
+                    {highlights.rating}/100
+                  </div>
+                </div>
+
+                {/* Hero mood/engagement area */}
+
+                <div
+                  className={`text-3xl font-quote leading-tight z-20 mt-8 ${getMoodColorClass(
+                    highlights.quote
+                  )}`}
+                >
+                  "{highlights.quote}"
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Error details (if any) */}
+        {saveError && (
+          <div className="mt-3 p-3 border border-red-300 bg-red-50 text-red-800 text-sm break-words">
+            <div className="font-semibold mb-1">Export error details</div>
+            <pre className="whitespace-pre-wrap text-[12px] leading-snug">
+              {saveError}
+            </pre>
+            <div className="mt-2 text-right">
+              <button
+                onClick={() => {
+                  if (saveError) navigator.clipboard.writeText(saveError);
+                }}
+                className="px-3 py-1 border border-neutral-300 bg-white text-neutral-800 hover:bg-neutral-50 text-xs"
+              >
+                Copy details
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Action Buttons */}
+        <div className="flex justify-end gap-3 mt-6 relative">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 border border-neutral-300 text-neutral-700 bg-white hover:bg-neutral-50 transition-colors"
+          >
+            Close
+          </button>
+          <button
+            onClick={handleSaveScoreCard}
+            disabled={isSaving}
+            className="relative flex gap-2 items-center py-2 px-4 border border-amber-300 bg-amber-100 text-neutral-800 hover:bg-neutral-50 transition-colors active:scale-95 cursor-pointer text-xs overflow-hidden disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            <span className="relative z-10 inline-flex items-center gap-2">
+              <div className="ph ph-[star--duotone] text-amber-400" />
+              {isSaving ? "Saving…" : "Save Your Score Card"}
+            </span>
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-400 to-transparent opacity-20 transform -skew-x-12 -translate-x-full animate-shimmer"></div>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const ChatInterface: React.FC<ChatInterfaceProps> = ({
   figure,
   onBack,
@@ -1065,6 +1617,34 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
     null
   );
   const hotkeyTimerRef = useRef<number | null>(null);
+  const [isScoreCardOpen, setIsScoreCardOpen] = useState(false);
+  const [attestationData, setAttestationData] = useState<any>(null);
+  const [shareHintVisible, setShareHintVisible] = useState(false);
+  const sendSoundRef = useRef<HTMLAudioElement | null>(null);
+  const receiveSoundRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    // Preload send/receive sounds
+    const sendAudio = new Audio("/resources/sounds/message-send.wav");
+    const receiveAudio = new Audio("/resources/sounds/message-receive.wav");
+    sendAudio.preload = "auto";
+    receiveAudio.preload = "auto";
+    sendSoundRef.current = sendAudio;
+    receiveSoundRef.current = receiveAudio;
+  }, []);
+
+  const playSound = (
+    audioRef: React.MutableRefObject<HTMLAudioElement | null>
+  ) => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    try {
+      audio.currentTime = 0;
+      void audio.play();
+    } catch (_) {
+      // Ignore playback errors (e.g., autoplay restrictions)
+    }
+  };
 
   useEffect(() => {
     const initializeChat = async () => {
@@ -1107,6 +1687,28 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
 
     initializeChat();
   }, [figure]);
+
+  // Fetch TEE attestation data for score card
+  useEffect(() => {
+    const fetchAttestation = async () => {
+      if (chatSession?.sessionId) {
+        try {
+          const attestation = await TEEService.getAttestation(
+            chatSession.sessionId
+          );
+          setAttestationData(attestation);
+        } catch (error) {
+          console.error(
+            "Failed to fetch TEE attestation for score card:",
+            error
+          );
+          setAttestationData({ error: "Failed to fetch attestation" });
+        }
+      }
+    };
+
+    fetchAttestation();
+  }, [chatSession?.sessionId]);
 
   // Hotkeys to change twin while in chat
   useEffect(() => {
@@ -1166,6 +1768,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
     };
 
     setMessages((prev) => [...prev, userMessage]);
+    // Play send sound when the user submits a message
+    playSound(sendSoundRef);
     setUserInput("");
     setIsLoading(true);
     setShouldAutoScroll(true); // Enable auto-scroll when user sends a message
@@ -1184,6 +1788,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
           msg.id === aiMessageId ? { ...msg, text: response } : msg
         )
       );
+      // Play receive sound when the AI's message is finalized
+      playSound(receiveSoundRef);
     } catch (error) {
       setMessages((prev) =>
         prev.map((msg) =>
@@ -1195,6 +1801,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
             : msg
         )
       );
+      // Still play receive sound on error to indicate response completion
+      playSound(receiveSoundRef);
     } finally {
       setIsLoading(false);
     }
@@ -1279,6 +1887,65 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                 >
                   ▶
                 </button>
+                {/* Share Score Card (disabled until 2+ user messages) */}
+                {(() => {
+                  const userMessageCount = messages.filter(
+                    (m) => m.author === MessageAuthor.User
+                  ).length;
+                  const canShare = userMessageCount >= 2;
+                  const showHint = () => {
+                    setShareHintVisible(true);
+                    window.setTimeout(() => setShareHintVisible(false), 2200);
+                  };
+                  return (
+                    <div className="relative">
+                      <button
+                        onClick={() => canShare && setIsScoreCardOpen(true)}
+                        disabled={!canShare}
+                        aria-disabled={!canShare}
+                        title={
+                          canShare
+                            ? "Share your score card"
+                            : `Send at least 2 messages with ${figure.name} to share your score card`
+                        }
+                        className={`relative flex gap-2 items-center py-2 px-4 border text-neutral-800 transition-colors text-xs overflow-hidden active:scale-95 ${
+                          canShare
+                            ? "cursor-pointer border-amber-300 bg-amber-100 hover:bg-neutral-50"
+                            : "cursor-not-allowed border-neutral-300 bg-neutral-100 opacity-70"
+                        }`}
+                      >
+                        <span className="relative z-10 inline-flex items-center gap-2">
+                          <div
+                            className={`ph ph-[star--duotone] ${
+                              canShare ? "text-amber-400" : "text-neutral-400"
+                            }`}
+                          />
+                          Share Your Score Card
+                        </span>
+                        <div
+                          className={`absolute inset-0 bg-gradient-to-r ${
+                            canShare
+                              ? "from-transparent via-amber-400"
+                              : "from-transparent via-neutral-400"
+                          } to-transparent opacity-20 transform -skew-x-12 -translate-x-full animate-shimmer`}
+                        ></div>
+                      </button>
+                      {!canShare && (
+                        <button
+                          type="button"
+                          onClick={showHint}
+                          aria-label="Share score card disabled overlay"
+                          className="absolute inset-0 bg-transparent"
+                        />
+                      )}
+                      {!canShare && shareHintVisible && (
+                        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2 py-1 text-xs bg-white border border-neutral-300 shadow z-50 whitespace-nowrap">
+                          Please send at least 2 messages with {figure.name}.
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
                 <button
                   onClick={onBack}
                   className="flex gap-2 items-center py-2 px-4 hover:bg-neutral-100 transition-colors mr-3 cursor-pointer border border-border text-xs active:scale-95 duration-150 ease-out-quart"
@@ -1401,6 +2068,13 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
           onClose={handleCloseModal}
         />
       )}
+      <ScoreCardModal
+        figure={figure}
+        messages={messages}
+        attestationData={attestationData}
+        isOpen={isScoreCardOpen}
+        onClose={() => setIsScoreCardOpen(false)}
+      />
     </>
   );
 };

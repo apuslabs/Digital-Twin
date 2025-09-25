@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,600;1,700&family=Dancing+Script:wght@600&display=swap');
 @import "tailwindcss";
 
 @plugin 'phosphor-icons-tailwindcss' {
@@ -127,5 +128,44 @@
     .ease-in-out-circ {
         transition-timing-function: cubic-bezier(.785, .135, .15, .86);
         animation-timing-function: cubic-bezier(.785, .135, .15, .86);
+    }
+
+    /* Sparkling animations for score card button */
+    @keyframes sparkle {
+        0% {
+            background-position: 0% 50%;
+        }
+
+        50% {
+            background-position: 100% 50%;
+        }
+
+        100% {
+            background-position: 0% 50%;
+        }
+    }
+
+    @keyframes shimmer {
+        0% {
+            transform: translateX(-100%) skewX(-12deg);
+        }
+
+        100% {
+            transform: translateX(200%) skewX(-12deg);
+        }
+    }
+
+    .animate-sparkle {
+        animation: sparkle 2s ease-in-out infinite;
+    }
+
+    .animate-shimmer {
+        animation: shimmer 2s ease-in-out infinite;
+    }
+
+    /* Quote font utility */
+    .font-quote {
+        font-family: "Playfair Display", "Dancing Script", ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+        font-style: italic;
     }
 }
