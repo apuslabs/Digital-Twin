@@ -1647,18 +1647,18 @@ const ScoreCardModal: React.FC<{
                 {/* Rating */}
                 <div>
                   {isEvaluating ? (
-                    <div className="flex items-center gap-2 text-6xl mt-12 tabular-nums text-neutral-400">
-                      <span className="w-16 h-16 ph ph-[spinner--duotone] animate-spin"></span>
+                    <div className="flex items-center gap-2 text-4xl mt-4 tabular-nums text-neutral-400">
+                      <span className="w-4 h-4 ph ph-[hourglass--duotone] animate-spin"></span>
                       Evaluating...
                     </div>
                   ) : evaluationError ? (
-                    <div className="flex items-center gap-2 text-4xl mt-12 tabular-nums text-red-400">
+                    <div className="flex items-center gap-2 text-4xl mt-4 tabular-nums text-red-400">
                       <span className="w-16 h-16 ph ph-[warning--duotone]"></span>
                       Error
                     </div>
                   ) : (
                     <div
-                      className={`flex items-center gap-2 text-6xl mt-12 tabular-nums ${getMoodColorClass(
+                      className={`flex items-center gap-2 text-6xl mt-4 tabular-nums ${getMoodColorClass(
                         highlights.mood
                       )}`}
                     >
