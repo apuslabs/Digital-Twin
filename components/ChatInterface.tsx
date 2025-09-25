@@ -2043,13 +2043,13 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                 >
                   ▶
                 </button>
-                {/* Share Score Card (disabled until 2+ user messages) */}
+                {/* Share Score Card (disabled until at least 1 user message) */}
                 {(() => {
                   const userMessageCount = messages.filter(
                     (m) => m.author === MessageAuthor.User
                   ).length;
-                  //const canShare = userMessageCount >= 2;
-                  const canShare = userMessageCount >= 0; // TEMP: allow sharing immediately
+                  //const canShare = userMessageCount >= 1;
+                  const canShare = userMessageCount >= 1;
                   const showHint = () => {
                     setShareHintVisible(true);
                     window.setTimeout(() => setShareHintVisible(false), 2200);
@@ -2063,7 +2063,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                         title={
                           canShare
                             ? "Share your score card"
-                            : `Send at least 2 messages with ${figure.name} to share your score card`
+                            : `Send at least 1 message with ${figure.name} to share your score card`
                         }
                         className={`relative flex gap-2 items-center py-2 px-4 border text-neutral-800 transition-colors text-xs overflow-hidden active:scale-95 ${
                           canShare
@@ -2097,7 +2097,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                       )}
                       {!canShare && shareHintVisible && (
                         <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2 py-1 text-xs bg-white border border-neutral-300 shadow z-50 whitespace-nowrap">
-                          Please send at least 2 messages with {figure.name}.
+                          Please send at least 1 message with {figure.name}.
                         </div>
                       )}
                     </div>
