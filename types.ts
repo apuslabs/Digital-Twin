@@ -27,5 +27,5 @@ export enum MessageAuthor {
 export interface ChatMessage {
     id: string;
     text: string;
-    author: MessageAuthor;
+    author: MessageAuthor | string; // Allow both enum and figure name
 }

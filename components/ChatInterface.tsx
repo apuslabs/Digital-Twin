@@ -3,7 +3,7 @@ import MessageComposer from "./chat/MessageComposer";
 import ContributionDetailCard from "./ContributionDetailCard";
 
 import { Figure, ChatMessage, MessageAuthor } from "../types";
-import { startChatSession, sendMessage, Chat } from "../services/apusService";
+import { startChatSession, sendMessage, Chat, evaluateConversation, formatConversationForEvaluation } from "../services/apusService";
 import { aoService, QueryResult } from "../services/LegacyAOService";
 import TEEService from "../services/teeService";
 import ArweaveService from "../services/arweaveService";
@@ -1059,13 +1059,61 @@ const ScoreCardModal: React.FC<{
   const rightPanelRef = useRef<HTMLDivElement>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [evaluationData, setEvaluationData] = useState<any>(null);
+  const [isEvaluating, setIsEvaluating] = useState(false);
+  const [evaluationError, setEvaluationError] = useState<string | null>(null);
   const shareSoundRef = useRef<HTMLAudioElement | null>(null);
+
+  // Helper function to check if message is from the AI/figure
+  const isAIMessage = (author: MessageAuthor | string) => {
+    return author === MessageAuthor.AI || author === figure.name;
+  };
 
   useEffect(() => {
     const shareAudio = new Audio("/resources/sounds/share.wav");
     shareAudio.preload = "auto";
     shareSoundRef.current = shareAudio;
   }, []);
+
+  // Evaluate conversation when modal opens
+  useEffect(() => {
+    if (isOpen && messages.length > 1 && !evaluationData && !isEvaluating) {
+      const runEvaluation = async () => {
+        setIsEvaluating(true);
+        setEvaluationError(null);
+        
+        try {
+          // Convert ChatMessage[] to the expected format
+          const formattedMessages = messages
+            .filter(msg => msg.text.trim() !== '') // Filter out empty messages
+            .map(msg => ({
+              author: msg.author === MessageAuthor.User ? 'User' : figure.name,
+              content: msg.text
+            }));
+          
+          const conversationData = formatConversationForEvaluation(formattedMessages);
+          const characterName = figure.name;
+          const characterBackground = figure.systemPrompt || figure.title || `${figure.name} is a digital twin character.`;
+          
+          const result = await evaluateConversation(
+            characterName,
+            characterBackground,
+            conversationData
+          );
+          console.log('Evaluation result:', result);
+          
+          setEvaluationData(result);
+        } catch (error) {
+          console.error('Failed to evaluate conversation:', error);
+          setEvaluationError(error instanceof Error ? error.message : 'Evaluation failed');
+        } finally {
+          setIsEvaluating(false);
+        }
+      };
+      
+      runEvaluation();
+    }
+  }, [isOpen, messages, figure, evaluationData, isEvaluating]);
 
   const playShareSound = () => {
     const audio = shareSoundRef.current;
@@ -1120,14 +1168,14 @@ const ScoreCardModal: React.FC<{
     if (firstUserIdx >= 0) {
       const after = messages.slice(firstUserIdx + 1);
       const aiReply = after.find(
-        (m) => m.author === MessageAuthor.AI && (m.text || "").trim() !== ""
+        (m) => isAIMessage(m.author) && (m.text || "").trim() !== ""
       );
       candidateText = aiReply?.text || "";
     }
     // Fallback: first non-empty AI message anywhere
     if (!candidateText) {
       const anyAi = messages.find(
-        (m) => m.author === MessageAuthor.AI && (m.text || "").trim() !== ""
+        (m) => isAIMessage(m.author) && (m.text || "").trim() !== ""
       );
       candidateText = anyAi?.text || "";
     }
@@ -1140,9 +1188,28 @@ const ScoreCardModal: React.FC<{
       (m) => m.author === MessageAuthor.User
     );
     const aiMessages = messages.filter(
-      (m) => m.author === MessageAuthor.AI && m.text.trim() !== ""
+      (m) => isAIMessage(m.author) && m.text.trim() !== ""
     );
 
+    // Use evaluation data if available, otherwise fallback to mock data
+    if (evaluationData) {
+      // Handle the parsed evaluation structure
+      const overallScore = evaluationData.score || evaluationData.overall_score || 75;
+      const mood = evaluationData.mood || (overallScore >= 85 ? "Happy" : overallScore >= 70 ? "Sad" : "Angry");
+      const quote = evaluationData.comments || `${figure.name} found this conversation engaging.`;
+      
+      return {
+        messageCount: messages.length - 1, // Exclude welcome message
+        userMessages: userMessages.length,
+        aiMessages: aiMessages.length,
+        conversationDuration: Math.max(5, Math.floor(Math.random() * 30) + 10), // Mock duration in minutes
+        mood,
+        rating: overallScore,
+        quote: ellipsize(quote, 210),
+      };
+    }
+
+    // Fallback to mock data if evaluation is not available yet
     const mood = getRandomMood();
     const rating = Math.floor(60 + Math.random() * 41); // 60–100 mock
     const judgement = getMockJudgement(figure.name, rating, mood);
@@ -1525,29 +1592,50 @@ const ScoreCardModal: React.FC<{
                 {/* (badge moved to absolute top-right) */}
                 {/* Rating */}
                 <div>
-                  <div
-                    className={`flex items-center gap-2 text-6xl mt-12 tabular-nums ${getMoodColorClass(
-                      highlights.mood
-                    )}`}
-                  >
-                    <span
-                      className={`w-16 h-16 ${getMoodIconClass(
+                  {isEvaluating ? (
+                    <div className="flex items-center gap-2 text-6xl mt-12 tabular-nums text-neutral-400">
+                      <span className="w-16 h-16 ph ph-[spinner--duotone] animate-spin"></span>
+                      Evaluating...
+                    </div>
+                  ) : evaluationError ? (
+                    <div className="flex items-center gap-2 text-4xl mt-12 tabular-nums text-red-400">
+                      <span className="w-16 h-16 ph ph-[warning--duotone]"></span>
+                      Error
+                    </div>
+                  ) : (
+                    <div
+                      className={`flex items-center gap-2 text-6xl mt-12 tabular-nums ${getMoodColorClass(
                         highlights.mood
                       )}`}
-                    ></span>
-                    {highlights.rating}/100
-                  </div>
+                    >
+                      <span
+                        className={`w-16 h-16 ${getMoodIconClass(
+                          highlights.mood
+                        )}`}
+                      ></span>
+                      {highlights.rating}/100
+                    </div>
+                  )}
                 </div>
 
                 {/* Hero mood/engagement area */}
-
-                <div
-                  className={`text-3xl font-quote leading-tight z-20 mt-8 ${getMoodColorClass(
-                    highlights.quote
-                  )}`}
-                >
-                  "{highlights.quote}"
-                </div>
+                {isEvaluating ? (
+                  <div className="text-2xl font-quote leading-tight z-20 mt-8 text-neutral-400">
+                    "Analyzing conversation quality..."
+                  </div>
+                ) : evaluationError ? (
+                  <div className="text-2xl font-quote leading-tight z-20 mt-8 text-red-400">
+                    "Unable to evaluate conversation"
+                  </div>
+                ) : (
+                  <div
+                    className={`text-3xl font-quote leading-tight z-20 mt-8 ${getMoodColorClass(
+                      highlights.quote
+                    )}`}
+                  >
+                    "{highlights.quote}"
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -1570,6 +1658,19 @@ const ScoreCardModal: React.FC<{
                 Copy details
               </button>
             </div>
+          </div>
+        )}
+
+        {/* Evaluation error details (if any) */}
+        {evaluationError && (
+          <div className="mt-3 p-3 border border-yellow-300 bg-yellow-50 text-yellow-800 text-sm break-words">
+            <div className="font-semibold mb-1">Evaluation error</div>
+            <p className="text-sm leading-snug">
+              {evaluationError}
+            </p>
+            <p className="text-xs mt-2 opacity-75">
+              The score card is showing mock data due to evaluation failure.
+            </p>
           </div>
         )}
 
@@ -1606,8 +1707,13 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
 }) => {
   const [chatSession, setChatSession] = useState<Chat | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([
-    { id: "welcome", text: "", author: MessageAuthor.AI },
+    { id: "welcome", text: "", author: figure.name },
   ]);
+  
+  // Helper function to check if message is from the AI/figure
+  const isAIMessage = (author: MessageAuthor | string) => {
+    return author === MessageAuthor.AI || author === figure.name;
+  };
   const [userInput, setUserInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [modalPlatform, setModalPlatform] = useState<string | null>(null);
@@ -1670,7 +1776,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
         {
           id: welcomeId,
           text: "",
-          author: MessageAuthor.AI,
+          author: figure.name,
         },
       ]);
       setShouldAutoScroll(true);
@@ -1777,7 +1883,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
     const aiMessageId = (Date.now() + 1).toString();
     setMessages((prev) => [
       ...prev,
-      { id: aiMessageId, text: "", author: MessageAuthor.AI },
+      { id: aiMessageId, text: "", author: figure.name },
     ]);
 
     try {
@@ -1892,7 +1998,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                   const userMessageCount = messages.filter(
                     (m) => m.author === MessageAuthor.User
                   ).length;
-                  const canShare = userMessageCount >= 2;
+                  //const canShare = userMessageCount >= 2;
+                  const canShare = userMessageCount >= 0; // TEMP: allow sharing immediately
                   const showHint = () => {
                     setShareHintVisible(true);
                     window.setTimeout(() => setShareHintVisible(false), 2200);

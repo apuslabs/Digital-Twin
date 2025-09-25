@@ -12,7 +12,7 @@ export const FIGURES: Figure[] = [
   {
     id: 'donald_trump',
     name: 'Donald Trump',
-    title: '45th U.S. President',
+    title: '47th U.S. President',
     imageUrl: '/resources/trump.png',
     category: Category.Politics,
     systemPrompt: Trump_Prompt,
@@ -22,7 +22,7 @@ export const FIGURES: Figure[] = [
     arweaveTxId: 'FhD4xbfkCkCb19BGUMduQCqmtirFCIcDUAeC0fenzbE',
     config: `{
     "temperature": 0,
-    "max_tokens": 812
+    "max_tokens": 500
     }`,
   },
   {
@@ -37,8 +37,8 @@ export const FIGURES: Figure[] = [
     processId: '',
     arweaveTxId: 'ORWELL_ARWEAVE_TX_ID',
     config: `{
-    "temperature": 0.5,
-    "top_p": 0.9
+      "temperature": 0,
+      "max_tokens": 500
     }`,
   },
   {
@@ -52,8 +52,9 @@ export const FIGURES: Figure[] = [
     contributors: 1873,
     processId: '',
     arweaveTxId: 'BO-PROMPT-1a2b3c4d5e6f7g8h9i0j1k2l3m4n5o6p7q8r9s0t1u2v3w4x5y6z7a8b9c0d',
-        config: `{
-    "temperature": 0,
+    config: `{
+      "temperature": 0,
+      "max_tokens": 500
     }`,
   },
   {
@@ -69,6 +70,7 @@ export const FIGURES: Figure[] = [
     arweaveTxId: 'RAND_ARWEAVE_TX_ID',
     config: `{
       "temperature": 0,
+      "max_tokens": 500
     }`,
   },
 ];
