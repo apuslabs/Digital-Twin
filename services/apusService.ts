@@ -16,7 +16,7 @@ export interface ApusChat {
   isFirstMessage: boolean;
 }
 
-const APUS_ENDPOINT = 'https://hb.apus.network/~llamacpp@1.0/chat/serialize~json@1.0';
+const APUS_ENDPOINT = 'https://hb.apus.network/~llamacpp@1.0/completion/serialize~json@1.0';
 const APUS_COMPLETION_ENDPOINT = 'https://hb.apus.network/~llamacpp@1.0/completion/serialize~json@1.0';
 
 // Default configuration for APUS
@@ -59,6 +59,11 @@ export const startChatSession = (systemInstruction: string, permanentPrompt: str
 };
 
 // Send message to APUS and return the complete response
+const ensureUserPrefix = (content: string): string => {
+  const trimmed = content.trim();
+  return trimmed.toLowerCase().startsWith("user:") ? trimmed : `User: ${trimmed}`;
+};
+
 export const sendMessage = async (chatSession: ApusChat, message: string, config: string): Promise<any> => {
   try {
     // Validate config
@@ -74,7 +79,8 @@ export const sendMessage = async (chatSession: ApusChat, message: string, config
     }
     console.log("Using config:", validConfig);
     // Build the prompt with system instruction on first message only
-    let prompt = message;
+    const userPrompt = ensureUserPrefix(message);
+    let prompt = userPrompt;
     
     // Only send system instruction on the first message, combined with permanent prompt if available
     if (chatSession.isFirstMessage) {
@@ -82,7 +88,7 @@ export const sendMessage = async (chatSession: ApusChat, message: string, config
       //   ? `${chatSession.permanentPrompt}\n\n${chatSession.systemInstruction}`
       //   : chatSession.systemInstruction;
       const combinedSystemInstruction = chatSession.systemInstruction;
-      prompt = `${combinedSystemInstruction}\n\n${message}`;
+      prompt = `${combinedSystemInstruction}\n\n${userPrompt}`;
       
         // Mark as no longer first message for subsequent calls
         chatSession.isFirstMessage = false;

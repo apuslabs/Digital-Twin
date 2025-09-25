@@ -17,6 +17,22 @@ interface ChatInterfaceProps {
   onPrevTwin?: () => void;
 }
 
+type EvaluationData = {
+  score?: number;
+  overall_score?: number;
+  mood?: string;
+  comment?: string;
+  comments?: string;
+  reasoning?: string;
+  key_highlights?: string[];
+  suggestions?: string[];
+};
+
+const isFigureAuthor = (
+  author: MessageAuthor | string,
+  figureName: string
+) => author === MessageAuthor.AI || author === figureName;
+
 const BackArrowIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -1059,15 +1075,15 @@ const ScoreCardModal: React.FC<{
   const rightPanelRef = useRef<HTMLDivElement>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
-  const [evaluationData, setEvaluationData] = useState<any>(null);
+  const [evaluationData, setEvaluationData] = useState<EvaluationData | null>(
+    null
+  );
   const [isEvaluating, setIsEvaluating] = useState(false);
   const [evaluationError, setEvaluationError] = useState<string | null>(null);
   const shareSoundRef = useRef<HTMLAudioElement | null>(null);
 
-  // Helper function to check if message is from the AI/figure
-  const isAIMessage = (author: MessageAuthor | string) => {
-    return author === MessageAuthor.AI || author === figure.name;
-  };
+  const isFigureMessage = (author: MessageAuthor | string) =>
+    isFigureAuthor(author, figure.name);
 
   useEffect(() => {
     const shareAudio = new Audio("/resources/sounds/share.wav");
@@ -1100,7 +1116,6 @@ const ScoreCardModal: React.FC<{
             characterBackground,
             conversationData
           );
-          console.log('Evaluation result:', result);
           
           setEvaluationData(result);
         } catch (error) {
@@ -1168,14 +1183,14 @@ const ScoreCardModal: React.FC<{
     if (firstUserIdx >= 0) {
       const after = messages.slice(firstUserIdx + 1);
       const aiReply = after.find(
-        (m) => isAIMessage(m.author) && (m.text || "").trim() !== ""
+        (m) => isFigureMessage(m.author) && (m.text || "").trim() !== ""
       );
       candidateText = aiReply?.text || "";
     }
     // Fallback: first non-empty AI message anywhere
     if (!candidateText) {
       const anyAi = messages.find(
-        (m) => isAIMessage(m.author) && (m.text || "").trim() !== ""
+        (m) => isFigureMessage(m.author) && (m.text || "").trim() !== ""
       );
       candidateText = anyAi?.text || "";
     }
@@ -1188,16 +1203,20 @@ const ScoreCardModal: React.FC<{
       (m) => m.author === MessageAuthor.User
     );
     const aiMessages = messages.filter(
-      (m) => isAIMessage(m.author) && m.text.trim() !== ""
+      (m) => isFigureMessage(m.author) && m.text.trim() !== ""
     );
 
     // Use evaluation data if available, otherwise fallback to mock data
     if (evaluationData) {
-      // Handle the parsed evaluation structure
-      const overallScore = evaluationData.score || evaluationData.overall_score || 75;
-      const mood = evaluationData.mood || (overallScore >= 85 ? "Happy" : overallScore >= 70 ? "Sad" : "Angry");
-      const quote = evaluationData.comments || `${figure.name} found this conversation engaging.`;
-      
+      const overallScore =
+        evaluationData.score ?? evaluationData.overall_score ?? 75;
+      const mood =
+        evaluationData.mood ||
+        (overallScore >= 85 ? "Happy" : overallScore >= 70 ? "Sad" : "Angry");
+      const quoteSource =
+        evaluationData.comments ??
+        `${figure.name} found this conversation engaging.`;
+
       return {
         messageCount: messages.length - 1, // Exclude welcome message
         userMessages: userMessages.length,
@@ -1205,7 +1224,7 @@ const ScoreCardModal: React.FC<{
         conversationDuration: Math.max(5, Math.floor(Math.random() * 30) + 10), // Mock duration in minutes
         mood,
         rating: overallScore,
-        quote: ellipsize(quote, 210),
+        quote: ellipsize(quoteSource, 210),
       };
     }
 
@@ -1630,7 +1649,7 @@ const ScoreCardModal: React.FC<{
                 ) : (
                   <div
                     className={`text-3xl font-quote leading-tight z-20 mt-8 ${getMoodColorClass(
-                      highlights.quote
+                      highlights.mood
                     )}`}
                   >
                     "{highlights.quote}"
@@ -1709,11 +1728,9 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   const [messages, setMessages] = useState<ChatMessage[]>([
     { id: "welcome", text: "", author: figure.name },
   ]);
-  
-  // Helper function to check if message is from the AI/figure
-  const isAIMessage = (author: MessageAuthor | string) => {
-    return author === MessageAuthor.AI || author === figure.name;
-  };
+
+  const isFigureMessage = (author: MessageAuthor | string) =>
+    isFigureAuthor(author, figure.name);
   const [userInput, setUserInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [modalPlatform, setModalPlatform] = useState<string | null>(null);
@@ -2073,7 +2090,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                       : "justify-start"
                   }`}
                 >
-                  {message.author === MessageAuthor.AI && (
+                  {isFigureMessage(message.author) && (
                     <img
                       src={figure.imageUrl}
                       data-fallback={figure.imageUrl}
@@ -2121,7 +2138,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                       } whitespace-pre-wrap text-sm`}
                       aria-live="polite"
                     >
-                      {message.author === MessageAuthor.AI &&
+                      {isFigureMessage(message.author) &&
                       message.text.trim() === "" ? (
                         <div
                           className="flex items-center gap-1 py-0.5"

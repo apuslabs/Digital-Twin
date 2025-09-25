@@ -22,7 +22,7 @@ export const FIGURES: Figure[] = [
     arweaveTxId: 'FhD4xbfkCkCb19BGUMduQCqmtirFCIcDUAeC0fenzbE',
     config: `{
     "temperature": 0,
-    "max_tokens": 500
+    "max_tokens": 3000
     }`,
   },
   {
@@ -38,7 +38,6 @@ export const FIGURES: Figure[] = [
     arweaveTxId: 'ORWELL_ARWEAVE_TX_ID',
     config: `{
       "temperature": 0,
-      "max_tokens": 500
     }`,
   },
   {
