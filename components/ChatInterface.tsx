@@ -1090,6 +1090,7 @@ const ScoreCardModal: React.FC<{
   const [isEvaluating, setIsEvaluating] = useState(false);
   const [evaluationError, setEvaluationError] = useState<string | null>(null);
   const shareSoundRef = useRef<HTMLAudioElement | null>(null);
+  const [showFinal, setShowFinal] = useState(false);
 
   const isFigureMessage = (author: MessageAuthor | string) =>
     isFigureAuthor(author, figure.name);
@@ -1144,6 +1145,19 @@ const ScoreCardModal: React.FC<{
       runEvaluation();
     }
   }, [isOpen, messages, figure, evaluationData, isEvaluating]);
+
+  // Reset transition state when modal opens
+  useEffect(() => {
+    if (isOpen) setShowFinal(false);
+  }, [isOpen]);
+
+  // When evaluation completes, trigger crossfade to final visuals
+  useEffect(() => {
+    if (isOpen && !isEvaluating) {
+      const id = window.setTimeout(() => setShowFinal(true), 50);
+      return () => window.clearTimeout(id);
+    }
+  }, [isOpen, isEvaluating]);
 
   const playShareSound = () => {
     const audio = shareSoundRef.current;
@@ -1544,7 +1558,7 @@ const ScoreCardModal: React.FC<{
       aria-labelledby="score-card-title"
     >
       <div
-        className="relative bg-white p-6 m-4 max-w-md md:max-w-5xl w-full max-h-[90vh] overflow-y-auto transform transition-all duration-300 animate-slide-up border border-neutral-300"
+        className="relative bg-white p-6 m-4 max-w-5xl w-full max-h-[90vh] overflow-y-auto transform transition-all duration-300 animate-slide-up border border-neutral-300"
         onClick={(e) => e.stopPropagation()}
       >
         <div
@@ -1575,61 +1589,84 @@ const ScoreCardModal: React.FC<{
               ref={aspectRef}
               className="aspect-[16/9] relative flex overflow-hidden"
             >
-              {/* Background visual - covers entire card */}
-              <div className="inset-0 z-20">
+              <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-white/100 to-transparent group-hover:opacity-50 transition-opacity duration-1000 ease-out-circ h-96 pointer-events-none z-20"></div>
+              {/* TEE badge */}
+              <div className="absolute bottom-0 right-0 p-4 z-30">
+                <div
+                  className={`px-2 py-1.5 border bg-white/80 text-[11px] ${
+                    attestationData?.status === "VERIFIED"
+                      ? "border-green-600 text-green-700"
+                      : attestationData?.error
+                      ? "border-red-600 text-red-700"
+                      : "border-yellow-600 text-yellow-700"
+                  }`}
+                  title={displaySessionId}
+                >
+                  <div className="flex items-center gap-1">
+                    <span
+                      className="ph ph-[shield-check--duotone]"
+                      aria-hidden
+                    ></span>
+                    <span>
+                      {attestationData?.status === "VERIFIED"
+                        ? "TEE Verified"
+                        : attestationData?.error
+                        ? "TEE Error"
+                        : "TEE Verifying"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              {/* Background stripes overlay clipped to right diagonal half */}
+              <div
+                className="pointer-events-none absolute inset-0 z-0"
+                style={{
+                  backgroundImage:
+                    "repeating-linear-gradient(135deg, rgba(0,0,0,0.08) 0px, rgba(0,0,0,0.08) 1px, transparent 1px, transparent 8px)",
+                  backgroundSize: "12px 12px",
+                  clipPath: "polygon(80% 0%, 100% 0%, 100% 100%, 20% 100%)",
+                  WebkitClipPath:
+                    "polygon(80% 0%, 100% 0%, 100% 100%, 20% 100%)",
+                }}
+              />
+              {/* Left visual area (image) */}
+              <div className="relative inset-0 flex-1 overflow-hidden">
+                {/* Evaluating image */}
                 <img
                   crossOrigin="anonymous"
-                  src={
-                    isEvaluating
-                      ? figure.imageUrl
-                      : getMoodImage(highlights.mood) || figure.imageUrl
-                  }
+                  src={figure.imageUrl}
                   alt={figure.name}
-                  className="inset-0 w-full h-full translate-x-4 object-cover object-left"
+                  className={`absolute inset-0 w-full h-full object-cover lg:object-left transition-opacity duration-1000 z-10 ${
+                    showFinal ? "opacity-0" : "opacity-100"
+                  }`}
                 />
-                {isEvaluating && (
+                {/* Final mood image */}
+                <img
+                  crossOrigin="anonymous"
+                  src={getMoodImage(highlights.mood) || figure.imageUrl}
+                  alt={figure.name}
+                  className={`absolute inset-0 w-full h-full object-cover lg:object-left transition-opacity duration-1000 z-10 ${
+                    showFinal ? "opacity-100" : "opacity-0"
+                  }`}
+                />
+                {!showFinal && (
                   <div className="absolute inset-0 pointer-events-none z-10">
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent opacity-60 transform -skew-x-12 animate-shimmer"></div>
                   </div>
                 )}
-                <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-white/100 to-transparent group-hover:opacity-50 transition-opacity duration-1000 ease-out-circ h-96"></div>
 
                 {/* Info on name and title */}
-                <div className="absolute bottom-0 right-0 inset-x-0 p-4">
-                  <div className="text-xl font-black tracking-wide uppercase">
+                <div className="absolute bottom-0 right-0 inset-x-0 p-4 z-30">
+                  <div className="text-lg md:text-xl font-black tracking-wide uppercase">
                     {figure.name}
                   </div>
-                  <div className="text-sm opacity-90">{figure.title}</div>
-                </div>
-                {/* Top-right TEE badge (absolute) */}
-                <div className="absolute bottom-0 right-0 p-4 z-20">
-                  <div
-                    className={`px-2 py-1.5 border bg-white/80 text-[11px] ${
-                      attestationData?.status === "VERIFIED"
-                        ? "border-green-600 text-green-700"
-                        : attestationData?.error
-                        ? "border-red-600 text-red-700"
-                        : "border-yellow-600 text-yellow-700"
-                    }`}
-                    title={displaySessionId}
-                  >
-                    <div className="flex items-center gap-1">
-                      <span
-                        className="ph ph-[shield-check--duotone]"
-                        aria-hidden
-                      ></span>
-                      <span>
-                        {attestationData?.status === "VERIFIED"
-                          ? "TEE Verified"
-                          : attestationData?.error
-                          ? "TEE Error"
-                          : "TEE Verifying"}
-                      </span>
-                    </div>
+                  <div className="text-xs md:text-sm opacity-90">
+                    {figure.title}
                   </div>
                 </div>
+
                 {/* Bottom-right Twin logo */}
-                <div className="absolute top-0 p-4 z-20">
+                <div className="absolute top-0 p-4 z-30">
                   <img
                     src="/resources/Twin_Logo.svg"
                     alt="Twin"
@@ -1641,64 +1678,87 @@ const ScoreCardModal: React.FC<{
               {/* Floating light right panel */}
               <div
                 ref={rightPanelRef}
-                className="inset-y-0 right-0 w-[40%] min-w-[280px] max-w-[520px] p-5 md:p-7 flex flex-col overflow-hidden "
+                className="inset-y-0 right-0 sm:w-[40%] min-w-[280px] max-w-[520px] p-5 md:p-7 flex flex-col overflow-hidden relative z-30"
               >
-                {/* Diagonal overlay */}
-                <div
-                  className="pointer-events-none absolute -inset-y-8 w-[1000px] h-[1000px] rotate-32 opacity-15 -translate-y-10 -translate-x-20 z-0"
-                  style={{
-                    backgroundImage:
-                      "repeating-linear-gradient(135deg, rgba(0,0,0,0.35) 0px, rgba(0,0,0,0.35) 1px, transparent 1px, transparent 8px)",
-                    backgroundSize: "12px 12px",
-                  }}
-                />
                 {/* (badge moved to absolute top-right) */}
                 {/* Rating */}
-                <div>
-                  {isEvaluating ? (
-                    <div className="flex items-center gap-2 text-4xl mt-4 tabular-nums text-neutral-400">
-                      <span className="w-4 h-4 ph ph-[hourglass--duotone] animate-spin"></span>
-                      Evaluating...
-                    </div>
-                  ) : evaluationError ? (
-                    <div className="flex items-center gap-2 text-4xl mt-4 tabular-nums text-red-400">
-                      <span className="w-16 h-16 ph ph-[warning--duotone]"></span>
-                      Error
-                    </div>
-                  ) : (
-                    <div
-                      className={`flex items-center gap-2 text-6xl mt-4 tabular-nums ${getMoodColorClass(
-                        highlights.mood
-                      )}`}
-                    >
-                      <span
-                        className={`w-16 h-16 ${getMoodIconClass(
+                <div className="relative min-h-[80px]">
+                  {/* Evaluating state */}
+                  <div
+                    className={`absolute inset-0 flex items-center gap-2 text-2xl sm:text-3xl md:text-4xl mt-4 tabular-nums text-neutral-400 transition-opacity duration-500 ${
+                      showFinal
+                        ? "opacity-0 pointer-events-none"
+                        : "opacity-100"
+                    }`}
+                  >
+                    <span className="w-4 h-4 ph ph-[hourglass--duotone] animate-spin"></span>
+                    Evaluating...
+                  </div>
+                  {/* Final state (rating or error) */}
+                  <div
+                    className={`absolute inset-0 transition-opacity duration-500 ${
+                      showFinal
+                        ? "opacity-100"
+                        : "opacity-0 pointer-events-none"
+                    }`}
+                  >
+                    {evaluationError ? (
+                      <div className="flex items-center gap-2 text-2xl sm:text-3xl md:text-4xl mt-4 tabular-nums text-red-400">
+                        <span className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 ph ph-[warning--duotone]"></span>
+                        Error
+                      </div>
+                    ) : (
+                      <div
+                        className={`flex items-center gap-2 text-4xl sm:text-5xl lg:text-6xl mt-4 tabular-nums ${getMoodColorClass(
                           highlights.mood
                         )}`}
-                      ></span>
-                      {highlights.rating}/100
-                    </div>
-                  )}
+                      >
+                        <span
+                          className={`w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 ${getMoodIconClass(
+                            highlights.mood
+                          )}`}
+                        ></span>
+                        {highlights.rating}/100
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* Hero mood/engagement area */}
-                {isEvaluating ? (
-                  <div className="text-2xl font-quote leading-tight z-20 mt-8 text-neutral-400">
+                <div className="relative min-h-[72px]">
+                  {/* Evaluating message */}
+                  <div
+                    className={`absolute inset-0 text-lg sm:text-xl md:text-2xl font-quote leading-tight z-20 mt-8 text-neutral-400 transition-opacity duration-500 ${
+                      showFinal
+                        ? "opacity-0 pointer-events-none"
+                        : "opacity-100"
+                    }`}
+                  >
                     "Analyzing conversation quality..."
                   </div>
-                ) : evaluationError ? (
-                  <div className="text-2xl font-quote leading-tight z-20 mt-8 text-red-400">
-                    "Unable to evaluate conversation"
-                  </div>
-                ) : (
+                  {/* Final quote or error */}
                   <div
-                    className={`text-3xl font-quote leading-tight z-20 mt-8 ${getMoodColorClass(
-                      highlights.mood
-                    )}`}
+                    className={`absolute inset-0 transition-opacity duration-500 ${
+                      showFinal
+                        ? "opacity-100"
+                        : "opacity-0 pointer-events-none"
+                    }`}
                   >
-                    "{highlights.quote}"
+                    {evaluationError ? (
+                      <div className="text-lg sm:text-xl md:text-2xl font-quote leading-tight z-20 mt-8 text-red-400">
+                        "Unable to evaluate conversation"
+                      </div>
+                    ) : (
+                      <div
+                        className={`text-xl sm:text-2xl lg:text-3xl font-quote leading-tight z-20 mt-8 ${getMoodColorClass(
+                          highlights.mood
+                        )}`}
+                      >
+                        "{highlights.quote}"
+                      </div>
+                    )}
                   </div>
-                )}
+                </div>
               </div>
             </div>
           </div>
@@ -2235,6 +2295,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
         />
       )}
       <ScoreCardModal
+        key={figure.id}
         figure={figure}
         messages={messages}
         attestationData={attestationData}
