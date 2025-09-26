@@ -1558,7 +1558,7 @@ const ScoreCardModal: React.FC<{
       aria-labelledby="score-card-title"
     >
       <div
-        className="relative bg-white p-6 m-4 max-w-5xl w-full max-h-[90vh] overflow-y-auto transform transition-all duration-300 animate-slide-up border border-neutral-300"
+        className="relative bg-white p-2 sm:p-6 m-2 sm:m-4 max-w-5xl w-full max-h-[90vh] overflow-y-auto transform transition-all duration-300 animate-slide-up border border-neutral-300"
         onClick={(e) => e.stopPropagation()}
       >
         <div
@@ -1570,7 +1570,7 @@ const ScoreCardModal: React.FC<{
           }}
         />
         <div className="relative">
-          <div className="flex justify-between items-center mb-6">
+          <div className="flex justify-between items-center mb-2 sm:mb-6">
             <button
               onClick={onClose}
               className="p-2 hover:bg-neutral-100 transition-colors"
@@ -1591,9 +1591,9 @@ const ScoreCardModal: React.FC<{
             >
               <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-white/100 to-transparent group-hover:opacity-50 transition-opacity duration-1000 ease-out-circ h-96 pointer-events-none z-20"></div>
               {/* TEE badge */}
-              <div className="absolute bottom-0 right-0 p-4 z-30">
+              <div className="absolute bottom-0 right-0 p-1 sm:p-4 z-30">
                 <div
-                  className={`px-2 py-1.5 border bg-white/80 text-[11px] ${
+                  className={`sm:px-2 sm:py-1.5 px-1 py-1 border bg-white/80 text-[11px] ${
                     attestationData?.status === "VERIFIED"
                       ? "border-green-600 text-green-700"
                       : attestationData?.error
@@ -1607,7 +1607,7 @@ const ScoreCardModal: React.FC<{
                       className="ph ph-[shield-check--duotone]"
                       aria-hidden
                     ></span>
-                    <span>
+                    <span className="text-[6px] sm:text-xs">
                       {attestationData?.status === "VERIFIED"
                         ? "TEE Verified"
                         : attestationData?.error
@@ -1619,14 +1619,14 @@ const ScoreCardModal: React.FC<{
               </div>
               {/* Background stripes overlay clipped to right diagonal half */}
               <div
-                className="pointer-events-none absolute inset-0 z-0"
+                className="pointer-events-none absolute inset-0 z-0 opacity-50"
                 style={{
                   backgroundImage:
                     "repeating-linear-gradient(135deg, rgba(0,0,0,0.08) 0px, rgba(0,0,0,0.08) 1px, transparent 1px, transparent 8px)",
-                  backgroundSize: "12px 12px",
-                  clipPath: "polygon(80% 0%, 100% 0%, 100% 100%, 20% 100%)",
+                  backgroundSize: "10px 10px",
+                  clipPath: "polygon(65% 0%, 100% 0%, 100% 100%, 20% 100%)",
                   WebkitClipPath:
-                    "polygon(80% 0%, 100% 0%, 100% 100%, 20% 100%)",
+                    "polygon(65% 0%, 100% 0%, 100% 100%, 20% 100%)",
                 }}
               />
               {/* Left visual area (image) */}
@@ -1656,21 +1656,21 @@ const ScoreCardModal: React.FC<{
                 )}
 
                 {/* Info on name and title */}
-                <div className="absolute bottom-0 right-0 inset-x-0 p-4 z-30">
-                  <div className="text-lg md:text-xl font-black tracking-wide uppercase">
+                <div className="absolute bottom-0 right-0 inset-x-0 p-2 sm:p-4 z-30">
+                  <div className="text-xs sm:text-lg md:text-xl font-black tracking-wide uppercase">
                     {figure.name}
                   </div>
-                  <div className="text-xs md:text-sm opacity-90">
+                  <div className="text-[9px] sm:text-xs md:text-sm opacity-90">
                     {figure.title}
                   </div>
                 </div>
 
                 {/* Bottom-right Twin logo */}
-                <div className="absolute top-0 p-4 z-30">
+                <div className="absolute top-0 p-2 sm:p-4 z-30">
                   <img
                     src="/resources/Twin_Logo.svg"
                     alt="Twin"
-                    className="w-24"
+                    className="w-12 sm:w-24"
                   />
                 </div>
               </div>
@@ -1678,14 +1678,14 @@ const ScoreCardModal: React.FC<{
               {/* Floating light right panel */}
               <div
                 ref={rightPanelRef}
-                className="inset-y-0 right-0 sm:w-[40%] min-w-[280px] max-w-[520px] p-5 md:p-7 flex flex-col overflow-hidden relative z-30"
+                className="inset-y-0 right-0 w-[50%] sm:w-[40%] max-w-[520px] p-4 md:p-7 flex flex-col overflow-hidden relative z-30"
               >
                 {/* (badge moved to absolute top-right) */}
                 {/* Rating */}
-                <div className="relative min-h-[80px]">
+                <div className="relative min-h-[40px] sm:min-h-[80px]">
                   {/* Evaluating state */}
                   <div
-                    className={`absolute inset-0 flex items-center gap-2 text-2xl sm:text-3xl md:text-4xl mt-4 tabular-nums text-neutral-400 transition-opacity duration-500 ${
+                    className={`absolute inset-0 flex items-center gap-2 text-[0.9rem] sm:text-3xl md:text-4xl mt-1 sm:mt-4 tabular-nums text-neutral-400 transition-opacity duration-500 ${
                       showFinal
                         ? "opacity-0 pointer-events-none"
                         : "opacity-100"
@@ -1703,18 +1703,18 @@ const ScoreCardModal: React.FC<{
                     }`}
                   >
                     {evaluationError ? (
-                      <div className="flex items-center gap-2 text-2xl sm:text-3xl md:text-4xl mt-4 tabular-nums text-red-400">
+                      <div className="flex items-center gap-2 text-[0.9rem] sm:text-3xl md:text-4xl mt-1 sm:mt-4 tabular-nums text-red-400">
                         <span className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 ph ph-[warning--duotone]"></span>
                         Error
                       </div>
                     ) : (
                       <div
-                        className={`flex items-center gap-2 text-4xl sm:text-5xl lg:text-6xl mt-4 tabular-nums ${getMoodColorClass(
+                        className={`flex items-center gap-2 text-[1.0rem] sm:text-5xl lg:text-6xl mt-1 sm:mt-4 tabular-nums ${getMoodColorClass(
                           highlights.mood
                         )}`}
                       >
                         <span
-                          className={`w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 ${getMoodIconClass(
+                          className={`w-6 h-6 sm:w-12 sm:h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 ${getMoodIconClass(
                             highlights.mood
                           )}`}
                         ></span>
@@ -1728,7 +1728,7 @@ const ScoreCardModal: React.FC<{
                 <div className="relative min-h-[72px]">
                   {/* Evaluating message */}
                   <div
-                    className={`absolute inset-0 text-lg sm:text-xl md:text-2xl font-quote leading-tight z-20 mt-8 text-neutral-400 transition-opacity duration-500 ${
+                    className={`absolute inset-0 text-[0.9rem] sm:text-xl md:text-2xl font-quote leading-tight z-20 mt-1 sm:mt-8 text-neutral-400 transition-opacity duration-500 ${
                       showFinal
                         ? "opacity-0 pointer-events-none"
                         : "opacity-100"
@@ -1745,12 +1745,12 @@ const ScoreCardModal: React.FC<{
                     }`}
                   >
                     {evaluationError ? (
-                      <div className="text-lg sm:text-xl md:text-2xl font-quote leading-tight z-20 mt-8 text-red-400">
+                      <div className="text-[0.9rem] sm:text-xl md:text-2xl font-quote leading-tight z-20 mt-1 sm:mt-8 text-red-400">
                         "Unable to evaluate conversation"
                       </div>
                     ) : (
                       <div
-                        className={`text-xl sm:text-2xl lg:text-3xl font-quote leading-tight z-20 mt-8 ${getMoodColorClass(
+                        className={`text-[0.9rem] sm:text-2xl lg:text-3xl font-quote leading-tight z-20 mt-1 sm:mt-8 ${getMoodColorClass(
                           highlights.mood
                         )}`}
                       >
@@ -1766,12 +1766,12 @@ const ScoreCardModal: React.FC<{
 
         {/* Error details (if any) */}
         {saveError && (
-          <div className="mt-3 p-3 border border-red-300 bg-red-50 text-red-800 text-sm break-words">
+          <div className="mt-1 sm:mt-3 p-3 border border-red-300 bg-red-50 text-red-800 text-sm break-words">
             <div className="font-semibold mb-1">Export error details</div>
             <pre className="whitespace-pre-wrap text-[12px] leading-snug">
               {saveError}
             </pre>
-            <div className="mt-2 text-right">
+            <div className="mt-1 sm:mt-2 text-right">
               <button
                 onClick={() => {
                   if (saveError) navigator.clipboard.writeText(saveError);
@@ -1786,7 +1786,7 @@ const ScoreCardModal: React.FC<{
 
         {/* Evaluation error details (if any) */}
         {evaluationError && (
-          <div className="mt-3 p-3 border border-yellow-300 bg-yellow-50 text-yellow-800 text-sm break-words">
+          <div className="mt-1 sm:mt-3 p-3 border border-yellow-300 bg-yellow-50 text-yellow-800 text-sm break-words">
             <div className="font-semibold mb-1">Evaluation error</div>
             <p className="text-sm leading-snug">{evaluationError}</p>
             <p className="text-xs mt-2 opacity-75">
@@ -1796,17 +1796,17 @@ const ScoreCardModal: React.FC<{
         )}
 
         {/* Action Buttons */}
-        <div className="flex justify-end gap-3 mt-6 relative">
+        <div className="flex justify-end gap-3 mt-1 sm:mt-6 relative">
           <button
             onClick={onClose}
-            className="px-4 py-2 border border-neutral-300 text-neutral-700 bg-white hover:bg-neutral-50 transition-colors"
+            className="sm:px-4 sm:py-2 px-2 py-1 border border-neutral-300 text-neutral-700 bg-white hover:bg-neutral-50 transition-colors text-xs sm:text-sm"
           >
             Close
           </button>
           <button
             onClick={handleSaveScoreCard}
             disabled={isSaving}
-            className="relative flex gap-2 items-center py-2 px-4 border border-amber-300 bg-amber-100 text-neutral-800 hover:bg-neutral-50 transition-colors active:scale-95 cursor-pointer text-xs overflow-hidden disabled:opacity-60 disabled:cursor-not-allowed"
+            className="relative flex gap-2 items-center py-2 px-4 border border-amber-300 bg-amber-100 text-neutral-800 hover:bg-neutral-50 transition-colors active:scale-95 cursor-pointer text-[10px] sm:text-xs md:text-sm overflow-hidden disabled:opacity-60 disabled:cursor-not-allowed"
           >
             <span className="relative z-10 inline-flex items-center gap-2">
               <div className="ph ph-[star--duotone] text-amber-400" />
@@ -2092,7 +2092,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
               <div className="flex items-center gap-2">
                 <button
                   onClick={onPrevTwin}
-                  className={`py-2 px-3 transition cursor-pointer border border-border text-xs active:scale-95 duration-150 ease-out-quart ${
+                  className={`hidden sm:flex py-2 px-3 transition cursor-pointer border border-border text-[10px] sm:text-xs md:text-sm active:scale-95 duration-150 ease-out-quart ${
                     hotkeyActive === "prev"
                       ? "bg-neutral-200 scale-95"
                       : "hover:bg-neutral-100"
@@ -2103,7 +2103,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                 </button>
                 <button
                   onClick={onNextTwin}
-                  className={`py-2 px-3 transition cursor-pointer border border-border text-xs active:scale-95 duration-150 ease-out-quart ${
+                  className={`hidden sm:flex py-2 px-3 transition cursor-pointer border border-border text-[10px] sm:text-xs md:text-sm active:scale-95 duration-150 ease-out-quart ${
                     hotkeyActive === "next"
                       ? "bg-neutral-200 scale-95"
                       : "hover:bg-neutral-100"
@@ -2134,7 +2134,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                             ? "Share your score card"
                             : `Send at least 1 message with ${figure.name} to share your score card`
                         }
-                        className={`relative flex gap-2 items-center py-2 px-4 border text-neutral-800 transition-colors text-xs overflow-hidden active:scale-95 ${
+                        className={`relative flex gap-2 items-center py-2 px-4 border text-neutral-800 transition-colors text-[10px] sm:text-xs md:text-sm overflow-hidden active:scale-95 ${
                           canShare
                             ? "cursor-pointer border-amber-300 bg-amber-100 hover:bg-neutral-50"
                             : "cursor-not-allowed border-neutral-300 bg-neutral-100 opacity-70"
@@ -2174,7 +2174,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                 })()}
                 <button
                   onClick={onBack}
-                  className="flex gap-2 items-center py-2 px-4 hover:bg-neutral-100 transition-colors mr-3 cursor-pointer border border-border text-xs active:scale-95 duration-150 ease-out-quart"
+                  className="flex gap-2 items-center py-2 px-4 hover:bg-neutral-100 transition-colors mr-3 cursor-pointer border border-border text-[10px] sm:text-xs md:text-sm active:scale-95 duration-150 ease-out-quart"
                 >
                   <BackArrowIcon />
                   Back to Home
@@ -2237,7 +2237,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                         message.author === MessageAuthor.User
                           ? "text-foreground"
                           : "text-blue-800"
-                      } whitespace-pre-wrap text-sm`}
+                      } whitespace-pre-wrap text-[13px] sm:text-sm md:text-base`}
                       aria-live="polite"
                     >
                       {isFigureMessage(message.author) &&
@@ -2251,7 +2251,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                           <span className="w-2.5 h-2.5 rounded-full bg-slate-400/70 animate-pulse [animation-delay:0.3s]"></span>
                         </div>
                       ) : (
-                        <p className="whitespace-pre-wrap text-sm">
+                        <p className="whitespace-pre-wrap text-[13px] sm:text-sm md:text-base">
                           <Markdown>{message.text}</Markdown>
                         </p>
                       )}
