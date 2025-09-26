@@ -16,7 +16,7 @@ export interface ApusChat {
   isFirstMessage: boolean;
 }
 
-const APUS_ENDPOINT = 'https://hb.apus.network/~llamacpp@1.0/completion/serialize~json@1.0';
+const APUS_ENDPOINT = 'https://hb.apus.network/~llamacpp@1.0/chat/serialize~json@1.0';
 const APUS_COMPLETION_ENDPOINT = 'https://hb.apus.network/~llamacpp@1.0/completion/serialize~json@1.0';
 
 // Default configuration for APUS
@@ -171,7 +171,6 @@ export const createConversationEvaluationPrompt = (
 
 // Fixed configuration for evaluation service
 const EVALUATION_CONFIG = JSON.stringify({ 
-  max_tokens: 500, 
   temperature: 0,
 });
 
