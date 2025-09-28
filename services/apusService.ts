@@ -10,7 +10,6 @@ interface ApusResponse {
 
 export interface ApusChat {
   sessionId: string;
-  reference: string;
   systemInstruction: string;
   permanentPrompt: string;
   isFirstMessage: boolean;
@@ -41,11 +40,9 @@ const generateReference = (): string => {
 export const startChatSession = (systemInstruction: string, permanentPrompt: string = ''): ApusChat | null => {
   try {
     const sessionId = generateSessionId();
-    const reference = generateReference();
     
     const chat: ApusChat = {
       sessionId,
-      reference,
       systemInstruction,
       permanentPrompt,
       isFirstMessage: true
@@ -94,20 +91,24 @@ export const sendMessage = async (chatSession: ApusChat, message: string, config
         chatSession.isFirstMessage = false;
     }
     console.log("Final prompt sent to APUS:", prompt);
+    
+    // Generate a unique reference for this specific message
+    const messageReference = generateReference();
+    
     // Build request parameters
     const requestParams = {
-      reference: chatSession.reference,
+      reference: messageReference,
       session_id: chatSession.sessionId,
       prompt: prompt,
       config: validConfig
     };
-
+    console.log("reference : ", requestParams.reference);
+    console.log("session_id : ", requestParams.session_id);
     const url = new URL(APUS_ENDPOINT);
     url.searchParams.append('reference', requestParams.reference);
     url.searchParams.append('session_id', requestParams.session_id);
     url.searchParams.append('prompt', requestParams.prompt);
     url.searchParams.append('config', requestParams.config);
-    console.log("url", url.toString());
 
     const response = await fetch(url.toString(), {
       method: 'POST'

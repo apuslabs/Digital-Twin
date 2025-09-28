@@ -1875,16 +1875,16 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
       let permanentPrompt = "";
 
       // Fetch permanent prompt if the figure has an Arweave transaction ID
-      if (figure.arweaveTxId) {
-        try {
-          permanentPrompt = await ArweaveService.fetchPermanentPrompt(
-            figure.arweaveTxId
-          );
-        } catch (error) {
-          console.warn("Failed to fetch permanent prompt:", error);
-          // Continue with empty permanent prompt if fetch fails
-        }
-      }
+      // if (figure.arweaveTxId) {
+      //   try {
+      //     permanentPrompt = await ArweaveService.fetchPermanentPrompt(
+      //       figure.arweaveTxId
+      //     );
+      //   } catch (error) {
+      //     console.warn("Failed to fetch permanent prompt:", error);
+      //     // Continue with empty permanent prompt if fetch fails
+      //   }
+      // }
 
       const session = startChatSession(figure.systemPrompt, permanentPrompt);
       setChatSession(session);

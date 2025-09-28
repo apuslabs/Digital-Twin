@@ -21,7 +21,6 @@ export const FIGURES: Figure[] = [
     processId: 'bI6_qOobuHJBHMEubTLv3lmLHUfK043S4-kN0q_wt3E',
     arweaveTxId: 'FhD4xbfkCkCb19BGUMduQCqmtirFCIcDUAeC0fenzbE',
     config: `{
-    "temperature": 0
     }`,
   },
   {
