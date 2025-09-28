@@ -197,6 +197,7 @@ const CompetitionPage: React.FC<CompetitionPageProps> = ({
   const [queryResult, setQueryResult] = useState<QueryResult | null>(null);
   const [isResultModalOpen, setIsResultModalOpen] = useState(false);
   const [attestationData, setAttestationData] = useState<any>(null);
+  const [isQuerying, setIsQuerying] = useState(false);
 
   // Get parsed evaluation result from the service
   const getEvaluationResult = (queryResult: QueryResult) => {
@@ -213,6 +214,7 @@ const CompetitionPage: React.FC<CompetitionPageProps> = ({
   };
 
   const handleQueryResult = async () => {
+    if (isQuerying) return; // Prevent multiple simultaneous queries
     if (!lastReference || !lastProcessId) {
       setQueryResult({
         success: false,
@@ -225,6 +227,7 @@ const CompetitionPage: React.FC<CompetitionPageProps> = ({
     }
 
     try {
+      setIsQuerying(true);
       // Fetch both the task result and TEE attestation in parallel
       const [result, attestation] = await Promise.all([
         aoService.queryTaskResult(lastProcessId, lastReference),
@@ -248,6 +251,8 @@ const CompetitionPage: React.FC<CompetitionPageProps> = ({
         status: "error",
       });
       setIsResultModalOpen(true);
+    } finally {
+      setIsQuerying(false);
     }
   };
 
@@ -593,7 +598,12 @@ const CompetitionPage: React.FC<CompetitionPageProps> = ({
               onClick={handleQueryResult}
               className="px-4 py-2 border text-sm active:scale-95 transition border-blue-600 text-blue-700 bg-white hover:bg-blue-50"
             >
-              Query Result
+              <div className="flex items-center justify-center space-x-2">
+              {isQuerying && (
+                <div className="animate-spin rounded-full h-3 w-3 border-b border-neutral-400"></div>
+              )}
+              <span>Query Result</span>
+              </div>
             </button>
           )}
           <button
