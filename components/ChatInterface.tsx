@@ -1836,8 +1836,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   const [userInput, setUserInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [modalPlatform, setModalPlatform] = useState<string | null>(null);
-  const [shouldAutoScroll, setShouldAutoScroll] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
   const [hotkeyActive, setHotkeyActive] = useState<"prev" | "next" | null>(
     null
   );
@@ -1898,7 +1897,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
           author: figure.name,
         },
       ]);
-      setShouldAutoScroll(true);
       const typingTimer = window.setTimeout(() => {
         setMessages((prev) =>
           prev.map((m) =>
@@ -1969,10 +1967,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   }, [onNextTwin, onPrevTwin]);
 
   useEffect(() => {
-    if (shouldAutoScroll) {
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    }
-  }, [messages, shouldAutoScroll]);
+      messagesContainerRef.current?.scrollTo({ top: messagesContainerRef.current.scrollHeight, behavior: "smooth" });
+  }, [messages]);
 
   const handleConnectClick = (platform: string) => {
     setModalPlatform(platform);
@@ -1997,7 +1993,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
     playSound(sendSoundRef);
     setUserInput("");
     setIsLoading(true);
-    setShouldAutoScroll(true); // Enable auto-scroll when user sends a message
 
     const aiMessageId = (Date.now() + 1).toString();
     setMessages((prev) => [
@@ -2182,7 +2177,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
               </div>
             </div>
 
-            <div className="flex-1 p-6 overflow-y-auto space-y-6">
+            <div className="flex-1 p-6 overflow-y-auto space-y-6" ref={messagesContainerRef}>
               {messages.map((message) => (
                 <div
                   key={message.id}
@@ -2259,8 +2254,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                   </div>
                 </div>
               ))}
-              {/* Loading indicator is shown inline within the pending AI message */}
-              <div ref={messagesEndRef} />
             </div>
 
             <MessageComposer
