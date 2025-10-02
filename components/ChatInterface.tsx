@@ -1146,9 +1146,13 @@ const ScoreCardModal: React.FC<{
     }
   }, [isOpen, messages, figure, evaluationData, isEvaluating]);
 
-  // Reset transition state when modal opens
+  // Reset transition state and evaluation when modal opens (force re-evaluation on each open)
   useEffect(() => {
-    if (isOpen) setShowFinal(false);
+    if (isOpen) {
+      setShowFinal(false);
+      setEvaluationData(null);
+      setEvaluationError(null);
+    }
   }, [isOpen]);
 
   // When evaluation completes, trigger crossfade to final visuals
@@ -1967,7 +1971,10 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   }, [onNextTwin, onPrevTwin]);
 
   useEffect(() => {
-      messagesContainerRef.current?.scrollTo({ top: messagesContainerRef.current.scrollHeight, behavior: "smooth" });
+    messagesContainerRef.current?.scrollTo({
+      top: messagesContainerRef.current.scrollHeight,
+      behavior: "smooth",
+    });
   }, [messages]);
 
   const handleConnectClick = (platform: string) => {
@@ -2177,7 +2184,10 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
               </div>
             </div>
 
-            <div className="flex-1 p-6 overflow-y-auto space-y-6" ref={messagesContainerRef}>
+            <div
+              className="flex-1 p-6 overflow-y-auto space-y-6"
+              ref={messagesContainerRef}
+            >
               {messages.map((message) => (
                 <div
                   key={message.id}
