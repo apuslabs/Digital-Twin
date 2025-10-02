@@ -1907,6 +1907,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
             m.id === welcomeId ? { ...m, text: figure.welcomeMessage } : m
           )
         );
+        // Play receive sound when the first figure message (welcome) completes
+        playSound(receiveSoundRef);
       }, 700);
       // Cleanup on figure change
       return () => window.clearTimeout(typingTimer);
