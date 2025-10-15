@@ -24,12 +24,11 @@ const CompetitionBanner: React.FC<CompetitionBannerProps> = ({
         <div className="flex justify-between gap-6 w-full">
           <div>
             <h2 className="font-bold scale-y-125 text-lg">
-              AI-Judged Data Competition
+              AI-Judged Data Rankings
             </h2>
             <p className="mt-1 max-w-lg">
-              Submit data contributions judged by advanced AI agents.
-              Top-quality submissions permanently stored on Arweave earn APUS
-              token rewards.
+              Start uploading data to be judged by advanced AI agents.
+              Top-quality submissions permanently stored on Arweave.
             </p>
           </div>
 
@@ -41,7 +40,7 @@ const CompetitionBanner: React.FC<CompetitionBannerProps> = ({
           transition-colors duration-200 ease-out-quart"
           >
             <span className="ph ph-[arrow-up-right] mr-2" aria-hidden></span>
-            Join the Competition
+            Start uploading data.
           </div>
         </div>
       </div>

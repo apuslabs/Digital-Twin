@@ -108,7 +108,7 @@ const WinnersHistory: React.FC<{ onWinnerClick: (winner: Winner) => void }> = ({
       }}
     />
     <h3 className="text-base font-semibold mb-2 inline-flex items-center gap-2 bg-white ">
-      <span className="ph ph-[trophy]"></span>AI‑Approved Winners
+      <span className="ph ph-[trophy]"></span>AI‑Approved Submissions
     </h3>
     <p className="text-[11px] text-neutral-500 mb-4 bg-white">
       Top contributions rated by AI agents
@@ -123,7 +123,7 @@ const WinnersHistory: React.FC<{ onWinnerClick: (winner: Winner) => void }> = ({
           <div className="flex justify-between items-center mb-2">
             <div className="flex flex-col">
               <span className="text-[11px] text-neutral-500 tracking-wide">
-                Winner Address
+                Address
               </span>
               <p
                 className="text-xs font-mono text-neutral-900"
@@ -359,7 +359,9 @@ const CompetitionPage: React.FC<CompetitionPageProps> = ({
   };
 
   const selectedFigure = figures.find((f) => f.id === selectedFigureId);
-  const isSubmittable = (contributionText.trim().length > 0 || fileName !== "") && selectedFigure?.processId;
+  const isSubmittable =
+    (contributionText.trim().length > 0 || fileName !== "") &&
+    selectedFigure?.processId;
 
   return (
     <>
@@ -406,8 +408,7 @@ const CompetitionPage: React.FC<CompetitionPageProps> = ({
 
               <p className="text-neutral-700 mb-6 text-sm bg-white/80 relative">
                 Submit high-quality persona data to improve digital twins. AI
-                agents score submissions automatically, and top contributors
-                earn APUS token rewards.
+                agents score submissions automatically.
               </p>
 
               <form
@@ -429,7 +430,8 @@ const CompetitionPage: React.FC<CompetitionPageProps> = ({
                   >
                     {figures.map((figure) => (
                       <option key={figure.id} value={figure.id}>
-                        {figure.name} - {figure.title}{!figure.processId ? ' (Not Available)' : ''}
+                        {figure.name} - {figure.title}
+                        {!figure.processId ? " (Not Available)" : ""}
                       </option>
                     ))}
                   </select>
@@ -486,7 +488,8 @@ const CompetitionPage: React.FC<CompetitionPageProps> = ({
                 <p className="text-[11px] text-neutral-600 text-center mt-2">
                   {!selectedFigure?.processId ? (
                     <span className="inline-flex items-center gap-1 text-red-600">
-                      <span className="ph ph-[warning]"></span>This figure is not available for contributions yet
+                      <span className="ph ph-[warning]"></span>This figure is
+                      not available for contributions yet
                     </span>
                   ) : !aoService.isWalletConnected() ? (
                     <span className="inline-flex items-center gap-1">
@@ -599,10 +602,10 @@ const CompetitionPage: React.FC<CompetitionPageProps> = ({
               className="px-4 py-2 border text-sm active:scale-95 transition border-blue-600 text-blue-700 bg-white hover:bg-blue-50"
             >
               <div className="flex items-center justify-center space-x-2">
-              {isQuerying && (
-                <div className="animate-spin rounded-full h-3 w-3 border-b border-neutral-400"></div>
-              )}
-              <span>Query Result</span>
+                {isQuerying && (
+                  <div className="animate-spin rounded-full h-3 w-3 border-b border-neutral-400"></div>
+                )}
+                <span>Query Result</span>
               </div>
             </button>
           )}
