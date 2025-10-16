@@ -25,6 +25,61 @@ const UsersIcon: React.FC = () => (
   </svg>
 );
 
+const ArrowKeysIcon: React.FC = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    className="inline-block h-4 w-8 mx-1"
+    viewBox="0 0 24 14"
+    aria-hidden="true"
+    fill="none"
+  >
+    <rect
+      x="1"
+      y="1"
+      width="10"
+      height="12"
+      rx="2"
+      stroke="currentColor"
+      strokeWidth="1"
+    />
+    <rect
+      x="13"
+      y="1"
+      width="10"
+      height="12"
+      rx="2"
+      stroke="currentColor"
+      strokeWidth="1"
+    />
+    <path
+      d="M7 4.5 L4.5 7 L7 9.5"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M17 4.5 L19.5 7 L17 9.5"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
+const ClickIcon: React.FC = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    className="inline-block h-4 w-4 mx-1"
+    viewBox="0 0 20 20"
+    aria-hidden="true"
+    fill="currentColor"
+  >
+    <path d="M3 2l12 6-5 1 3 6-2 1-3-6-4 4V2z" />
+  </svg>
+);
+
 const FigureCard: React.FC<{
   figure: Figure;
   onSelect: (figure: Figure) => void;
@@ -198,20 +253,26 @@ const FigureSelector: React.FC<FigureSelectorProps> = ({
     <div className="animate-fade-in">
       <div className="flex justify-between">
         <div className="flex flex-col">
-          <h2 className="font mb-4 flex items-center gap-2">
+          <h2 className="font mb-4 flex items-center gap-4">
             <img
               src={TwinLogoMark}
               alt="Twin Logo Mark"
               aria-hidden="true"
-              className="h-4 w-auto"
+              className="h-6 w-auto"
             />
-            <span className="scale-y-125 font-bold text-sm sm:text-base">
-              Choose a Digital Twin
+            <span className="scale-y-125 font-bold text-sm sm:text-2xl">
+              Select a Digital Twin
             </span>
           </h2>
           <p className="mb-8 max-w-2xl text-xs sm:text-sm">
-            Select a public figure to chat with their permanent digital twin,
-            built on Arweave.{" "}
+            Select a permanent digital twin to chat with below by using your
+            <ArrowKeysIcon />
+            arrow keys or <ClickIcon /> clicking on the twin.{" "}
+          </p>
+        </div>
+        <div className="flex flex-col gap-4 items-end">
+          <p>Built on ⓐ Arweave.</p>
+          <p>
             <a
               href="#"
               onClick={(e) => {

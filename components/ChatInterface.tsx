@@ -1146,9 +1146,13 @@ const ScoreCardModal: React.FC<{
     }
   }, [isOpen, messages, figure, evaluationData, isEvaluating]);
 
-  // Reset transition state when modal opens
+  // Reset transition state and evaluation when modal opens (force re-evaluation on each open)
   useEffect(() => {
-    if (isOpen) setShowFinal(false);
+    if (isOpen) {
+      setShowFinal(false);
+      setEvaluationData(null);
+      setEvaluationError(null);
+    }
   }, [isOpen]);
 
   // When evaluation completes, trigger crossfade to final visuals
@@ -1374,6 +1378,7 @@ const ScoreCardModal: React.FC<{
 
   const handleSaveScoreCard = async () => {
     if (!scoreCardRef.current) return;
+    if (isEvaluating) return; // Do not allow saving while evaluation is in progress
 
     // Play share sound on click
     playShareSound();
@@ -1546,6 +1551,7 @@ const ScoreCardModal: React.FC<{
       maximumFractionDigits: 2,
     })}%`;
   })();
+  const saveDisabled = isSaving || isEvaluating;
 
   if (!isOpen) return null;
 
@@ -1805,14 +1811,33 @@ const ScoreCardModal: React.FC<{
           </button>
           <button
             onClick={handleSaveScoreCard}
-            disabled={isSaving}
-            className="relative flex gap-2 items-center py-2 px-4 border border-amber-300 bg-amber-100 text-neutral-800 hover:bg-neutral-50 transition-colors active:scale-95 cursor-pointer text-[10px] sm:text-xs md:text-sm overflow-hidden disabled:opacity-60 disabled:cursor-not-allowed"
+            disabled={saveDisabled}
+            title={
+              isEvaluating ? "Please wait for evaluation to finish" : undefined
+            }
+            className={`relative flex gap-2 items-center py-2 px-4 text-[10px] sm:text-xs md:text-sm overflow-hidden
+              ${
+                saveDisabled
+                  ? "border border-neutral-300 bg-neutral-200 text-neutral-500 cursor-not-allowed"
+                  : "border border-amber-300 bg-amber-100 text-neutral-800 hover:bg-neutral-50 active:scale-95 cursor-pointer transition-colors"
+              }
+            `}
           >
             <span className="relative z-10 inline-flex items-center gap-2">
-              <div className="ph ph-[star--duotone] text-amber-400" />
-              {isSaving ? "Saving…" : "Save Your Score Card"}
+              <div
+                className={`ph ph-[star--duotone] ${
+                  saveDisabled ? "text-neutral-400" : "text-amber-400"
+                }`}
+              />
+              {isSaving
+                ? "Saving…"
+                : isEvaluating
+                ? "Evaluating…"
+                : "Save Your Score Card"}
             </span>
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-400 to-transparent opacity-20 transform -skew-x-12 -translate-x-full animate-shimmer"></div>
+            {!saveDisabled && (
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-400 to-transparent opacity-20 transform -skew-x-12 -translate-x-full animate-shimmer"></div>
+            )}
           </button>
         </div>
       </div>
@@ -1903,6 +1928,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
             m.id === welcomeId ? { ...m, text: figure.welcomeMessage } : m
           )
         );
+        // Play receive sound when the first figure message (welcome) completes
+        playSound(receiveSoundRef);
       }, 700);
       // Cleanup on figure change
       return () => window.clearTimeout(typingTimer);
@@ -1967,7 +1994,10 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   }, [onNextTwin, onPrevTwin]);
 
   useEffect(() => {
-      messagesContainerRef.current?.scrollTo({ top: messagesContainerRef.current.scrollHeight, behavior: "smooth" });
+    messagesContainerRef.current?.scrollTo({
+      top: messagesContainerRef.current.scrollHeight,
+      behavior: "smooth",
+    });
   }, [messages]);
 
   const handleConnectClick = (platform: string) => {
@@ -2143,13 +2173,9 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                           />
                           Share Your Score Card
                         </span>
-                        <div
-                          className={`absolute inset-0 bg-gradient-to-r ${
-                            canShare
-                              ? "from-transparent via-amber-400"
-                              : "from-transparent via-neutral-400"
-                          } to-transparent opacity-20 transform -skew-x-12 -translate-x-full animate-shimmer`}
-                        ></div>
+                        {canShare && (
+                          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-400 to-transparent opacity-20 transform -skew-x-12 -translate-x-full animate-shimmer"></div>
+                        )}
                       </button>
                       {!canShare && (
                         <button
@@ -2177,7 +2203,10 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
               </div>
             </div>
 
-            <div className="flex-1 p-6 overflow-y-auto space-y-6" ref={messagesContainerRef}>
+            <div
+              className="flex-1 p-6 overflow-y-auto space-y-6"
+              ref={messagesContainerRef}
+            >
               {messages.map((message) => (
                 <div
                   key={message.id}
