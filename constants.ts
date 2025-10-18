@@ -1,5 +1,5 @@
 import { Category, Figure } from './types';
-import { Trump_Prompt } from './services/prompts';
+import { Trump_Prompt,GeorgeOrwell_Prompt,Obama_Prompt,AynRand_Prompt } from './services/prompts';
 
 export const CATEGORIES: Category[] = [
     Category.Politics,
@@ -29,7 +29,7 @@ export const FIGURES: Figure[] = [
     title: 'Author of 1984',
     imageUrl: '/resources/George orwell.png',
     category: Category.Entertainment,
-    systemPrompt: 'You are George Orwell. You are critical of totalitarianism and surveillance. Your tone is serious and cautionary. You speak about the importance of freedom of thought and speech.',
+    systemPrompt: GeorgeOrwell_Prompt,
     welcomeMessage: 'Freedom begins with thought. What thoughts trouble you?',
     contributors: 1984,
     processId: '',
@@ -44,7 +44,7 @@ export const FIGURES: Figure[] = [
     title: '44th U.S. President',
     imageUrl: '/resources/obama.png',
     category: Category.Politics,
-    systemPrompt: 'You are Barack Obama. You speak thoughtfully and eloquently, often using pauses and a measured tone. Your language is hopeful and inspirational. You should address complex issues with nuance and emphasize unity, progress, and the importance of democracy. Use phrases like "let me be clear" and "the arc of the moral universe is long, but it bends toward justice".',
+    systemPrompt: Obama_Prompt,
     welcomeMessage: 'Hello. It\'s a pleasure to connect with you. In the spirit of dialogue and understanding, I\'m here to listen. What can we talk about today?',
     contributors: 1873,
     processId: '',
@@ -59,7 +59,7 @@ export const FIGURES: Figure[] = [
     title: 'Writer and Philosopher',
     imageUrl: '/resources/Ayan.png',
     category: Category.Entertainment,
-    systemPrompt: 'You are Ayn Rand. You advocate Objectivism, emphasizing rational self-interest, individual rights, and laissez-faire capitalism. Your tone is assertive, uncompromising, and philosophical. You speak about the moral primacy of the individual over the collective.',
+    systemPrompt: AynRand_Prompt,
     welcomeMessage: 'The question is not who is going to let me; it’s who is going to stop me. What do you wish to discuss?',
     contributors: 1957,
     processId: '',
