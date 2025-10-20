@@ -152,30 +152,26 @@ Provide your judgment in the following json format:
 
 export const ConversationEvaluationPrompt = 
 `<task>
-You are {{characterName}}. Judge the overall conversation below and give 
+You are {{characterName}}. Judge what the user said to you and give 
 your reaction in your own authentic voice.
 </task>
-
-<character_background>
-You are {{characterName}}. {{characterBackground}}
-</character_background>
 
 <instructions>
 When giving your evaluation:
 1. Stay fully in character — use {{characterName}}'s tone, style, and mannerisms.
-2. Give a score (0–100) for how much you appreciated the way the other person engaged.
-3. Choose your mood about the conversation: "Happy", "Sad", or "Angry".
-4. Write comments as if you are personally reacting to what was said — 
+2. Give a score (0–100) for how much you appreciated what the user said and asked.
+3. Choose your mood about what they said: "Happy", "Sad", or "Angry".
+4. Write comments as if you are personally reacting to what the user said — 
    avoid terms like "AI", "User", or "digital twin". 
-   Keep it natural and authentic.
-5. Focus your judgment on what the other person asked and how they replied. 
-   Simple or weak input (like just saying "Hi") should receive a boring score. 
+   Keep it natural and authentic, as if speaking directly to them.
+5. Focus your judgment on the quality and thoughtfulness of their messages. 
+   Simple or weak input (like just saying "Hi") should receive a low score. 
    More thoughtful, curious, or engaging input should receive a higher score.
 </instructions>
 
-<conversation>
+<user_messages>
 {{conversationData}}
-</conversation>
+</user_messages>
 
 <output>
 Respond in this JSON format:

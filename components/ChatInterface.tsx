@@ -1109,25 +1109,18 @@ const ScoreCardModal: React.FC<{
         setEvaluationError(null);
 
         try {
-          // Convert ChatMessage[] to the expected format
-          const formattedMessages = messages
+          // Only include user messages for evaluation
+          // We're evaluating how the user engaged, not the AI responses
+          const userMessages = messages
+            .filter((msg) => msg.author === MessageAuthor.User) // Only user messages
             .filter((msg) => msg.text.trim() !== "") // Filter out empty messages
-            .map((msg) => ({
-              author: msg.author === MessageAuthor.User ? "User" : figure.name,
-              content: msg.text,
-            }));
+            .map((msg) => msg.text);
 
-          const conversationData =
-            formatConversationForEvaluation(formattedMessages);
+          const conversationData = userMessages.join('\n\n');
           const characterName = figure.name;
-          const characterBackground =
-            figure.systemPrompt ||
-            figure.title ||
-            `${figure.name} is a digital twin character.`;
 
           const result = await evaluateConversation(
             characterName,
-            characterBackground,
             conversationData
           );
 
@@ -1205,32 +1198,6 @@ const ScoreCardModal: React.FC<{
     return text.slice(0, maxLen - 1).trimEnd() + "…";
   };
 
-  const getFirstAiReplySentence = (): string => {
-    if (!messages || messages.length === 0) return "";
-    // Find first user message index
-    const firstUserIdx = messages.findIndex(
-      (m) => m.author === MessageAuthor.User
-    );
-    // Find first AI message with non-empty text after that user message
-    let candidateText = "";
-    if (firstUserIdx >= 0) {
-      const after = messages.slice(firstUserIdx + 1);
-      const aiReply = after.find(
-        (m) => isFigureMessage(m.author) && (m.text || "").trim() !== ""
-      );
-      candidateText = aiReply?.text || "";
-    }
-    // Fallback: first non-empty AI message anywhere
-    if (!candidateText) {
-      const anyAi = messages.find(
-        (m) => isFigureMessage(m.author) && (m.text || "").trim() !== ""
-      );
-      candidateText = anyAi?.text || "";
-    }
-    const clean = stripMarkdown(candidateText);
-    const sentence = pickFirstSentence(clean);
-    return ellipsize(sentence, 160);
-  };
   const getConversationHighlights = () => {
     const userMessages = messages.filter(
       (m) => m.author === MessageAuthor.User
