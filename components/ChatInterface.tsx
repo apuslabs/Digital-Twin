@@ -2056,11 +2056,11 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                   <a
                     href="#"
                     className="text-xs font-mono text-neutral-400 hover:text-blue-500 underline transition-colors"
-                    title={`View ${figure.name}'s permanent prompt on Arweave: ${figure.arweaveTxId}`}
+                    title={`View ${figure.name}'s permanent prompt on Load network: ${figure.arweaveTxId}`}
                     onClick={(e) => {
                       e.preventDefault();
                       window.open(
-                        `https://arweave.net/${figure.arweaveTxId}`,
+                        `https://load-s3-agent.load.network/${figure.arweaveTxId}`,
                         "_blank"
                       );
                     }}

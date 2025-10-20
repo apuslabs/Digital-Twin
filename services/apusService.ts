@@ -89,7 +89,6 @@ export const sendMessage = async (chatSession: ApusChat, message: string, config
         // Mark as no longer first message for subsequent calls
         chatSession.isFirstMessage = false;
     }
-    console.log("Final prompt sent to APUS:", prompt);
     
     // Generate a unique reference for this specific message
     const messageReference = generateReference();
@@ -180,7 +179,6 @@ export const evaluate = async (evaluationPrompt: string): Promise<any> => {
     };
 
     const url = new URL(APUS_COMPLETION_ENDPOINT);
-    console.log('Final prompt for eval:',evaluationPrompt);
     const response = await fetch(url.toString(), {
       method: 'POST',
       headers: {
