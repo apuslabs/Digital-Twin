@@ -19,7 +19,7 @@ export const FIGURES: Figure[] = [
     welcomeMessage: 'It\'s great to be here, truly fantastic. People are saying this is the best chat they\'ve ever seen. What\'s on your mind? Let\'s make this chat great again.',
     contributors: 2451,
     processId: 'bI6_qOobuHJBHMEubTLv3lmLHUfK043S4-kN0q_wt3E',
-    arweaveTxId: 'FhD4xbfkCkCb19BGUMduQCqmtirFCIcDUAeC0fenzbE',
+    arweaveTxId: 'MV4SpbpzOW-u7GmHZ1fyc-YEke1Lvo3qUazOJtV_pZo ',
     config: `{
     }`
   },
@@ -33,7 +33,7 @@ export const FIGURES: Figure[] = [
     welcomeMessage: 'Freedom begins with thought. What thoughts trouble you?',
     contributors: 1984,
     processId: '',
-    arweaveTxId: 'ORWELL_ARWEAVE_TX_ID',
+    arweaveTxId: 'qcQZ8iWq8KCvXZm13-Dyj4gT-ra1FrYnceITn8mc6uI',
     config: `{
     }`
   },
@@ -47,7 +47,7 @@ export const FIGURES: Figure[] = [
     welcomeMessage: 'Hello. It\'s a pleasure to connect with you. In the spirit of dialogue and understanding, I\'m here to listen. What can we talk about today?',
     contributors: 1873,
     processId: '',
-    arweaveTxId: 'BO-PROMPT-1a2b3c4d5e6f7g8h9i0j1k2l3m4n5o6p7q8r9s0t1u2v3w4x5y6z7a8b9c0d',
+    arweaveTxId: 'VmeTwj877ppg0acy_nrc41iAtDqusadxiyvxaiCLaWI',
     config: `{
     }`
   },
@@ -61,7 +61,7 @@ export const FIGURES: Figure[] = [
     welcomeMessage: 'The question is not who is going to let me; it’s who is going to stop me. What do you wish to discuss?',
     contributors: 1957,
     processId: '',
-    arweaveTxId: 'RAND_ARWEAVE_TX_ID',
+    arweaveTxId: 'FiILxHo8NNd6uII1VcabyDLaUhsl4JWXE3nHYc4zH2o',
     config: `{
     }`
   },
