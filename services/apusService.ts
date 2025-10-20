@@ -15,8 +15,8 @@ export interface ApusChat {
   isFirstMessage: boolean;
 }
 
-const APUS_ENDPOINT = 'https://hb.apus.network/~llamacpp@1.0/chat/serialize~json@1.0';
-const APUS_COMPLETION_ENDPOINT = 'https://hb.apus.network/~llamacpp@1.0/completion/serialize~json@1.0';
+const APUS_ENDPOINT = 'https://hb2.apus.network/~llamacpp@1.0/chat/serialize~json@1.0';
+const APUS_COMPLETION_ENDPOINT = 'https://hb2.apus.network/~llamacpp@1.0/completion/serialize~json@1.0';
 
 // Default configuration for APUS
 const DEFAULT_CONFIG = JSON.stringify({ max_tokens: 3000 });
@@ -74,7 +74,6 @@ export const sendMessage = async (chatSession: ApusChat, message: string, config
         validConfig = DEFAULT_CONFIG;
       }
     }
-    console.log("Using config:", validConfig);
     // Build the prompt with system instruction on first message only
     const userPrompt = ensureUserPrefix(message);
     let prompt = userPrompt;
@@ -102,8 +101,6 @@ export const sendMessage = async (chatSession: ApusChat, message: string, config
       prompt: prompt,
       config: validConfig
     };
-    console.log("reference : ", requestParams.reference);
-    console.log("session_id : ", requestParams.session_id);
     const url = new URL(APUS_ENDPOINT);
     url.searchParams.append('reference', requestParams.reference);
     url.searchParams.append('session_id', requestParams.session_id);
@@ -178,7 +175,6 @@ const EVALUATION_CONFIG = JSON.stringify({
 // Evaluate conversation quality using completion endpoint
 export const evaluate = async (evaluationPrompt: string): Promise<any> => {
   try {
-    console.log("Evaluation prompt:", evaluationPrompt);
 
     // Generate a unique reference for this evaluation
     const reference = `EVAL-${Date.now()}`;
@@ -194,8 +190,6 @@ export const evaluate = async (evaluationPrompt: string): Promise<any> => {
     url.searchParams.append('reference', requestParams.reference);
     url.searchParams.append('prompt', requestParams.prompt);
     url.searchParams.append('config', requestParams.config);
-
-    console.log("Evaluation URL:", url.toString());
 
     const response = await fetch(url.toString(), {
       method: 'POST'
@@ -265,7 +259,6 @@ export const evaluateConversation = async (
         const jsonMatch = result.evaluation.match(/```json\n([\s\S]*?)\n```/);
         if (jsonMatch && jsonMatch[1]) {
           const parsedResult = JSON.parse(jsonMatch[1]);
-          console.log('Parsed evaluation result:', parsedResult);
           return parsedResult;
         } else {
           // Try parsing the raw string if no markdown wrapper

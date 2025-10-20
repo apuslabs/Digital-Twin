@@ -11,7 +11,7 @@ interface TEEAttestationResponse {
   status?: string;
 }
 
-const TEE_ENDPOINT = 'https://hb.apus.network/~sev_gpu@1.0/generate';
+const TEE_ENDPOINT = 'https://hb2.apus.network/~sev_gpu@1.0/generate';
 
 export class TEEService {
   /**
@@ -21,7 +21,6 @@ export class TEEService {
    */
   static async getAttestation(sessionId: string): Promise<TEEAttestationResponse> {
     try {
-      console.log('Requesting TEE attestation for session:', sessionId);
 
       const requestParams: TEEAttestationRequest = {
         session_id: sessionId

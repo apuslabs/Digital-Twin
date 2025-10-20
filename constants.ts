@@ -21,7 +21,7 @@ export const FIGURES: Figure[] = [
     processId: 'bI6_qOobuHJBHMEubTLv3lmLHUfK043S4-kN0q_wt3E',
     arweaveTxId: 'FhD4xbfkCkCb19BGUMduQCqmtirFCIcDUAeC0fenzbE',
     config: `{
-    }`,
+    }`
   },
   {
     id: 'george_orwell',
@@ -35,8 +35,7 @@ export const FIGURES: Figure[] = [
     processId: '',
     arweaveTxId: 'ORWELL_ARWEAVE_TX_ID',
     config: `{
-      "temperature": 0,
-    }`,
+    }`
   },
   {
     id: 'barack_obama',
@@ -50,8 +49,7 @@ export const FIGURES: Figure[] = [
     processId: '',
     arweaveTxId: 'BO-PROMPT-1a2b3c4d5e6f7g8h9i0j1k2l3m4n5o6p7q8r9s0t1u2v3w4x5y6z7a8b9c0d',
     config: `{
-      "temperature": 0,
-    }`,
+    }`
   },
   {
     id: 'ayn_rand',
@@ -65,7 +63,6 @@ export const FIGURES: Figure[] = [
     processId: '',
     arweaveTxId: 'RAND_ARWEAVE_TX_ID',
     config: `{
-      "temperature": 0,
-    }`,
+    }`
   },
 ];
