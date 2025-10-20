@@ -102,13 +102,13 @@ export const sendMessage = async (chatSession: ApusChat, message: string, config
       config: validConfig
     };
     const url = new URL(APUS_ENDPOINT);
-    url.searchParams.append('reference', requestParams.reference);
-    url.searchParams.append('session_id', requestParams.session_id);
-    url.searchParams.append('prompt', requestParams.prompt);
-    url.searchParams.append('config', requestParams.config);
 
     const response = await fetch(url.toString(), {
-      method: 'POST'
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(requestParams)
     });
 
     if (!response.ok) {
@@ -158,19 +158,13 @@ export const sendMessage = async (chatSession: ApusChat, message: string, config
 // Helper function to create evaluation prompt for conversation
 export const createConversationEvaluationPrompt = (
   characterName: string, 
-  characterBackground: string, 
   conversationData: string
 ): string => {
   return ConversationEvaluationPrompt
     .replace(/\{\{characterName\}\}/g, characterName)
-    .replace(/\{\{characterBackground\}\}/g, characterBackground)
     .replace(/\{\{conversationData\}\}/g, conversationData);
 };
 
-// Fixed configuration for evaluation service
-const EVALUATION_CONFIG = JSON.stringify({ 
-  temperature: 0,
-});
 
 // Evaluate conversation quality using completion endpoint
 export const evaluate = async (evaluationPrompt: string): Promise<any> => {
@@ -183,16 +177,16 @@ export const evaluate = async (evaluationPrompt: string): Promise<any> => {
     const requestParams = {
       reference: reference,
       prompt: evaluationPrompt,
-      config: EVALUATION_CONFIG
     };
 
     const url = new URL(APUS_COMPLETION_ENDPOINT);
-    url.searchParams.append('reference', requestParams.reference);
-    url.searchParams.append('prompt', requestParams.prompt);
-    url.searchParams.append('config', requestParams.config);
-
+    console.log('Final prompt for eval:',evaluationPrompt);
     const response = await fetch(url.toString(), {
-      method: 'POST'
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(requestParams)
     });
 
     if (!response.ok) {
@@ -240,13 +234,11 @@ export const formatConversationForEvaluation = (messages: Array<{author: string,
 // High-level function to evaluate a conversation with a character
 export const evaluateConversation = async (
   characterName: string,
-  characterBackground: string,
   conversationData: string
 ): Promise<any> => {
   try {
     const evaluationPrompt = createConversationEvaluationPrompt(
       characterName,
-      characterBackground,
       conversationData
     );
     
