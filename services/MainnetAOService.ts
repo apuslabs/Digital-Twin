@@ -36,7 +36,6 @@ export class MainnetAOService {
    */
   async submitPromptForEvaluation(figure: Figure, promptData: string): Promise<AOResponse> {
     try {
-      console.log(`Submitting prompt to ${figure.name}'s agent: ${figure.processId}`);
       
       const result = await this.request({
         method: "POST",
@@ -45,9 +44,6 @@ export class MainnetAOService {
         signingFormat: "ANS-104",
         data: promptData,
       });
-
-      console.log(`Prompt submitted successfully. Message ID: ${result}`);
-      
       return {
         success: true,
         messageId: result,

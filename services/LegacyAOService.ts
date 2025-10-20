@@ -43,7 +43,6 @@ export class LegacyAOService {
    */
   async submitPromptForEvaluation(figure: Figure, promptData: string): Promise<AOResponse> {
     try {
-      console.log(`Submitting prompt to ${figure.name}'s agent: ${figure.processId}`);
       const reference = `${figure.id}-${Date.now()}`;
        
       // Combine judge prompt with character-specific information and user's prompt data
@@ -63,8 +62,6 @@ export class LegacyAOService {
         data: judgePromptWithData,
       });
 
-      console.log(`Prompt submitted successfully. Message ID: ${result}`);
-      
       return {
         success: true,
         messageId: result,
@@ -118,7 +115,6 @@ export class LegacyAOService {
         }
       }
     } catch (e) {
-      console.log("Failed to parse Data as JSON, using raw data - treating as processing state");
       parsedData = message.Data;
       // When JSON parsing fails, it likely means the task is still processing
       status = "processing";
@@ -164,7 +160,6 @@ export class LegacyAOService {
    */
   async queryTaskResult(processId: string, reference: string): Promise<QueryResult> {
     try {
-      console.log(`Querying task result for reference: ${reference} from process: ${processId}`);
       
       const result = await dryrun({
         process: processId,
@@ -180,7 +175,6 @@ export class LegacyAOService {
         ],
       });
 
-      console.log(`Task result query completed for reference: ${reference}`);
       
       // Parse the result using the helper function
       const parsed = this.parseAOResult(result);
