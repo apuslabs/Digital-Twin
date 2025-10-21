@@ -9,6 +9,7 @@ import {
   Chat,
   evaluateConversation,
   formatConversationForEvaluation,
+  summarizeConversation,
 } from "../services/apusService";
 import { aoService, QueryResult } from "../services/LegacyAOService";
 import TEEService from "../services/teeService";
@@ -32,6 +33,10 @@ type EvaluationData = {
   reasoning?: string;
   key_highlights?: string[];
   suggestions?: string[];
+};
+
+type SummaryData = {
+  rawResponse?: string;
 };
 
 const isFigureAuthor = (author: MessageAuthor | string, figureName: string) =>
@@ -1838,6 +1843,11 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   const [shareHintVisible, setShareHintVisible] = useState(false);
   const sendSoundRef = useRef<HTMLAudioElement | null>(null);
   const receiveSoundRef = useRef<HTMLAudioElement | null>(null);
+  
+  // Summary modal state
+  const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
+  const [summaryData, setSummaryData] = useState<SummaryData | null>(null);
+  const [isSummarizing, setIsSummarizing] = useState(false);
 
   useEffect(() => {
     // Preload send/receive sounds
@@ -2022,6 +2032,39 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
       playSound(receiveSoundRef);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleSummarize = async () => {
+    if (messages.length <= 1 || isSummarizing) return; // Skip if only welcome message
+
+    setIsSummarizing(true);
+    setIsSummaryModalOpen(true);
+    setSummaryData(null);
+
+    try {
+      // Get all messages for summarization (including both user and AI)
+      const conversationMessages = messages
+        .filter((msg) => msg.id !== "welcome") // Filter out welcome message
+        .map((msg) => ({
+          author: msg.author === MessageAuthor.User ? "User" : figure.name,
+          content: msg.text,
+        }));
+
+      const conversationData = formatConversationForEvaluation(conversationMessages);
+      const result = await summarizeConversation(figure.name, conversationData);
+
+      // Store raw response as string
+      setSummaryData({
+        rawResponse: JSON.stringify(result, null, 2)
+      });
+    } catch (error) {
+      console.error("Failed to generate summary:", error);
+      setSummaryData({
+        rawResponse: "Failed to generate summary. Please try again.",
+      });
+    } finally {
+      setIsSummarizing(false);
     }
   };
 
@@ -2256,8 +2299,10 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
               value={userInput}
               onChange={setUserInput}
               onSubmit={handleSubmit}
+              onSummarize={handleSummarize}
               isLoading={isLoading}
               placeholder={`Message ${figure.name}...`}
+              hasSummarizeButton={messages.length > 1}
             />
           </div>
         </div>
@@ -2291,6 +2336,67 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
         isOpen={isScoreCardOpen}
         onClose={() => setIsScoreCardOpen(false)}
       />
+      
+      {/* Summary Modal */}
+      <Modal
+        isOpen={isSummaryModalOpen}
+        onClose={() => setIsSummaryModalOpen(false)}
+        title="Conversation Summary"
+      >
+        {isSummarizing ? (
+          <div className="text-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto mb-4"></div>
+            <p className="text-neutral-600">Generating summary...</p>
+            <p className="text-sm text-neutral-500 mt-2">
+              {figure.name} is analyzing your conversation.
+            </p>
+          </div>
+        ) : summaryData?.rawResponse ? (
+          <div className="space-y-4">
+            {/* Raw Response */}
+            <div className="p-4 bg-neutral-50 border border-neutral-200 rounded">
+              <h4 className="text-sm font-semibold text-neutral-900 mb-2">AI Summary Response</h4>
+              <pre className="text-sm text-neutral-700 whitespace-pre-wrap font-mono overflow-x-auto">
+                {summaryData.rawResponse}
+              </pre>
+            </div>
+
+            {/* Upload to Arweave Button (Mockup) */}
+            <div className="flex gap-3 pt-4 border-t border-neutral-200">
+              <button
+                onClick={() => alert('Upload to Arweave feature coming soon!')}
+                className="flex-1 px-4 py-3 bg-green-600 text-white font-semibold hover:bg-green-500 transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 flex items-center justify-center gap-2"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                  />
+                </svg>
+                Upload to Arweave
+              </button>
+              <button
+                onClick={() => setIsSummaryModalOpen(false)}
+                className="px-4 py-3 border border-neutral-300 text-neutral-800 bg-white hover:bg-neutral-50 transition-colors focus:outline-none"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="text-center py-8 text-neutral-600">
+            No summary available.
+          </div>
+        )}
+      </Modal>
     </>
   );
 };

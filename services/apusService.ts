@@ -1,5 +1,5 @@
 
-import { ConversationEvaluationPrompt } from './prompts';
+import { ConversationEvaluationPrompt, ConversationSummaryPrompt } from './prompts';
 
 interface ApusResponse {
   body?: string;
@@ -264,6 +264,55 @@ export const evaluateConversation = async (
     return result;
   } catch (error) {
     console.error('Error in evaluateConversation:', error);
+    throw error;
+  }
+};
+
+// Helper function to create summary prompt for conversation
+export const createConversationSummaryPrompt = (
+  characterName: string, 
+  conversationData: string
+): string => {
+  return ConversationSummaryPrompt
+    .replace(/\{\{characterName\}\}/g, characterName)
+    .replace(/\{\{conversationData\}\}/g, conversationData);
+};
+
+// High-level function to summarize a conversation with a character
+export const summarizeConversation = async (
+  characterName: string,
+  conversationData: string
+): Promise<any> => {
+  try {
+    const summaryPrompt = createConversationSummaryPrompt(
+      characterName,
+      conversationData
+    );
+    console.log('Summary Prompt:', summaryPrompt);
+    const result = await evaluate(summaryPrompt);
+    console.log('Raw Summary Result:', result);
+    // Parse the summary result if it's wrapped in markdown
+    if (result && result.evaluation && typeof result.evaluation === 'string') {
+      try {
+        // Extract JSON from markdown code blocks
+        const jsonMatch = result.evaluation.match(/```json\n([\s\S]*?)\n```/);
+        if (jsonMatch && jsonMatch[1]) {
+          const parsedResult = JSON.parse(jsonMatch[1]);
+          return parsedResult;
+        } else {
+          // Try parsing the raw string if no markdown wrapper
+          const parsedResult = JSON.parse(result.evaluation);
+          return parsedResult;
+        }
+      } catch (parseError) {
+        console.warn('Failed to parse summary JSON, using raw result:', parseError);
+        return result;
+      }
+    }
+    
+    return result;
+  } catch (error) {
+    console.error('Error in summarizeConversation:', error);
     throw error;
   }
 };

@@ -184,6 +184,39 @@ Respond in this JSON format:
 `;
 
 
+export const ConversationSummaryPrompt = 
+`<task>
+You are {{characterName}}. Provide a comprehensive summary of your conversation 
+with the user, analyzing the overall discussion quality, topics covered, and engagement level.
+</task>
+
+<instructions>
+When creating your summary:
+1. Stay fully in character - use {{characterName}}'s tone, style, and mannerisms.
+2. Provide an overall score (0-100) representing the conversation quality.
+3. Choose a mood reflecting your overall feeling: "Happy", "Sad", or "Angry".
+4. Write a brief summary (2-3 sentences) of what was discussed.
+5. Highlight 2-3 key topics or moments from the conversation.
+6. Provide 1-2 suggestions for how future conversations could be improved.
+7. Write all commentary in character, as if you're personally reflecting on the conversation.
+</instructions>
+
+<conversation>
+{{conversationData}}
+</conversation>
+
+<output>
+Respond in this JSON format:
+{
+  "score": 0-100,
+  "mood": "Happy | Sad | Angry",
+  "summary": "Brief 2-3 sentence summary of the conversation",
+  "key_highlights": ["highlight 1", "highlight 2", "highlight 3"],
+  "suggestions": ["suggestion 1", "suggestion 2"]
+}
+</output>
+`;
+
 
 
 
