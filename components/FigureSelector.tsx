@@ -272,7 +272,7 @@ const FigureSelector: React.FC<FigureSelectorProps> = ({
         </div>
         <div className="flex flex-col gap-4 items-end">
           <p>Built on ⓐ Arweave.</p>
-          <p>
+          <p hidden>
             <a
               href="#"
               onClick={(e) => {

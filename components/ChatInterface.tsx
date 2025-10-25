@@ -2263,7 +2263,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
         </div>
 
         {/* Right Sidebar - Collapsible Panels (TEE moved under image) */}
-        <div className="w-full xl:max-w-xs xl:w-88 space-y-3 self-start">
+        <div className="hidden w-full xl:max-w-xs xl:w-88 space-y-3 self-start">
           <AccordionItem id="improve-twin" title="Improve this Digital Twin">
             <ContributionPanel figure={figure} hideTitle />
           </AccordionItem>
