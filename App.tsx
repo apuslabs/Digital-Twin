@@ -75,7 +75,7 @@ const App: React.FC = () => {
               onSelectFigure={handleSelectFigure}
               onNavigateToCompetition={handleNavigateToCompetition}
             />
-            <CompetitionBanner onNavigate={handleNavigateToCompetition} />
+            {/* <CompetitionBanner onNavigate={handleNavigateToCompetition} /> */}
           </div>
         );
     }
