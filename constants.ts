@@ -27,7 +27,7 @@ export const FIGURES: Figure[] = [
     id: 'george_orwell',
     name: 'George Orwell',
     title: 'Author of 1984',
-    imageUrl: '/resources/George orwell.png',
+    imageUrl: '/resources/George_orwell.png',
     category: Category.Entertainment,
     systemPrompt: GeorgeOrwell_Prompt,
     welcomeMessage: 'Freedom begins with thought. What thoughts trouble you?',
