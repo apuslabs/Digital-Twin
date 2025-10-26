@@ -94,10 +94,10 @@ const FigureCard: React.FC<{
         <h3 className="text-base sm:text-lg font-bold">{figure.name}</h3>
         <p className="text-xs sm:text-sm text-neutral-500">{figure.title}</p>
       </div>
-      <div className="flex items-start text-[8px] sm:text-xs text-neutral-500">
+      {/* <div className="flex items-start text-[8px] sm:text-xs text-neutral-500">
         <UsersIcon />
         <span>{figure.contributors.toLocaleString()} contributors</span>
-      </div>
+      </div> */}
     </div>
     <div className="relative">
       <img
