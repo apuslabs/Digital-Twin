@@ -4,7 +4,7 @@ import { CATEGORIES, FIGURES } from "./constants";
 import Header from "./components/Header";
 import FigureSelector from "./components/FigureSelector";
 import ChatInterface from "./components/ChatInterface";
-import CompetitionBanner from "./components/CompetitionBanner";
+import HowToBanner from "./components/HowToBanner";
 import CompetitionPage from "./components/CompetitionPage";
 
 type View = "selector" | "chat" | "competition";
@@ -48,6 +48,14 @@ const App: React.FC = () => {
     setCurrentView("competition");
   };
 
+  const handleStartRandom = () => {
+    const pool = filteredFigures.length > 0 ? filteredFigures : FIGURES;
+    const randomIndex = Math.floor(Math.random() * pool.length);
+    const figure = pool[randomIndex];
+    setSelectedFigure(figure);
+    setCurrentView("chat");
+  };
+
   const renderContent = () => {
     switch (currentView) {
       case "chat":
@@ -75,7 +83,7 @@ const App: React.FC = () => {
               onSelectFigure={handleSelectFigure}
               onNavigateToCompetition={handleNavigateToCompetition}
             />
-            {/* <CompetitionBanner onNavigate={handleNavigateToCompetition} /> */}
+            <HowToBanner onStartRandom={handleStartRandom} />
           </div>
         );
     }

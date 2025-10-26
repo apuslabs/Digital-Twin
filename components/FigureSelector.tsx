@@ -98,6 +98,7 @@ const FigureCard: React.FC<{
         <UsersIcon />
         <span>{figure.contributors.toLocaleString()} contributors</span>
       </div> */}
+      <span className="ph ph-[arrow-up-right] mr-2 text-lg" aria-hidden></span>
     </div>
     <div className="relative">
       <img
@@ -141,7 +142,7 @@ const FigureSelector: React.FC<FigureSelectorProps> = ({
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   const setTweenFactor = useCallback((api: any) => {
-    tweenFactor.current = 0.3 * api.scrollSnapList().length;
+    tweenFactor.current = 0.4 * api.scrollSnapList().length;
   }, []);
 
   const numberWithinRange = (n: number, min: number, max: number) =>

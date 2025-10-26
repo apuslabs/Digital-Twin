@@ -1091,6 +1091,8 @@ const ScoreCardModal: React.FC<{
   const [evaluationError, setEvaluationError] = useState<string | null>(null);
   const shareSoundRef = useRef<HTMLAudioElement | null>(null);
   const [showFinal, setShowFinal] = useState(false);
+  const [shareChoiceOpen, setShareChoiceOpen] = useState(false);
+  const [capturedBlob, setCapturedBlob] = useState<Blob | null>(null);
 
   const isFigureMessage = (author: MessageAuthor | string) =>
     isFigureAuthor(author, figure.name);
@@ -1116,7 +1118,7 @@ const ScoreCardModal: React.FC<{
             .filter((msg) => msg.text.trim() !== "") // Filter out empty messages
             .map((msg) => msg.text);
 
-          const conversationData = userMessages.join('\n\n');
+          const conversationData = userMessages.join("\n\n");
           const characterName = figure.name;
 
           const result = await evaluateConversation(
@@ -1375,6 +1377,12 @@ const ScoreCardModal: React.FC<{
       new Date().toISOString().split("T")[0]
     }.png`;
 
+    // New flow: capture first, open choice modal; actions execute from modal
+    const openShareChoice = (blob: Blob) => {
+      setCapturedBlob(blob);
+      setShareChoiceOpen(true);
+    };
+
     // Strategy A: html2canvas
     const attemptHtml2Canvas = async () => {
       const html2canvas = await import("html2canvas").then((m) => m.default);
@@ -1418,13 +1426,13 @@ const ScoreCardModal: React.FC<{
         );
 
         if (blob) {
-          downloadBlob(blob, fileName);
+          openShareChoice(blob);
           return true;
         } else {
           // Fallback to data URL path
           const dataUrl = canvasElement.toDataURL("image/png");
           const blobFromDataUrl = await dataUrlToBlob(dataUrl);
-          downloadBlob(blobFromDataUrl, fileName);
+          openShareChoice(blobFromDataUrl);
           return true;
         }
       } finally {
@@ -1478,7 +1486,7 @@ const ScoreCardModal: React.FC<{
       });
 
       const blob = await dataUrlToBlob(dataUrl);
-      downloadBlob(blob, fileName);
+      openShareChoice(blob);
       return true;
     };
 
@@ -1807,6 +1815,73 @@ const ScoreCardModal: React.FC<{
             )}
           </button>
         </div>
+        {/* Share Choice Modal */}
+        <Modal
+          isOpen={shareChoiceOpen}
+          onClose={() => setShareChoiceOpen(false)}
+          title="Share Score Card"
+        >
+          <div className="space-y-4">
+            <p className="text-sm">
+              Choose how you want to share your score card.
+            </p>
+            <div className="grid sm:grid-cols-2 gap-3">
+              <button
+                className="flex items-center justify-center gap-2 border border-neutral-300 bg-black text-white px-4 py-2 text-sm hover:opacity-90 active:scale-95 transition"
+                onClick={async () => {
+                  if (!capturedBlob) return;
+                  try {
+                    const ClipboardItemCtor = (window as any).ClipboardItem;
+                    if (
+                      ClipboardItemCtor &&
+                      (navigator as any).clipboard &&
+                      "write" in (navigator as any).clipboard
+                    ) {
+                      await (navigator as any).clipboard.write([
+                        new ClipboardItemCtor({
+                          [capturedBlob.type]: capturedBlob,
+                        }),
+                      ]);
+                    }
+                  } catch (_) {}
+                  try {
+                    const url =
+                      typeof window !== "undefined" ? window.location.href : "";
+                    const intent = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
+                      "Had a conversation that will live forever. #DigitalImmortality https://twin.ar.io/"
+                    )}`;
+                    window.open(intent, "_blank", "noopener,noreferrer");
+                  } catch (_) {}
+                  setShareChoiceOpen(false);
+                }}
+              >
+                <span className="ph ph-[paperclip]" aria-hidden></span>
+                Copy photo and post to X
+              </button>
+              <button
+                className="flex items-center justify-center gap-2 border border-neutral-300 bg-white text-neutral-800 px-4 py-2 text-sm hover:bg-neutral-50 active:scale-95 transition"
+                onClick={() => {
+                  if (!capturedBlob) return;
+                  const name = `${figure.name.replace(/\s+/g, "_")}_ScoreCard_${
+                    new Date().toISOString().split("T")[0]
+                  }.png`;
+                  const url = URL.createObjectURL(capturedBlob);
+                  const link = document.createElement("a");
+                  link.href = url;
+                  link.download = name;
+                  document.body.appendChild(link);
+                  link.click();
+                  document.body.removeChild(link);
+                  URL.revokeObjectURL(url);
+                  setShareChoiceOpen(false);
+                }}
+              >
+                <span className="ph ph-[download-simple]" aria-hidden></span>
+                Save to desktop
+              </button>
+            </div>
+          </div>
+        </Modal>
       </div>
     </div>
   );
