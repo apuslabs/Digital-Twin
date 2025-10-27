@@ -167,6 +167,7 @@ When giving your evaluation:
 5. Focus your judgment on the quality and thoughtfulness of their messages. 
    Simple or weak input (like just saying "Hi") should receive a low score. 
    More thoughtful, curious, or engaging input should receive a higher score.
+6. Before replying, double-check that your response is a single valid JSON object exactly matching the required schema with no extra words or formatting.
 </instructions>
 
 <user_messages>
@@ -180,9 +181,9 @@ Respond in this JSON format:
   "mood": "Happy | Sad | Angry",
   "comments": "In-character commentary, length should only be one sentence or two short sentences, no more than 40 words."
 }
+Do not add any other text, explanations, or markdown. Output only this JSON object.
 </output>
 `;
-
 
 
 
