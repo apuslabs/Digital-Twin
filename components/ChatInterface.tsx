@@ -15,6 +15,11 @@ import TEEService from "../services/teeService";
 import ArweaveService from "../services/arweaveService";
 import Markdown from "react-markdown";
 import Modal from "./dialog/Modal";
+import {
+  trackChatPerCharacter,
+  trackPromptSubmissionWithReward,
+  trackSocialShare,
+} from "../services/analytics";
 
 interface ChatInterfaceProps {
   figure: Figure;
@@ -246,6 +251,14 @@ const ContributionPanel: React.FC<{ figure: Figure; hideTitle?: boolean }> = ({
             ]);
             setAttestationData(attestationResult);
             setWalletAddress(walletAddr || "");
+
+            // Track prompt submission with reward when evaluation is complete
+            if (evaluationResult.reward_amount) {
+              trackPromptSubmissionWithReward({
+                characterName: figure.name,
+                rewardAmount: evaluationResult.reward_amount,
+              });
+            }
           } catch (error) {
             console.error("Failed to fetch attestation or wallet data:", error);
             const errorData = { error: "Failed to fetch attestation data" };
@@ -1843,6 +1856,13 @@ const ScoreCardModal: React.FC<{
                       ]);
                     }
                   } catch (_) {}
+                  
+                  // Track social share to X/Twitter
+                  trackSocialShare({
+                    shareType: 'x',
+                    characterName: figure.name,
+                  });
+
                   try {
                     const url =
                       typeof window !== "undefined" ? window.location.href : "";
@@ -1861,6 +1881,13 @@ const ScoreCardModal: React.FC<{
                 className="flex items-center justify-center gap-2 border border-neutral-300 bg-white text-neutral-800 px-4 py-2 text-sm hover:bg-neutral-50 active:scale-95 transition"
                 onClick={() => {
                   if (!capturedBlob) return;
+
+                  // Track social share as download
+                  trackSocialShare({
+                    shareType: 'download',
+                    characterName: figure.name,
+                  });
+
                   const name = `${figure.name.replace(/\s+/g, "_")}_ScoreCard_${
                     new Date().toISOString().split("T")[0]
                   }.png`;
@@ -2062,6 +2089,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
     setMessages((prev) => [...prev, userMessage]);
     // Play send sound when the user submits a message
     playSound(sendSoundRef);
+
     setUserInput("");
     setIsLoading(true);
 
@@ -2081,6 +2109,10 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
       );
       // Play receive sound when the AI's message is finalized
       playSound(receiveSoundRef);
+
+      // Track chat per character (1. Chats per character)
+      const totalMessages = messages.length + 2; // +1 for user message, +1 for AI response
+      trackChatPerCharacter(figure.name, totalMessages);
     } catch (error) {
       setMessages((prev) =>
         prev.map((msg) =>
