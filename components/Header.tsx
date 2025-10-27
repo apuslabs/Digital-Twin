@@ -1,5 +1,4 @@
 import React from "react";
-import WalletConnector from "./WalletConnector";
 
 const Header: React.FC<{ onLogoClick?: () => void }> = ({ onLogoClick }) => {
   return (
@@ -22,7 +21,6 @@ const Header: React.FC<{ onLogoClick?: () => void }> = ({ onLogoClick }) => {
           </button>
 
           <div className="flex-1 flex justify-end">
-            <WalletConnector />
           </div>
         </div>
       </div>
