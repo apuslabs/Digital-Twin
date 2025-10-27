@@ -1,4 +1,3 @@
-
 import { ConversationEvaluationPrompt } from './prompts';
 
 interface ApusResponse {
@@ -171,7 +170,6 @@ export const evaluate = async (evaluationPrompt: string): Promise<any> => {
 
     // Generate a unique reference for this evaluation
     const reference = `EVAL-${Date.now()}`;
-
     // Build request parameters for completion endpoint
     const requestParams = {
       reference: reference,
@@ -192,7 +190,7 @@ export const evaluate = async (evaluationPrompt: string): Promise<any> => {
     }
 
     const data: ApusResponse = await response.json();
-    
+
     if (data.error) {
       throw new Error(`APUS evaluation error: ${data.error}`);
     }
@@ -207,11 +205,66 @@ export const evaluate = async (evaluationPrompt: string): Promise<any> => {
         responseText = data.body;
       }
     }
-
     // Try to parse as JSON for structured evaluation results
     try {
       return JSON.parse(responseText);
     } catch (e) {
+      // Some model replies embed a valid JSON object alongside commentary; walk the body
+      // to extract the most recent well-formed JSON block so downstream parsing succeeds.
+      const extractJsonSegments = (input: string): string[] => {
+        const segments: string[] = [];
+        let depth = 0;
+        let startIndex = -1;
+        let inString = false;
+        let isEscaped = false;
+
+        for (let i = 0; i < input.length; i++) {
+          const char = input[i];
+
+          if (inString) {
+            if (isEscaped) {
+              isEscaped = false;
+            } else if (char === '\\') {
+              isEscaped = true;
+            } else if (char === '"') {
+              inString = false;
+            }
+            continue;
+          }
+
+          if (char === '"') {
+            inString = true;
+            continue;
+          }
+
+          if (char === '{') {
+            if (depth === 0) {
+              startIndex = i;
+            }
+            depth += 1;
+          } else if (char === '}') {
+            if (depth > 0) {
+              depth -= 1;
+              if (depth === 0 && startIndex !== -1) {
+                segments.push(input.slice(startIndex, i + 1));
+                startIndex = -1;
+              }
+            }
+          }
+        }
+
+        return segments;
+      };
+
+      const segments = extractJsonSegments(responseText);
+      for (let i = segments.length - 1; i >= 0; i--) {
+        try {
+          return JSON.parse(segments[i]);
+        } catch (_segmentError) {
+          // continue trying earlier segments
+        }
+      }
+
       // If not JSON, return as plain text
       return { evaluation: responseText };
     }

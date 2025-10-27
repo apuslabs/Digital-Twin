@@ -1125,7 +1125,6 @@ const ScoreCardModal: React.FC<{
             characterName,
             conversationData
           );
-
           setEvaluationData(result);
         } catch (error) {
           console.error("Failed to evaluate conversation:", error);
