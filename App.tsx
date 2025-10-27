@@ -84,6 +84,7 @@ const App: React.FC = () => {
               onNavigateToCompetition={handleNavigateToCompetition}
             />
             <HowToBanner onStartRandom={handleStartRandom} />
+            {/* <CompetitionBanner onNavigate={handleNavigateToCompetition} /> */}
           </div>
         );
     }
