@@ -18,7 +18,7 @@ export const FIGURES: Figure[] = [
     systemPrompt: Trump_Prompt,
     welcomeMessage: 'It\'s great to be here, truly fantastic. People are saying this is the best chat they\'ve ever seen. What\'s on your mind? Let\'s make this chat great again.',
     contributors: 2451,
-    processId: 'bI6_qOobuHJBHMEubTLv3lmLHUfK043S4-kN0q_wt3E',
+    processId: '',
     arweaveTxId: 'MV4SpbpzOW-u7GmHZ1fyc-YEke1Lvo3qUazOJtV_pZo ',
     config: `{
     }`
