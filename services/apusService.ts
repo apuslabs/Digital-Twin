@@ -1,161 +1,168 @@
-import { ConversationEvaluationPrompt } from './prompts';
+import OpenAI from "openai";
 
-interface ApusResponse {
-  body?: string;
-  error?: string;
-  'X-Reference'?: string;
-  status?: number;
-}
+import { ConversationEvaluationPrompt } from "./prompts";
+
+type ChatHistoryMessage = {
+  role: "assistant" | "user";
+  content: string;
+};
 
 export interface ApusChat {
-  sessionId: string;
   systemInstruction: string;
   permanentPrompt: string;
   isFirstMessage: boolean;
+  history: ChatHistoryMessage[];
+  sessionId?: string;
 }
 
-const APUS_ENDPOINT = 'https://hb2.apus.network/~llamacpp@1.0/chat/serialize~json@1.0';
-const APUS_COMPLETION_ENDPOINT = 'https://hb2.apus.network/~llamacpp@1.0/completion/serialize~json@1.0';
+const openai = new OpenAI({
+  apiKey: "APUS_KEY",
+  baseURL: "https://hb.apus.network/~inference@1.0",
+  dangerouslyAllowBrowser:true
+});
 
-// Default configuration for APUS
-const DEFAULT_CONFIG = JSON.stringify({ max_tokens: 3000 });
+const DEFAULT_CHAT_MODEL = "Test_model";
+const DEFAULT_CHAT_MAX_TOKENS = 300;
+const DEFAULT_COMPLETION_MODEL = DEFAULT_CHAT_MODEL;
+const DEFAULT_COMPLETION_MAX_TOKENS = 600;
 
-// Generate a unique session ID
-const generateSessionId = (): string => {
-  const timestamp = Date.now();
-  const random = Math.random().toString(36).substring(2, 8);
-  return `session_${timestamp}_${random}`;
-};
+const parseJsonConfig = (config?: string): Record<string, unknown> => {
+  if (!config) {
+    return {};
+  }
 
-// Generate a reference ID (this could be from previous interactions or a default)
-const generateReference = (): string => {
-  // In a real implementation, this might come from a previous APUS interaction
-  // For now, we'll use a mock reference based on the example
-  const timestamp = Date.now();
-  return `DT-${timestamp}`;
-};
-
-// Create a chat session compatible with the existing interface
-export const startChatSession = (systemInstruction: string, permanentPrompt: string = ''): ApusChat | null => {
   try {
-    const sessionId = generateSessionId();
-    
-    const chat: ApusChat = {
-      sessionId,
+    return JSON.parse(config);
+  } catch (error) {
+    console.warn("Invalid APUS config provided, ignoring:", error);
+    return {};
+  }
+};
+
+const pickChatOptions = (
+  config: Record<string, unknown>
+): Partial<OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming> => {
+  const allowedKeys: Array<keyof OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming> =
+    [
+      "frequency_penalty",
+      "logit_bias",
+      "logprobs",
+      "max_tokens",
+      "n",
+      "presence_penalty",
+      "seed",
+      "stop",
+      "temperature",
+      "top_logprobs",
+      "top_p",
+    ];
+
+  const result: Partial<OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming> =
+    {};
+
+  for (const key of allowedKeys) {
+    const value = config[key as string];
+    if (value !== undefined) {
+      result[key] = value as never;
+    }
+  }
+
+  return result;
+};
+
+const buildSystemMessage = (session: ApusChat): string | null => {
+  const parts = [
+    session.permanentPrompt?.trim(),
+    session.systemInstruction?.trim(),
+  ].filter(Boolean);
+
+  if (!parts.length) {
+    return null;
+  }
+
+  return parts.join("\n\n");
+};
+
+const buildMessagePayload = (
+  session: ApusChat,
+  userMessage: string
+): OpenAI.Chat.Completions.ChatCompletionMessageParam[] => {
+  const messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [];
+  const systemContent = buildSystemMessage(session);
+
+  if (systemContent) {
+    messages.push({ role: "system", content: systemContent });
+  }
+
+  session.history.forEach((msg) => {
+    messages.push({ role: msg.role, content: msg.content });
+  });
+
+  messages.push({ role: "user", content: userMessage });
+
+  return messages;
+};
+
+export const startChatSession = (
+  systemInstruction: string,
+  permanentPrompt: string = ""
+): ApusChat | null => {
+  try {
+    return {
       systemInstruction,
       permanentPrompt,
-      isFirstMessage: true
+      isFirstMessage: true,
+      history: [],
     };
-    
-    return chat;
   } catch (error) {
     console.error("Failed to start APUS chat session", error);
     return null;
   }
 };
 
-// Send message to APUS and return the complete response
-const ensureUserPrefix = (content: string): string => {
-  const trimmed = content.trim();
-  return trimmed.toLowerCase().startsWith("user:") ? trimmed : `User: ${trimmed}`;
-};
+export const sendMessage = async (
+  chatSession: ApusChat,
+  message: string,
+  config: string
+): Promise<string> => {
+  if (!chatSession) {
+    throw new Error("Chat session is not initialized");
+  }
 
-export const sendMessage = async (chatSession: ApusChat, message: string, config: string): Promise<any> => {
-  try {
-    // Validate config
-    let validConfig = DEFAULT_CONFIG;
-    if (config) {
-      try {
-        JSON.parse(config);
-        validConfig = config;
-      } catch (e) {
-        console.warn('Invalid config provided, using default:', e);
-        validConfig = DEFAULT_CONFIG;
-      }
-    }
-    // Build the prompt with system instruction on first message only
-    const userPrompt = ensureUserPrefix(message);
-    let prompt = userPrompt;
-    
-    // Only send system instruction on the first message, combined with permanent prompt if available
-    if (chatSession.isFirstMessage) {
-      // const combinedSystemInstruction = chatSession.permanentPrompt 
-      //   ? `${chatSession.permanentPrompt}\n\n${chatSession.systemInstruction}`
-      //   : chatSession.systemInstruction;
-      const combinedSystemInstruction = chatSession.systemInstruction;
-      prompt = `${combinedSystemInstruction}\n\n${userPrompt}`;
-      
-        // Mark as no longer first message for subsequent calls
-        chatSession.isFirstMessage = false;
-    }
-    
-    // Generate a unique reference for this specific message
-    const messageReference = generateReference();
-    
-    // Build request parameters
-    const requestParams = {
-      reference: messageReference,
-      session_id: chatSession.sessionId,
-      prompt: prompt,
-      config: validConfig
+  const parsedConfig = parseJsonConfig(config);
+  const model =
+    typeof parsedConfig.model === "string" && parsedConfig.model.trim()
+      ? (parsedConfig.model as string)
+      : DEFAULT_CHAT_MODEL;
+  const chatOptions = pickChatOptions(parsedConfig);
+
+  const messages = buildMessagePayload(chatSession, message);
+
+  const requestPayload: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming =
+    {
+      model,
+      messages,
+      ...chatOptions,
     };
-    const url = new URL(APUS_ENDPOINT);
+  console.log("messages : ",messages)
+  try {
+    const response = await openai.chat.completions.create(requestPayload);
+    const content =
+      response.choices?.[0]?.message?.content?.trim() ?? "";
 
-    const response = await fetch(url.toString(), {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(requestParams)
-    });
+    chatSession.history.push({ role: "user", content: message });
+    chatSession.history.push({ role: "assistant", content });
+    chatSession.isFirstMessage = false;
 
-    if (!response.ok) {
-      throw new Error(`Failed to send message: ${response.status} ${response.statusText}`);
-    }
-
-    const data: ApusResponse = await response.json();
-    
-    if (data.error) {
-      throw new Error(`APUS error: ${data.error}`);
-    }
-
-    // Parse the response from the body field
-    let responseText = '';
-    if (data.body) {
-      try {
-        const bodyData = JSON.parse(data.body);
-        responseText = bodyData.result || '';
-      } catch (e) {
-        responseText = data.body;
-      }
-    }
-    // Normalize odd leading artifacts sometimes returned by the model
-    // - Strip BOM/zero-width no-break space
-    // - Remove a leading standalone '.' line
-    // - Trim only left side to keep user's intended trailing whitespace/newlines
-    if (responseText) {
-      // Remove BOM/ZWNBSP if present
-      responseText = responseText.replace(/^\uFEFF/, "");
-      // Remove a leading line that is just a period
-      const lines = responseText.split(/\r?\n/);
-      if (lines.length > 0 && lines[0].trim() === '.') {
-        lines.shift();
-        responseText = lines.join('\n');
-      }
-      // Avoid accidental extra leading blank lines
-      responseText = responseText.replace(/^\s*\n/, '');
-    }
-
-    return responseText;
+    return content;
   } catch (error) {
-    console.error('Error in sendMessage:', error);
+    console.error("Error in sendMessage:", error);
     throw error;
   }
 };
 
-// Helper function to create evaluation prompt for conversation
 export const createConversationEvaluationPrompt = (
-  characterName: string, 
+  characterName: string,
   conversationData: string
 ): string => {
   return ConversationEvaluationPrompt
@@ -163,163 +170,60 @@ export const createConversationEvaluationPrompt = (
     .replace(/\{\{conversationData\}\}/g, conversationData);
 };
 
-
-// Evaluate conversation quality using completion endpoint
-export const evaluate = async (evaluationPrompt: string): Promise<any> => {
+export const evaluate = async (evaluationPrompt: string): Promise<string> => {
   try {
-
-    // Generate a unique reference for this evaluation
-    const reference = `EVAL-${Date.now()}`;
-    // Build request parameters for completion endpoint
-    const requestParams = {
-      reference: reference,
+    const completion = await openai.completions.create({
+      model: DEFAULT_COMPLETION_MODEL,
       prompt: evaluationPrompt,
-    };
-
-    const url = new URL(APUS_COMPLETION_ENDPOINT);
-    const response = await fetch(url.toString(), {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(requestParams)
+      max_tokens: DEFAULT_COMPLETION_MAX_TOKENS,
     });
 
-    if (!response.ok) {
-      throw new Error(`Failed to evaluate conversation: ${response.status} ${response.statusText}`);
-    }
-
-    const data: ApusResponse = await response.json();
-
-    if (data.error) {
-      throw new Error(`APUS evaluation error: ${data.error}`);
-    }
-
-    // Parse the response from the body field
-    let responseText = '';
-    if (data.body) {
-      try {
-        const bodyData = JSON.parse(data.body);
-        responseText = bodyData.result || '';
-      } catch (e) {
-        responseText = data.body;
-      }
-    }
-    // Try to parse as JSON for structured evaluation results
-    try {
-      return JSON.parse(responseText);
-    } catch (e) {
-      // Some model replies embed a valid JSON object alongside commentary; walk the body
-      // to extract the most recent well-formed JSON block so downstream parsing succeeds.
-      const extractJsonSegments = (input: string): string[] => {
-        const segments: string[] = [];
-        let depth = 0;
-        let startIndex = -1;
-        let inString = false;
-        let isEscaped = false;
-
-        for (let i = 0; i < input.length; i++) {
-          const char = input[i];
-
-          if (inString) {
-            if (isEscaped) {
-              isEscaped = false;
-            } else if (char === '\\') {
-              isEscaped = true;
-            } else if (char === '"') {
-              inString = false;
-            }
-            continue;
-          }
-
-          if (char === '"') {
-            inString = true;
-            continue;
-          }
-
-          if (char === '{') {
-            if (depth === 0) {
-              startIndex = i;
-            }
-            depth += 1;
-          } else if (char === '}') {
-            if (depth > 0) {
-              depth -= 1;
-              if (depth === 0 && startIndex !== -1) {
-                segments.push(input.slice(startIndex, i + 1));
-                startIndex = -1;
-              }
-            }
-          }
-        }
-
-        return segments;
-      };
-
-      const segments = extractJsonSegments(responseText);
-      for (let i = segments.length - 1; i >= 0; i--) {
-        try {
-          return JSON.parse(segments[i]);
-        } catch (_segmentError) {
-          // continue trying earlier segments
-        }
-      }
-
-      // If not JSON, return as plain text
-      return { evaluation: responseText };
-    }
-    
+    return completion.choices?.[0]?.text?.trim() ?? "";
   } catch (error) {
-    console.error('Error in evaluate:', error);
+    console.error("Error in evaluate:", error);
     throw error;
   }
 };
 
-// Helper function to format conversation messages for evaluation
-export const formatConversationForEvaluation = (messages: Array<{author: string, content: string}>): string => {
-  return messages
-    .map(msg => `${msg.author}: ${msg.content}`)
-    .join('\n\n');
+const extractJsonFromText = (input: string): unknown => {
+  if (!input) {
+    return { evaluation: "" };
+  }
+
+  const fencedMatch = input.match(/```json\s*([\s\S]*?)```/i);
+  const candidate = fencedMatch?.[1]?.trim() ?? input.trim();
+
+  try {
+    return JSON.parse(candidate);
+  } catch {
+    return { evaluation: input };
+  }
 };
 
-// High-level function to evaluate a conversation with a character
 export const evaluateConversation = async (
   characterName: string,
   conversationData: string
 ): Promise<any> => {
-  try {
-    const evaluationPrompt = createConversationEvaluationPrompt(
-      characterName,
-      conversationData
-    );
-    
-    const result = await evaluate(evaluationPrompt);
-    
-    // Parse the evaluation result if it's wrapped in markdown
-    if (result && result.evaluation && typeof result.evaluation === 'string') {
-      try {
-        // Extract JSON from markdown code blocks
-        const jsonMatch = result.evaluation.match(/```json\n([\s\S]*?)\n```/);
-        if (jsonMatch && jsonMatch[1]) {
-          const parsedResult = JSON.parse(jsonMatch[1]);
-          return parsedResult;
-        } else {
-          // Try parsing the raw string if no markdown wrapper
-          const parsedResult = JSON.parse(result.evaluation);
-          return parsedResult;
-        }
-      } catch (parseError) {
-        console.warn('Failed to parse evaluation JSON, using raw result:', parseError);
-        return result;
-      }
-    }
-    
-    return result;
-  } catch (error) {
-    console.error('Error in evaluateConversation:', error);
-    throw error;
+  const evaluationPrompt = createConversationEvaluationPrompt(
+    characterName,
+    conversationData
+  );
+
+  const rawResult = await evaluate(evaluationPrompt);
+
+  if (!rawResult) {
+    return { evaluation: "" };
   }
+
+  return extractJsonFromText(rawResult);
 };
 
-// Export the chat type for compatibility
+export const formatConversationForEvaluation = (
+  messages: Array<{ author: string; content: string }>
+): string => {
+  return messages
+    .map((msg) => `${msg.author}: ${msg.content}`)
+    .join("\n\n");
+};
+
 export type { ApusChat as Chat };
