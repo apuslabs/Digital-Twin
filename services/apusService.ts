@@ -12,7 +12,6 @@ export interface ApusChat {
   permanentPrompt: string;
   isFirstMessage: boolean;
   history: ChatHistoryMessage[];
-  sessionId?: string;
 }
 
 const openai = new OpenAI({
@@ -24,7 +23,7 @@ const openai = new OpenAI({
 const DEFAULT_CHAT_MODEL = "Test_model";
 const DEFAULT_CHAT_MAX_TOKENS = 300;
 const DEFAULT_COMPLETION_MODEL = DEFAULT_CHAT_MODEL;
-const DEFAULT_COMPLETION_MAX_TOKENS = 600;
+const DEFAULT_COMPLETION_MAX_TOKENS = 200;
 
 const parseJsonConfig = (config?: string): Record<string, unknown> => {
   if (!config) {
@@ -144,7 +143,6 @@ export const sendMessage = async (
       messages,
       ...chatOptions,
     };
-  console.log("messages : ",messages)
   try {
     const response = await openai.chat.completions.create(requestPayload);
     const content =
@@ -210,7 +208,6 @@ export const evaluateConversation = async (
   );
 
   const rawResult = await evaluate(evaluationPrompt);
-
   if (!rawResult) {
     return { evaluation: "" };
   }
