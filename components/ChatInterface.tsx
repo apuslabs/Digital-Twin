@@ -756,7 +756,7 @@ const TEEProtectionPanel: React.FC<{
     fetchAttestation();
   }, [sessionId]);
 
-  const displaySessionId = sessionId.substring(0, 16) + "...";
+  const displaySessionId = sessionId;
   const attestationStatus =
     attestationData?.status === "VERIFIED"
       ? "✓"
@@ -1528,8 +1528,7 @@ const ScoreCardModal: React.FC<{
 
   const highlights = getConversationHighlights();
   const sessionId = attestationData?.sessionId || "loading...";
-  const displaySessionId =
-    sessionId.length > 16 ? sessionId.substring(0, 16) + "..." : sessionId;
+  const displaySessionId = sessionId;
   const pairLabel = `${figure.name.split(" ")[0].toUpperCase()}/MOOD`;
   const headlinePercent = (() => {
     const total = Math.max(0, highlights.messageCount);
