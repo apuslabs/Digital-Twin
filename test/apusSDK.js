@@ -2,7 +2,7 @@ import OpenAI from "openai";
 
 const openai = new OpenAI({
   apiKey: "APUS_KEY",
-  baseURL: "https://hb.apus.network/~inference@1.0",
+  baseURL: "https://hb.apus.network/v1",
 });
 
 const logResult = (label, value) => {
