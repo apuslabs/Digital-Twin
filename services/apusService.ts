@@ -12,6 +12,8 @@ export interface ApusChat {
   permanentPrompt: string;
   isFirstMessage: boolean;
   history: ChatHistoryMessage[];
+  sessionId: string;
+  contextSummary?: string;
 }
 
 const openai = new OpenAI({
@@ -20,10 +22,77 @@ const openai = new OpenAI({
   dangerouslyAllowBrowser:true
 });
 
-const DEFAULT_CHAT_MODEL = "Test_model";
-const DEFAULT_CHAT_MAX_TOKENS = 300;
+const DEFAULT_CHAT_MODEL = "Gemma_3_27B";
 const DEFAULT_COMPLETION_MODEL = DEFAULT_CHAT_MODEL;
 const DEFAULT_COMPLETION_MAX_TOKENS = 200;
+const MAX_HISTORY_MESSAGES = 10;
+const SUMMARY_MAX_LENGTH = 800;
+
+// Generate a unique session ID
+const generateSessionId = (): string => {
+  const timestamp = Date.now();
+  const random = Math.random().toString(36).substring(2, 8);
+  return `session_${timestamp}_${random}`;
+};
+
+const condenseWhitespace = (value: string): string =>
+  value.replace(/\s+/g, " ").trim();
+
+const truncateForSummary = (value: string, maxLength: number): string => {
+  if (value.length <= maxLength) {
+    return value;
+  }
+  return `${value.slice(0, Math.max(maxLength - 3, 0))}...`;
+};
+
+const formatMessagesForSummary = (
+  messages: ChatHistoryMessage[]
+): string => {
+  return messages
+    .map((msg) => {
+      const roleLabel = msg.role === "user" ? "User" : "Assistant";
+      const sanitized = truncateForSummary(
+        condenseWhitespace(msg.content),
+        120
+      );
+      return `${roleLabel}: ${sanitized}`;
+    })
+    .join(" | ");
+};
+
+const mergeSummary = (
+  existingSummary: string | undefined,
+  removedMessages: ChatHistoryMessage[]
+): string | undefined => {
+  if (!removedMessages.length) {
+    return existingSummary;
+  }
+
+  const addition = formatMessagesForSummary(removedMessages);
+  const combined = [existingSummary, addition]
+    .filter((part) => part && part.trim().length)
+    .join(" ");
+
+  if (!combined) {
+    return undefined;
+  }
+
+  if (combined.length <= SUMMARY_MAX_LENGTH) {
+    return combined;
+  }
+
+  return combined.slice(combined.length - SUMMARY_MAX_LENGTH);
+};
+
+const trimChatHistory = (session: ApusChat): void => {
+  if (session.history.length <= MAX_HISTORY_MESSAGES) {
+    return;
+  }
+
+  const excessCount = session.history.length - MAX_HISTORY_MESSAGES;
+  const removed = session.history.splice(0, excessCount);
+  session.contextSummary = mergeSummary(session.contextSummary, removed);
+};
 
 const parseJsonConfig = (config?: string): Record<string, unknown> => {
   if (!config) {
@@ -93,6 +162,13 @@ const buildMessagePayload = (
     messages.push({ role: "system", content: systemContent });
   }
 
+  if (session.contextSummary && session.contextSummary.trim()) {
+    messages.push({
+      role: "system",
+      content: `Summary of earlier conversation:\n${session.contextSummary.trim()}`,
+    });
+  }
+
   session.history.forEach((msg) => {
     messages.push({ role: msg.role, content: msg.content });
   });
@@ -107,11 +183,15 @@ export const startChatSession = (
   permanentPrompt: string = ""
 ): ApusChat | null => {
   try {
+    const sessionId = generateSessionId();
+
     return {
       systemInstruction,
       permanentPrompt,
       isFirstMessage: true,
       history: [],
+      contextSummary: "",
+      sessionId,
     };
   } catch (error) {
     console.error("Failed to start APUS chat session", error);
@@ -127,6 +207,8 @@ export const sendMessage = async (
   if (!chatSession) {
     throw new Error("Chat session is not initialized");
   }
+  console.log("length : " , chatSession.history.length)
+  trimChatHistory(chatSession);
 
   const parsedConfig = parseJsonConfig(config);
   const model =
@@ -136,7 +218,7 @@ export const sendMessage = async (
   const chatOptions = pickChatOptions(parsedConfig);
 
   const messages = buildMessagePayload(chatSession, message);
-
+  console.log("message : ",messages)
   const requestPayload: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming =
     {
       model,
@@ -151,6 +233,7 @@ export const sendMessage = async (
     chatSession.history.push({ role: "user", content: message });
     chatSession.history.push({ role: "assistant", content });
     chatSession.isFirstMessage = false;
+    trimChatHistory(chatSession);
 
     return content;
   } catch (error) {
