@@ -13,20 +13,18 @@ export interface ApusChat {
   isFirstMessage: boolean;
   history: ChatHistoryMessage[];
   sessionId: string;
-  contextSummary?: string;
 }
 
 const openai = new OpenAI({
   apiKey: "APUS_KEY",
-  baseURL: "https://hb.apus.network/~inference@1.0",
+  baseURL: "https://hb.apus.network/v1/",
   dangerouslyAllowBrowser:true
 });
 
 const DEFAULT_CHAT_MODEL = "Gemma_3_27B";
 const DEFAULT_COMPLETION_MODEL = DEFAULT_CHAT_MODEL;
 const DEFAULT_COMPLETION_MAX_TOKENS = 200;
-const MAX_HISTORY_MESSAGES = 10;
-const SUMMARY_MAX_LENGTH = 800;
+const MAX_HISTORY_MESSAGES = 12;
 
 // Generate a unique session ID
 const generateSessionId = (): string => {
@@ -35,63 +33,13 @@ const generateSessionId = (): string => {
   return `session_${timestamp}_${random}`;
 };
 
-const condenseWhitespace = (value: string): string =>
-  value.replace(/\s+/g, " ").trim();
-
-const truncateForSummary = (value: string, maxLength: number): string => {
-  if (value.length <= maxLength) {
-    return value;
-  }
-  return `${value.slice(0, Math.max(maxLength - 3, 0))}...`;
-};
-
-const formatMessagesForSummary = (
-  messages: ChatHistoryMessage[]
-): string => {
-  return messages
-    .map((msg) => {
-      const roleLabel = msg.role === "user" ? "User" : "Assistant";
-      const sanitized = truncateForSummary(
-        condenseWhitespace(msg.content),
-        120
-      );
-      return `${roleLabel}: ${sanitized}`;
-    })
-    .join(" | ");
-};
-
-const mergeSummary = (
-  existingSummary: string | undefined,
-  removedMessages: ChatHistoryMessage[]
-): string | undefined => {
-  if (!removedMessages.length) {
-    return existingSummary;
-  }
-
-  const addition = formatMessagesForSummary(removedMessages);
-  const combined = [existingSummary, addition]
-    .filter((part) => part && part.trim().length)
-    .join(" ");
-
-  if (!combined) {
-    return undefined;
-  }
-
-  if (combined.length <= SUMMARY_MAX_LENGTH) {
-    return combined;
-  }
-
-  return combined.slice(combined.length - SUMMARY_MAX_LENGTH);
-};
-
 const trimChatHistory = (session: ApusChat): void => {
   if (session.history.length <= MAX_HISTORY_MESSAGES) {
     return;
   }
 
   const excessCount = session.history.length - MAX_HISTORY_MESSAGES;
-  const removed = session.history.splice(0, excessCount);
-  session.contextSummary = mergeSummary(session.contextSummary, removed);
+  session.history.splice(0, excessCount);
 };
 
 const parseJsonConfig = (config?: string): Record<string, unknown> => {
@@ -162,13 +110,6 @@ const buildMessagePayload = (
     messages.push({ role: "system", content: systemContent });
   }
 
-  if (session.contextSummary && session.contextSummary.trim()) {
-    messages.push({
-      role: "system",
-      content: `Summary of earlier conversation:\n${session.contextSummary.trim()}`,
-    });
-  }
-
   session.history.forEach((msg) => {
     messages.push({ role: msg.role, content: msg.content });
   });
@@ -190,7 +131,6 @@ export const startChatSession = (
       permanentPrompt,
       isFirstMessage: true,
       history: [],
-      contextSummary: "",
       sessionId,
     };
   } catch (error) {
