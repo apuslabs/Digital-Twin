@@ -147,7 +147,6 @@ export const sendMessage = async (
   if (!chatSession) {
     throw new Error("Chat session is not initialized");
   }
-  console.log("length : " , chatSession.history.length)
   trimChatHistory(chatSession);
 
   const parsedConfig = parseJsonConfig(config);
@@ -158,7 +157,6 @@ export const sendMessage = async (
   const chatOptions = pickChatOptions(parsedConfig);
 
   const messages = buildMessagePayload(chatSession, message);
-  console.log("message : ",messages)
   const requestPayload: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming =
     {
       model,
