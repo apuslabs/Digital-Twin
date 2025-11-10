@@ -113,9 +113,9 @@ const FigureCard: React.FC<{
           }
         }}
         alt={figure.name}
-        className="w-full h-96 sm:h-[50vh] object-cover object-top"
+        className="w-full h-96 sm:h-[50vh] object-cover object-[50%_20%] overflow-visible"
       />
-      <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-white/100 to-transparent group-hover:opacity-50 transition-opacity duration-1000 ease-out-circ h-48"></div>
+      <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-white/100 to-transparent group-hover:opacity-50 transition-opacity duration-1000 ease-out-circ h-48 transform translate-y-4"></div>
       {showEnterHint && (
         <div className="pointer-events-none absolute bottom-4 left-1/2 -translate-x-1/2 flex justify-center">
           <span className="px-3 py-1 border border-border bg-white text-neutral-900 text-[8px] sm:text-xs w-fit">
@@ -255,13 +255,7 @@ const FigureSelector: React.FC<FigureSelectorProps> = ({
       <div className="flex justify-between">
         <div className="flex flex-col">
           <h2 className="font mb-4 flex items-center gap-4">
-            <img
-              src={TwinLogoMark}
-              alt="Twin Logo Mark"
-              aria-hidden="true"
-              className="h-6 w-auto"
-            />
-            <span className="scale-y-125 font-bold text-sm sm:text-2xl">
+            <span className="scale-y-125 font-bold text-sm sm:text-lg">
               Select a Digital Twin
             </span>
           </h2>

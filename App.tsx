@@ -7,6 +7,11 @@ import ChatInterface from "./components/ChatInterface";
 import HowToBanner from "./components/HowToBanner";
 import CompetitionPage from "./components/CompetitionPage";
 
+const dreamVideoUrl = new URL(
+  "./resources/videos/network-is-dreaming.mp4",
+  import.meta.url
+).href;
+
 type View = "selector" | "chat" | "competition";
 
 const App: React.FC = () => {
@@ -75,6 +80,14 @@ const App: React.FC = () => {
       default:
         return (
           <div className="flex flex-col gap-6">
+            <video
+              src={dreamVideoUrl}
+              autoPlay
+              muted
+              loop
+              playsInline
+              className="w-full rounded-md border border-border"
+            />
             <FigureSelector
               categories={CATEGORIES}
               activeCategory={activeCategory}
