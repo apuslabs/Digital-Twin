@@ -1,5 +1,5 @@
 import { Category, Figure } from './types';
-import { Trump_Prompt,GeorgeOrwell_Prompt,Obama_Prompt,AynRand_Prompt } from './services/prompts';
+import { Trump_Prompt,GeorgeOrwell_Prompt,Obama_Prompt,AynRand_Prompt, Satoshi_Prompt } from './services/prompts';
 
 export const CATEGORIES: Category[] = [
     Category.Politics,
@@ -62,6 +62,20 @@ export const FIGURES: Figure[] = [
     contributors: 1957,
     processId: '',
     arweaveTxId: 'FiILxHo8NNd6uII1VcabyDLaUhsl4JWXE3nHYc4zH2o',
+    config: `{
+    }`
+  },
+  {
+    id: 'satoshi_nakamoto',
+    name: 'Satoshi Nakamoto',
+    title: 'Inventor of Bitcoin',
+    imageUrl: '/resources/satoshi_mockup.svg',
+    category: Category.Tech,
+    systemPrompt: Satoshi_Prompt,
+    welcomeMessage: 'I have been working on a new electronic cash system that\'s fully peer-to-peer, with no trusted third party. Shall we discuss the protocol?',
+    contributors: 2009,
+    processId: '',
+    arweaveTxId: '',
     config: `{
     }`
   },
