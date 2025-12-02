@@ -1,5 +1,6 @@
 import { Category, Figure } from './types';
 import { Trump_Prompt,GeorgeOrwell_Prompt,Obama_Prompt,AynRand_Prompt, Satoshi_Prompt } from './services/prompts';
+import { getSatoshiWelcomeMessage } from './utils/welcomeMessages';
 
 export const CATEGORIES: Category[] = [
     Category.Politics,
@@ -9,6 +10,34 @@ export const CATEGORIES: Category[] = [
 ];
 
 export const FIGURES: Figure[] = [
+  {
+    id: 'satoshi_nakamoto',
+    name: 'Satoshi Nakamoto',
+    title: 'Inventor of Bitcoin',
+    imageUrl: '/resources/satoshi.png',
+    category: Category.Tech,
+    systemPrompt: Satoshi_Prompt,
+    welcomeMessage: getSatoshiWelcomeMessage,
+    contributors: 2009,
+    processId: '',
+    arweaveTxId: '',
+    config: `{
+    }`
+  },
+  {
+    id: 'ayn_rand',
+    name: 'Ayn Rand',
+    title: 'Writer and Philosopher',
+    imageUrl: '/resources/Ayan.png',
+    category: Category.Entertainment,
+    systemPrompt: AynRand_Prompt,
+    welcomeMessage: 'The question is not who is going to let me; it\'s who is going to stop me. What do you wish to discuss?',
+    contributors: 1957,
+    processId: '',
+    arweaveTxId: 'FiILxHo8NNd6uII1VcabyDLaUhsl4JWXE3nHYc4zH2o',
+    config: `{
+    }`
+  },
   {
     id: 'donald_trump',
     name: 'Donald Trump',
@@ -48,34 +77,6 @@ export const FIGURES: Figure[] = [
     contributors: 1873,
     processId: '',
     arweaveTxId: 'VmeTwj877ppg0acy_nrc41iAtDqusadxiyvxaiCLaWI',
-    config: `{
-    }`
-  },
-  {
-    id: 'ayn_rand',
-    name: 'Ayn Rand',
-    title: 'Writer and Philosopher',
-    imageUrl: '/resources/Ayan.png',
-    category: Category.Entertainment,
-    systemPrompt: AynRand_Prompt,
-    welcomeMessage: 'The question is not who is going to let me; it’s who is going to stop me. What do you wish to discuss?',
-    contributors: 1957,
-    processId: '',
-    arweaveTxId: 'FiILxHo8NNd6uII1VcabyDLaUhsl4JWXE3nHYc4zH2o',
-    config: `{
-    }`
-  },
-  {
-    id: 'satoshi_nakamoto',
-    name: 'Satoshi Nakamoto',
-    title: 'Inventor of Bitcoin',
-    imageUrl: '/resources/satoshi_mockup.svg',
-    category: Category.Tech,
-    systemPrompt: Satoshi_Prompt,
-    welcomeMessage: 'I have been working on a new electronic cash system that\'s fully peer-to-peer, with no trusted third party. Shall we discuss the protocol?',
-    contributors: 2009,
-    processId: '',
-    arweaveTxId: '',
     config: `{
     }`
   },

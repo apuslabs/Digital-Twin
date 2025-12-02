@@ -13,7 +13,7 @@ export interface Figure {
   systemPrompt: string;
   config: string; 
   category: Category;
-  welcomeMessage: string;
+  welcomeMessage: string | (() => string); // Can be static string or dynamic function
   contributors: number;
   processId: string; // AO process ID for this character's agent
   arweaveTxId: string; // Arweave transaction ID for permanent prompt storage
