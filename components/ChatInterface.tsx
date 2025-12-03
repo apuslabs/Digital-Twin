@@ -2176,7 +2176,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                     onClick={(e) => {
                       e.preventDefault();
                       window.open(
-                        `https://load-s3-agent.load.network/${figure.arweaveTxId}`,
+                        `https://gateway.s3-node-1.load.network/resolve/${figure.arweaveTxId}`,
                         "_blank"
                       );
                     }}

@@ -20,7 +20,7 @@ export const FIGURES: Figure[] = [
     welcomeMessage: getSatoshiWelcomeMessage,
     contributors: 2009,
     processId: '',
-    arweaveTxId: '',
+    arweaveTxId: 'WeZx67qhbAx72NB69UfsfZdcjKRYhizZxis45UUI-RU',
     config: `{
     }`
   },
