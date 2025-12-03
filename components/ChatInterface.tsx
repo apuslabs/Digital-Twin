@@ -1302,6 +1302,11 @@ const ScoreCardModal: React.FC<{
       moodFolder = "Trump";
     } else if (figureName.includes("rand")) {
       moodFolder = "Rand";
+    } else if (
+      figureName.includes("satoshi") ||
+      figureName.includes("nakamoto")
+    ) {
+      moodFolder = "Satoshi";
     }
 
     switch (mood) {
@@ -1855,10 +1860,10 @@ const ScoreCardModal: React.FC<{
                       ]);
                     }
                   } catch (_) {}
-                  
+
                   // Track social share to X/Twitter
                   trackSocialShare({
-                    shareType: 'x',
+                    shareType: "x",
                     characterName: figure.name,
                   });
 
@@ -1883,7 +1888,7 @@ const ScoreCardModal: React.FC<{
 
                   // Track social share as download
                   trackSocialShare({
-                    shareType: 'download',
+                    shareType: "download",
                     characterName: figure.name,
                   });
 
@@ -1990,9 +1995,15 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
         },
       ]);
       const typingTimer = window.setTimeout(() => {
+        // Handle both static string and dynamic function for welcomeMessage
+        const welcomeText =
+          typeof figure.welcomeMessage === "function"
+            ? figure.welcomeMessage()
+            : figure.welcomeMessage;
+
         setMessages((prev) =>
           prev.map((m) =>
-            m.id === welcomeId ? { ...m, text: figure.welcomeMessage } : m
+            m.id === welcomeId ? { ...m, text: welcomeText } : m
           )
         );
         // Play receive sound when the first figure message (welcome) completes
@@ -2165,7 +2176,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                     onClick={(e) => {
                       e.preventDefault();
                       window.open(
-                        `https://load-s3-agent.load.network/${figure.arweaveTxId}`,
+                        `https://gateway.s3-node-1.load.network/resolve/${figure.arweaveTxId}`,
                         "_blank"
                       );
                     }}
