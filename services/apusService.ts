@@ -18,7 +18,7 @@ export interface ApusChat {
 const openai = new OpenAI({
   apiKey: "APUS_KEY",
   baseURL: "https://hb.apus.network/~inference@1.0/",
-  dangerouslyAllowBrowser:true
+  dangerouslyAllowBrowser: true
 });
 
 const DEFAULT_CHAT_MODEL = "Gemma_3_27B";
@@ -158,11 +158,11 @@ export const sendMessage = async (
 
   const messages = buildMessagePayload(chatSession, message);
   const requestPayload: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming =
-    {
-      model,
-      messages,
-      ...chatOptions,
-    };
+  {
+    model,
+    messages,
+    ...chatOptions,
+  };
   try {
     const response = await openai.chat.completions.create(requestPayload);
     const content =
@@ -176,6 +176,62 @@ export const sendMessage = async (
     return content;
   } catch (error) {
     console.error("Error in sendMessage:", error);
+    throw error;
+  }
+};
+
+/**
+ * Send a message with streaming support.
+ * Calls onChunk for each content delta, enabling real-time text display.
+ */
+export const sendMessageStream = async (
+  chatSession: ApusChat,
+  message: string,
+  config: string,
+  onChunk: (content: string) => void
+): Promise<string> => {
+  if (!chatSession) {
+    throw new Error("Chat session is not initialized");
+  }
+  trimChatHistory(chatSession);
+
+  const parsedConfig = parseJsonConfig(config);
+  const model =
+    typeof parsedConfig.model === "string" && parsedConfig.model.trim()
+      ? (parsedConfig.model as string)
+      : DEFAULT_CHAT_MODEL;
+  const chatOptions = pickChatOptions(parsedConfig);
+
+  const messages = buildMessagePayload(chatSession, message);
+
+  try {
+    const requestParams: OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming = {
+      ...chatOptions,
+      model,
+      messages,
+      stream: true,
+    };
+
+    const stream = await openai.chat.completions.create(requestParams);
+
+    let fullContent = "";
+
+    for await (const chunk of stream) {
+      const content = chunk.choices[0]?.delta?.content ?? "";
+      if (content) {
+        fullContent += content;
+        onChunk(content);
+      }
+    }
+
+    chatSession.history.push({ role: "user", content: message });
+    chatSession.history.push({ role: "assistant", content: fullContent });
+    chatSession.isFirstMessage = false;
+    trimChatHistory(chatSession);
+
+    return fullContent;
+  } catch (error) {
+    console.error("Error in sendMessageStream:", error);
     throw error;
   }
 };

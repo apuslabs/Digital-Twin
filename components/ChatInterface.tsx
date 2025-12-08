@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useRef, FormEvent } from "react";
+import React, { useState, useEffect, useRef, FormEvent, useCallback } from "react";
 import MessageComposer from "./chat/MessageComposer";
 import ContributionDetailCard from "./ContributionDetailCard";
 
 import { Figure, ChatMessage, MessageAuthor } from "../types";
 import {
   startChatSession,
-  sendMessage,
+  sendMessageStream,
   Chat,
   evaluateConversation,
   formatConversationForEvaluation,
@@ -149,9 +149,8 @@ const AccordionItem: React.FC<{
       >
         <span className="text-xs">{title}</span>
         <span
-          className={`transition-transform ${
-            isOpen ? "rotate-180" : "rotate-0"
-          }`}
+          className={`transition-transform ${isOpen ? "rotate-180" : "rotate-0"
+            }`}
           aria-hidden="true"
         >
           <ChevronIcon />
@@ -340,9 +339,8 @@ const ContributionPanel: React.FC<{ figure: Figure; hideTitle?: boolean }> = ({
       } else {
         setSubmitMsg({
           title: "Submission Error",
-          body: `Error submitting contribution: ${
-            result?.error || "Unknown error"
-          }\n\nPlease try again or check your wallet connection.`,
+          body: `Error submitting contribution: ${result?.error || "Unknown error"
+            }\n\nPlease try again or check your wallet connection.`,
         });
         setSubmitStatus("error");
         setIsSubmitModalOpen(true);
@@ -520,18 +518,16 @@ const ContributionPanel: React.FC<{ figure: Figure; hideTitle?: boolean }> = ({
           </>
         ) : (
           <div
-            className={`mb-3 p-3 border flex items-start gap-3 ${
-              submitStatus === "error"
+            className={`mb-3 p-3 border flex items-start gap-3 ${submitStatus === "error"
                 ? "border-red-300 bg-red-50"
                 : "border-neutral-300 bg-white"
-            }`}
+              }`}
           >
             <span
-              className={`ph ${
-                submitStatus === "error"
+              className={`ph ${submitStatus === "error"
                   ? "ph-[x-circle] text-red-600"
                   : "ph-[info] text-neutral-700"
-              } text-xl leading-none mt-0.5`}
+                } text-xl leading-none mt-0.5`}
               aria-hidden
             ></span>
             <div className="text-sm text-neutral-900">
@@ -555,13 +551,12 @@ const ContributionPanel: React.FC<{ figure: Figure; hideTitle?: boolean }> = ({
           )}
           <button
             onClick={() => setIsSubmitModalOpen(false)}
-            className={`px-4 py-2 border text-sm active:scale-95 transition ${
-              submitStatus === "success"
+            className={`px-4 py-2 border text-sm active:scale-95 transition ${submitStatus === "success"
                 ? "border-green-600 text-green-700 bg-white hover:bg-green-50"
                 : submitStatus === "error"
-                ? "border-red-600 text-red-700 bg-white hover:bg-red-50"
-                : "border-neutral-300 text-neutral-800 bg-white hover:bg-neutral-50"
-            }`}
+                  ? "border-red-600 text-red-700 bg-white hover:bg-red-50"
+                  : "border-neutral-300 text-neutral-800 bg-white hover:bg-neutral-50"
+              }`}
           >
             Close
           </button>
@@ -589,8 +584,8 @@ const ContributionPanel: React.FC<{ figure: Figure; hideTitle?: boolean }> = ({
               teeStatus: attestationData?.error
                 ? "failed"
                 : attestationData?.attestation
-                ? "verified"
-                : "verifying",
+                  ? "verified"
+                  : "verifying",
             }}
             mode="evaluation"
           />
@@ -761,14 +756,14 @@ const TEEProtectionPanel: React.FC<{
     attestationData?.status === "VERIFIED"
       ? "✓"
       : attestationData?.status === "ERROR"
-      ? "✗"
-      : "⏳";
+        ? "✗"
+        : "⏳";
   const statusColor =
     attestationData?.status === "VERIFIED"
       ? "text-green-600"
       : attestationData?.status === "ERROR"
-      ? "text-red-600"
-      : "text-yellow-600";
+        ? "text-red-600"
+        : "text-yellow-600";
 
   return (
     <>
@@ -814,8 +809,8 @@ const TEEProtectionPanel: React.FC<{
                 {attestationData?.status === "VERIFIED"
                   ? "Trusted execution environment"
                   : attestationData?.status === "ERROR"
-                  ? "Attestation failed"
-                  : "Verifying..."}
+                    ? "Attestation failed"
+                    : "Verifying..."}
               </p>
             )}
           </div>
@@ -872,12 +867,12 @@ const TEEProtectionPanel: React.FC<{
                 {attestationData?.error
                   ? "Error - Click for details"
                   : attestationData?.attestation
-                  ? attestationData.attestation.startsWith("eyJ")
-                    ? `JWT: ${attestationData.attestation.substring(0, 20)}...`
-                    : attestationData.attestation.length > 50
-                    ? attestationData.attestation.substring(0, 50) + "..."
-                    : attestationData.attestation
-                  : "No attestation data"}
+                    ? attestationData.attestation.startsWith("eyJ")
+                      ? `JWT: ${attestationData.attestation.substring(0, 20)}...`
+                      : attestationData.attestation.length > 50
+                        ? attestationData.attestation.substring(0, 50) + "..."
+                        : attestationData.attestation
+                    : "No attestation data"}
               </button>
             )}
           </div>
@@ -1328,24 +1323,21 @@ const ScoreCardModal: React.FC<{
 
   const getMockJudgement = (name: string, rating: number, mood: string) => {
     const templates = [
-      `${name} found your conversation ${
-        rating >= 85
-          ? "insightful and engaging"
-          : rating >= 70
+      `${name} found your conversation ${rating >= 85
+        ? "insightful and engaging"
+        : rating >= 70
           ? "balanced and constructive"
           : "a bit uneven, but promising"
       }`,
-      `${
-        rating >= 85
-          ? "Strong signal"
-          : rating >= 70
+      `${rating >= 85
+        ? "Strong signal"
+        : rating >= 70
           ? "Solid effort"
           : "Needs polish"
       }—clear ideas and a ${mood.toLowerCase()} tone.`,
-      `Overall, ${name} rates this exchange ${rating}/100 and ${
-        rating >= 85
-          ? "would continue the thread"
-          : rating >= 70
+      `Overall, ${name} rates this exchange ${rating}/100 and ${rating >= 85
+        ? "would continue the thread"
+        : rating >= 70
           ? "sees room to go deeper"
           : "suggests refining your prompts"
       }.`,
@@ -1355,8 +1347,8 @@ const ScoreCardModal: React.FC<{
       rating >= 85
         ? "Great flow and clarity."
         : rating >= 70
-        ? "Good direction; a few details could be sharper."
-        : "Try focusing the next question more narrowly.";
+          ? "Good direction; a few details could be sharper."
+          : "Try focusing the next question more narrowly.";
     const includeSecond = Math.random() > 0.5;
     const result = includeSecond ? `${first} ${second}` : first;
     return ellipsize(result, 210);
@@ -1390,9 +1382,8 @@ const ScoreCardModal: React.FC<{
       return await res.blob();
     };
 
-    const fileName = `${figure.name.replace(/\s+/g, "_")}_ScoreCard_${
-      new Date().toISOString().split("T")[0]
-    }.png`;
+    const fileName = `${figure.name.replace(/\s+/g, "_")}_ScoreCard_${new Date().toISOString().split("T")[0]
+      }.png`;
 
     // New flow: capture first, open choice modal; actions execute from modal
     const openShareChoice = (blob: Blob) => {
@@ -1476,7 +1467,7 @@ const ScoreCardModal: React.FC<{
           try {
             const srcUrl = new URL(node.src, window.location.href);
             if (srcUrl.origin !== window.location.origin) return false;
-          } catch {}
+          } catch { }
         }
         if (node.dataset && node.dataset.captureIgnore === "true") return false;
         // Exclude elements using backdrop-filter
@@ -1590,13 +1581,12 @@ const ScoreCardModal: React.FC<{
               {/* TEE badge */}
               <div className="absolute bottom-0 right-0 p-1 sm:p-4 z-30">
                 <div
-                  className={`sm:px-2 sm:py-1.5 px-1 py-1 border bg-white/80 text-[11px] ${
-                    attestationData?.status === "VERIFIED"
+                  className={`sm:px-2 sm:py-1.5 px-1 py-1 border bg-white/80 text-[11px] ${attestationData?.status === "VERIFIED"
                       ? "border-green-600 text-green-700"
                       : attestationData?.error
-                      ? "border-red-600 text-red-700"
-                      : "border-yellow-600 text-yellow-700"
-                  }`}
+                        ? "border-red-600 text-red-700"
+                        : "border-yellow-600 text-yellow-700"
+                    }`}
                   title={displaySessionId}
                 >
                   <div className="flex items-center gap-1">
@@ -1608,8 +1598,8 @@ const ScoreCardModal: React.FC<{
                       {attestationData?.status === "VERIFIED"
                         ? "TEE Verified"
                         : attestationData?.error
-                        ? "TEE Error"
-                        : "TEE Verifying"}
+                          ? "TEE Error"
+                          : "TEE Verifying"}
                     </span>
                   </div>
                 </div>
@@ -1633,18 +1623,16 @@ const ScoreCardModal: React.FC<{
                   crossOrigin="anonymous"
                   src={figure.imageUrl}
                   alt={figure.name}
-                  className={`absolute inset-0 w-full h-full object-cover lg:object-left transition-opacity duration-1000 z-10 ${
-                    showFinal ? "opacity-0" : "opacity-100"
-                  }`}
+                  className={`absolute inset-0 w-full h-full object-cover lg:object-left transition-opacity duration-1000 z-10 ${showFinal ? "opacity-0" : "opacity-100"
+                    }`}
                 />
                 {/* Final mood image */}
                 <img
                   crossOrigin="anonymous"
                   src={getMoodImage(highlights.mood) || figure.imageUrl}
                   alt={figure.name}
-                  className={`absolute inset-0 w-full h-full object-cover lg:object-left transition-opacity duration-1000 z-10 ${
-                    showFinal ? "opacity-100" : "opacity-0"
-                  }`}
+                  className={`absolute inset-0 w-full h-full object-cover lg:object-left transition-opacity duration-1000 z-10 ${showFinal ? "opacity-100" : "opacity-0"
+                    }`}
                 />
                 {!showFinal && (
                   <div className="absolute inset-0 pointer-events-none z-10">
@@ -1682,22 +1670,20 @@ const ScoreCardModal: React.FC<{
                 <div className="relative min-h-[40px] sm:min-h-[80px]">
                   {/* Evaluating state */}
                   <div
-                    className={`absolute inset-0 flex items-center gap-2 text-[0.9rem] sm:text-3xl md:text-4xl mt-1 sm:mt-4 tabular-nums text-neutral-400 transition-opacity duration-500 ${
-                      showFinal
+                    className={`absolute inset-0 flex items-center gap-2 text-[0.9rem] sm:text-3xl md:text-4xl mt-1 sm:mt-4 tabular-nums text-neutral-400 transition-opacity duration-500 ${showFinal
                         ? "opacity-0 pointer-events-none"
                         : "opacity-100"
-                    }`}
+                      }`}
                   >
                     <span className="w-4 h-4 ph ph-[hourglass--duotone] animate-spin"></span>
                     Evaluating...
                   </div>
                   {/* Final state (rating or error) */}
                   <div
-                    className={`absolute inset-0 transition-opacity duration-500 ${
-                      showFinal
+                    className={`absolute inset-0 transition-opacity duration-500 ${showFinal
                         ? "opacity-100"
                         : "opacity-0 pointer-events-none"
-                    }`}
+                      }`}
                   >
                     {evaluationError ? (
                       <div className="flex items-center gap-2 text-[0.9rem] sm:text-3xl md:text-4xl mt-1 sm:mt-4 tabular-nums text-red-400">
@@ -1725,21 +1711,19 @@ const ScoreCardModal: React.FC<{
                 <div className="relative min-h-[72px]">
                   {/* Evaluating message */}
                   <div
-                    className={`absolute inset-0 text-[0.9rem] sm:text-xl md:text-2xl font-quote leading-tight z-20 mt-1 sm:mt-8 text-neutral-400 transition-opacity duration-500 ${
-                      showFinal
+                    className={`absolute inset-0 text-[0.9rem] sm:text-xl md:text-2xl font-quote leading-tight z-20 mt-1 sm:mt-8 text-neutral-400 transition-opacity duration-500 ${showFinal
                         ? "opacity-0 pointer-events-none"
                         : "opacity-100"
-                    }`}
+                      }`}
                   >
                     "Analyzing conversation quality..."
                   </div>
                   {/* Final quote or error */}
                   <div
-                    className={`absolute inset-0 transition-opacity duration-500 ${
-                      showFinal
+                    className={`absolute inset-0 transition-opacity duration-500 ${showFinal
                         ? "opacity-100"
                         : "opacity-0 pointer-events-none"
-                    }`}
+                      }`}
                   >
                     {evaluationError ? (
                       <div className="text-[0.9rem] sm:text-xl md:text-2xl font-quote leading-tight z-20 mt-1 sm:mt-8 text-red-400">
@@ -1807,24 +1791,22 @@ const ScoreCardModal: React.FC<{
               isEvaluating ? "Please wait for evaluation to finish" : undefined
             }
             className={`relative flex gap-2 items-center py-2 px-4 text-[10px] sm:text-xs md:text-sm overflow-hidden
-              ${
-                saveDisabled
-                  ? "border border-neutral-300 bg-neutral-200 text-neutral-500 cursor-not-allowed"
-                  : "border border-amber-300 bg-amber-100 text-neutral-800 hover:bg-neutral-50 active:scale-95 cursor-pointer transition-colors"
+              ${saveDisabled
+                ? "border border-neutral-300 bg-neutral-200 text-neutral-500 cursor-not-allowed"
+                : "border border-amber-300 bg-amber-100 text-neutral-800 hover:bg-neutral-50 active:scale-95 cursor-pointer transition-colors"
               }
             `}
           >
             <span className="relative z-10 inline-flex items-center gap-2">
               <div
-                className={`ph ph-[star--duotone] ${
-                  saveDisabled ? "text-neutral-400" : "text-amber-400"
-                }`}
+                className={`ph ph-[star--duotone] ${saveDisabled ? "text-neutral-400" : "text-amber-400"
+                  }`}
               />
               {isSaving
                 ? "Saving…"
                 : isEvaluating
-                ? "Evaluating…"
-                : "Save Your Score Card"}
+                  ? "Evaluating…"
+                  : "Save Your Score Card"}
             </span>
             {!saveDisabled && (
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-400 to-transparent opacity-20 transform -skew-x-12 -translate-x-full animate-shimmer"></div>
@@ -1859,7 +1841,7 @@ const ScoreCardModal: React.FC<{
                         }),
                       ]);
                     }
-                  } catch (_) {}
+                  } catch (_) { }
 
                   // Track social share to X/Twitter
                   trackSocialShare({
@@ -1874,7 +1856,7 @@ const ScoreCardModal: React.FC<{
                       "Had a conversation that will live forever. #DigitalImmortality https://twin.ar.io/"
                     )}`;
                     window.open(intent, "_blank", "noopener,noreferrer");
-                  } catch (_) {}
+                  } catch (_) { }
                   setShareChoiceOpen(false);
                 }}
               >
@@ -1892,9 +1874,8 @@ const ScoreCardModal: React.FC<{
                     characterName: figure.name,
                   });
 
-                  const name = `${figure.name.replace(/\s+/g, "_")}_ScoreCard_${
-                    new Date().toISOString().split("T")[0]
-                  }.png`;
+                  const name = `${figure.name.replace(/\s+/g, "_")}_ScoreCard_${new Date().toISOString().split("T")[0]
+                    }.png`;
                   const url = URL.createObjectURL(capturedBlob);
                   const link = document.createElement("a");
                   link.href = url;
@@ -1944,6 +1925,14 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   const sendSoundRef = useRef<HTMLAudioElement | null>(null);
   const receiveSoundRef = useRef<HTMLAudioElement | null>(null);
 
+  // Typewriter effect constants and refs
+  const TYPING_SPEED = 15; // ms per character
+  const charQueueRef = useRef<string[]>([]);
+  const isTypingRef = useRef(false);
+  const displayedContentRef = useRef("");
+  const aiMessageIdRef = useRef<string | null>(null);
+  const currentMessagesRef = useRef<ChatMessage[]>([]);
+
   useEffect(() => {
     // Preload send/receive sounds
     const sendAudio = new Audio("/resources/sounds/message-send.wav");
@@ -1966,6 +1955,35 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
       // Ignore playback errors (e.g., autoplay restrictions)
     }
   };
+
+  // Process character queue for typewriter animation
+  const processCharQueue = useCallback(() => {
+    if (!isTypingRef.current || charQueueRef.current.length === 0) {
+      if (charQueueRef.current.length === 0) {
+        isTypingRef.current = false;
+      }
+      return;
+    }
+
+    const char = charQueueRef.current.shift();
+    if (char !== undefined) {
+      displayedContentRef.current += char;
+
+      const updatedMessages = currentMessagesRef.current.map((msg) =>
+        msg.id === aiMessageIdRef.current
+          ? { ...msg, text: displayedContentRef.current }
+          : msg
+      );
+      currentMessagesRef.current = updatedMessages;
+      setMessages(updatedMessages);
+    }
+
+    if (charQueueRef.current.length > 0) {
+      setTimeout(processCharQueue, TYPING_SPEED);
+    } else {
+      isTypingRef.current = false;
+    }
+  }, []);
 
   useEffect(() => {
     const initializeChat = async () => {
@@ -2104,19 +2122,49 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
     setIsLoading(true);
 
     const aiMessageId = (Date.now() + 1).toString();
-    setMessages((prev) => [
-      ...prev,
+    const newMessages = [
+      ...messages,
+      userMessage,
       { id: aiMessageId, text: "", author: figure.name },
-    ]);
+    ];
+    setMessages(newMessages);
+
+    // Reset typewriter animation state
+    charQueueRef.current = [];
+    isTypingRef.current = false;
+    displayedContentRef.current = "";
+    aiMessageIdRef.current = aiMessageId;
+    currentMessagesRef.current = newMessages;
 
     try {
-      const response = await sendMessage(chatSession, userInput, figure.config);
+      await sendMessageStream(
+        chatSession,
+        userInput,
+        figure.config,
+        (chunk) => {
+          for (const char of chunk) {
+            charQueueRef.current.push(char);
+          }
 
-      setMessages((prev) =>
-        prev.map((msg) =>
-          msg.id === aiMessageId ? { ...msg, text: response } : msg
-        )
+          if (!isTypingRef.current) {
+            isTypingRef.current = true;
+            processCharQueue();
+          }
+        }
       );
+
+      // Wait for typing animation to complete
+      await new Promise<void>((resolve) => {
+        const checkQueue = () => {
+          if (charQueueRef.current.length === 0 && !isTypingRef.current) {
+            resolve();
+          } else {
+            setTimeout(checkQueue, 50);
+          }
+        };
+        checkQueue();
+      });
+
       // Play receive sound when the AI's message is finalized
       playSound(receiveSoundRef);
 
@@ -2124,13 +2172,16 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
       const totalMessages = messages.length + 2; // +1 for user message, +1 for AI response
       trackChatPerCharacter(figure.name, totalMessages);
     } catch (error) {
+      charQueueRef.current = [];
+      isTypingRef.current = false;
+
       setMessages((prev) =>
         prev.map((msg) =>
           msg.id === aiMessageId
             ? {
-                ...msg,
-                text: "Sorry, I encountered an error. Please try again.",
-              }
+              ...msg,
+              text: "Sorry, I encountered an error. Please try again.",
+            }
             : msg
         )
       );
@@ -2200,22 +2251,20 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
               <div className="flex items-center gap-2">
                 <button
                   onClick={onPrevTwin}
-                  className={`hidden sm:flex py-2 px-3 transition cursor-pointer border border-border text-[10px] sm:text-xs md:text-sm active:scale-95 duration-150 ease-out-quart ${
-                    hotkeyActive === "prev"
+                  className={`hidden sm:flex py-2 px-3 transition cursor-pointer border border-border text-[10px] sm:text-xs md:text-sm active:scale-95 duration-150 ease-out-quart ${hotkeyActive === "prev"
                       ? "bg-neutral-200 scale-95"
                       : "hover:bg-neutral-100"
-                  }`}
+                    }`}
                   aria-label="Previous Twin (Arrow Left)"
                 >
                   ◀
                 </button>
                 <button
                   onClick={onNextTwin}
-                  className={`hidden sm:flex py-2 px-3 transition cursor-pointer border border-border text-[10px] sm:text-xs md:text-sm active:scale-95 duration-150 ease-out-quart ${
-                    hotkeyActive === "next"
+                  className={`hidden sm:flex py-2 px-3 transition cursor-pointer border border-border text-[10px] sm:text-xs md:text-sm active:scale-95 duration-150 ease-out-quart ${hotkeyActive === "next"
                       ? "bg-neutral-200 scale-95"
                       : "hover:bg-neutral-100"
-                  }`}
+                    }`}
                   aria-label="Next Twin (Arrow Right)"
                 >
                   ▶
@@ -2242,17 +2291,15 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                             ? "Share your score card"
                             : `Send at least 1 message with ${figure.name} to share your score card`
                         }
-                        className={`relative flex gap-2 items-center py-2 px-4 border text-neutral-800 transition-colors text-[10px] sm:text-xs md:text-sm overflow-hidden active:scale-95 ${
-                          canShare
+                        className={`relative flex gap-2 items-center py-2 px-4 border text-neutral-800 transition-colors text-[10px] sm:text-xs md:text-sm overflow-hidden active:scale-95 ${canShare
                             ? "cursor-pointer border-amber-300 bg-amber-100 hover:bg-neutral-50"
                             : "cursor-not-allowed border-neutral-300 bg-neutral-100 opacity-70"
-                        }`}
+                          }`}
                       >
                         <span className="relative z-10 inline-flex items-center gap-2">
                           <div
-                            className={`ph ph-[star--duotone] ${
-                              canShare ? "text-amber-400" : "text-neutral-400"
-                            }`}
+                            className={`ph ph-[star--duotone] ${canShare ? "text-amber-400" : "text-neutral-400"
+                              }`}
                           />
                           Share Your Score Card
                         </span>
@@ -2293,11 +2340,10 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
               {messages.map((message) => (
                 <div
                   key={message.id}
-                  className={`flex items-end gap-3 ${
-                    message.author === MessageAuthor.User
+                  className={`flex items-end gap-3 ${message.author === MessageAuthor.User
                       ? "justify-end"
                       : "justify-start"
-                  }`}
+                    }`}
                 >
                   {isFigureMessage(message.author) && (
                     <img
@@ -2316,11 +2362,10 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                     />
                   )}
                   <div
-                    className={`relative max-w-2xl lg:max-w-3xl px-4 py-3 ${
-                      message.author === MessageAuthor.User
+                    className={`relative max-w-2xl lg:max-w-3xl px-4 py-3 ${message.author === MessageAuthor.User
                         ? "bg-neutral-200"
                         : "bg-blue-100"
-                    }`}
+                      }`}
                   >
                     {message.author === MessageAuthor.User ? (
                       <span
@@ -2340,15 +2385,14 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                       />
                     ) : null}
                     <div
-                      className={`${
-                        message.author === MessageAuthor.User
+                      className={`${message.author === MessageAuthor.User
                           ? "text-foreground"
                           : "text-blue-800"
-                      } whitespace-pre-wrap text-[13px] sm:text-sm md:text-base`}
+                        } whitespace-pre-wrap text-[13px] sm:text-sm md:text-base`}
                       aria-live="polite"
                     >
                       {isFigureMessage(message.author) &&
-                      message.text.trim() === "" ? (
+                        message.text.trim() === "" ? (
                         <div
                           className="flex items-center gap-1 py-0.5"
                           aria-label="AI is typing"
