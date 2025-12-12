@@ -11,6 +11,34 @@ export const CATEGORIES: Category[] = [
 
 export const FIGURES: Figure[] = [
   {
+    id: 'ao',
+    name: 'AO',
+    title: 'A decentralized supercomputer',
+    imageUrl: '/resources/AO.png',
+    category: Category.Tech,
+    systemPrompt: Satoshi_Prompt,
+    welcomeMessage: 'Hello. I am AO, a decentralized supercomputer. How can I assist you today?',
+    contributors: 0,
+    processId: '',
+    arweaveTxId: '',
+    config: `{
+    }`
+  },
+  {
+    id: 'george_orwell',
+    name: 'George Orwell',
+    title: 'Author of 1984',
+    imageUrl: '/resources/George_orwell.png',
+    category: Category.Entertainment,
+    systemPrompt: GeorgeOrwell_Prompt,
+    welcomeMessage: 'Freedom begins with thought. What thoughts trouble you?',
+    contributors: 1984,
+    processId: '',
+    arweaveTxId: 'qcQZ8iWq8KCvXZm13-Dyj4gT-ra1FrYnceITn8mc6uI',
+    config: `{
+    }`
+  },
+  {
     id: 'satoshi_nakamoto',
     name: 'Satoshi Nakamoto',
     title: 'Inventor of Bitcoin',
@@ -49,20 +77,6 @@ export const FIGURES: Figure[] = [
     contributors: 2451,
     processId: '',
     arweaveTxId: 'MV4SpbpzOW-u7GmHZ1fyc-YEke1Lvo3qUazOJtV_pZo ',
-    config: `{
-    }`
-  },
-  {
-    id: 'george_orwell',
-    name: 'George Orwell',
-    title: 'Author of 1984',
-    imageUrl: '/resources/George_orwell.png',
-    category: Category.Entertainment,
-    systemPrompt: GeorgeOrwell_Prompt,
-    welcomeMessage: 'Freedom begins with thought. What thoughts trouble you?',
-    contributors: 1984,
-    processId: '',
-    arweaveTxId: 'qcQZ8iWq8KCvXZm13-Dyj4gT-ra1FrYnceITn8mc6uI',
     config: `{
     }`
   },
