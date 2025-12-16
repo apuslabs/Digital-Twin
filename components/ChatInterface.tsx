@@ -2028,7 +2028,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
       //   }
       // }
 
-      const session = startChatSession(figure.systemPrompt, permanentPrompt);
+      const session = startChatSession(figure.systemPrompt, permanentPrompt, figure.id);
       setChatSession(session);
       // Show typing state first for the initial AI message, then reveal welcome text
       const welcomeId = "welcome";
