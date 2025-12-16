@@ -1,5 +1,5 @@
 import { Category, Figure } from './types';
-import { Trump_Prompt,GeorgeOrwell_Prompt,Obama_Prompt,AynRand_Prompt, Satoshi_Prompt } from './services/prompts';
+import { Trump_Prompt,GeorgeOrwell_Prompt,Obama_Prompt,AynRand_Prompt, Satoshi_Prompt, AO_Prompt } from './services/prompts';
 import { getSatoshiWelcomeMessage } from './utils/welcomeMessages';
 
 export const CATEGORIES: Category[] = [
@@ -16,7 +16,7 @@ export const FIGURES: Figure[] = [
     title: 'A decentralized supercomputer',
     imageUrl: '/resources/AO.png',
     category: Category.Tech,
-    systemPrompt: Satoshi_Prompt,
+    systemPrompt: AO_Prompt,
     welcomeMessage: 'Hello. I am AO, a decentralized supercomputer. How can I assist you today?',
     contributors: 0,
     processId: '',
