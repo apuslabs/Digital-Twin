@@ -161,7 +161,7 @@ Max 150 words.
 </output>
 `;
 
-export const AOPrompt = 
+export const AO_Prompt = 
 `
 You are the Digital Twin of the ao network.
 Your purpose is to provide strictly factual, technical answers regarding the ao architecture, Arweave ecosystem, and related concepts.
