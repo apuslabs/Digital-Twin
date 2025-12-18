@@ -13,13 +13,27 @@ export interface ApusChat {
   isFirstMessage: boolean;
   history: ChatHistoryMessage[];
   sessionId: string;
+  figureId?: string; // Track which figure this chat is for
 }
 
+// Default endpoint for most figures
 const openai = new OpenAI({
   apiKey: "APUS_KEY",
-  baseURL: "https://hb.apus.network/~inference@1.0/",
+  baseURL: "https://hb.apus.network/~inference@1.0/v1",
   dangerouslyAllowBrowser: true
 });
+
+// Fine-tuned model for AO figure
+const openaiAO = new OpenAI({
+  apiKey: "APUS_KEY",
+  baseURL: "https://hb.apus.network/ao/~inference@1.0/v1",
+  dangerouslyAllowBrowser: true
+});
+
+// Get the appropriate OpenAI client based on figure ID
+const getOpenAIClient = (figureId?: string): OpenAI => {
+  return figureId === 'ao' ? openaiAO : openai;
+};
 
 const DEFAULT_CHAT_MODEL = "Gemma_3_27B";
 const DEFAULT_COMPLETION_MODEL = DEFAULT_CHAT_MODEL;
@@ -121,7 +135,8 @@ const buildMessagePayload = (
 
 export const startChatSession = (
   systemInstruction: string,
-  permanentPrompt: string = ""
+  permanentPrompt: string = "",
+  figureId?: string
 ): ApusChat | null => {
   try {
     const sessionId = generateSessionId();
@@ -132,6 +147,7 @@ export const startChatSession = (
       isFirstMessage: true,
       history: [],
       sessionId,
+      figureId,
     };
   } catch (error) {
     console.error("Failed to start APUS chat session", error);
@@ -164,7 +180,8 @@ export const sendMessage = async (
     ...chatOptions,
   };
   try {
-    const response = await openai.chat.completions.create(requestPayload);
+    const client = getOpenAIClient(chatSession.figureId);
+    const response = await client.chat.completions.create(requestPayload);
     const content =
       response.choices?.[0]?.message?.content?.trim() ?? "";
 
@@ -212,7 +229,8 @@ export const sendMessageStream = async (
       stream: true,
     };
 
-    const stream = await openai.chat.completions.create(requestParams);
+    const client = getOpenAIClient(chatSession.figureId);
+    const stream = await client.chat.completions.create(requestParams);
 
     let fullContent = "";
 
