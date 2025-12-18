@@ -2243,25 +2243,27 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
               <div className="border border-border bg-white p-3 w-full xl:w-auto">
                 <h2 className="text-xl font-bold">{figure.name}</h2>
                 <p className="text-sm text-neutral-500">{figure.title}</p>
-                <div className="flex items-center mt-1">
-                  <span className="text-xs text-neutral-500 mr-2">
-                    Permanent Prompt:
-                  </span>
-                  <a
-                    href="#"
-                    className="text-xs font-mono text-neutral-400 hover:text-blue-500 underline transition-colors"
-                    title={`View ${figure.name}'s permanent prompt on Load network: ${figure.arweaveTxId}`}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      window.open(
-                        `https://gateway.s3-node-1.load.network/resolve/${figure.arweaveTxId}`,
-                        "_blank"
-                      );
-                    }}
-                  >
-                    {figure.arweaveTxId.substring(0, 12)}...
-                  </a>
-                </div>
+                {figure.id !== 'ao' && (
+                  <div className="flex items-center mt-1">
+                    <span className="text-xs text-neutral-500 mr-2">
+                      Permanent Prompt:
+                    </span>
+                    <a
+                      href="#"
+                      className="text-xs font-mono text-neutral-400 hover:text-blue-500 underline transition-colors"
+                      title={`View ${figure.name}'s permanent prompt on Load network: ${figure.arweaveTxId}`}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        window.open(
+                          `https://gateway.s3-node-1.load.network/resolve/${figure.arweaveTxId}`,
+                          "_blank"
+                        );
+                      }}
+                    >
+                      {figure.arweaveTxId.substring(0, 12)}...
+                    </a>
+                  </div>
+                )}
               </div>
               <TEEProtectionPanel
                 figure={figure}

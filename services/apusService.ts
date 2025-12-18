@@ -19,14 +19,14 @@ export interface ApusChat {
 // Default endpoint for most figures
 const openai = new OpenAI({
   apiKey: "APUS_KEY",
-  baseURL: "https://hb.apus.network/~inference@1.0/",
+  baseURL: "https://hb.apus.network/~inference@1.0/v1",
   dangerouslyAllowBrowser: true
 });
 
-// Special endpoint for AO figure
+// Fine-tuned model for AO figure
 const openaiAO = new OpenAI({
   apiKey: "APUS_KEY",
-  baseURL: "https://hb3.apus.network/~inference@1.0/",
+  baseURL: "https://hb.apus.network/ao/~inference@1.0/v1",
   dangerouslyAllowBrowser: true
 });
 
