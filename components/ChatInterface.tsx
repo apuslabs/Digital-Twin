@@ -24,7 +24,8 @@ import Modal from "./dialog/Modal";
 import {
   trackChatPerCharacter,
   trackPromptSubmissionWithReward,
-  trackSocialShare,
+  trackShareButtonClick,
+  trackShareAction,
 } from "../services/analytics";
 
 interface ChatInterfaceProps {
@@ -1869,9 +1870,9 @@ const ScoreCardModal: React.FC<{
                     }
                   } catch (_) {}
 
-                  // Track social share to X/Twitter
-                  trackSocialShare({
-                    shareType: "x",
+                  // Track copy to X action
+                  trackShareAction({
+                    actionType: "copy_to_x",
                     characterName: figure.name,
                   });
 
@@ -1894,9 +1895,9 @@ const ScoreCardModal: React.FC<{
                 onClick={() => {
                   if (!capturedBlob) return;
 
-                  // Track social share as download
-                  trackSocialShare({
-                    shareType: "download",
+                  // Track download action
+                  trackShareAction({
+                    actionType: "download",
                     characterName: figure.name,
                   });
 
@@ -2637,6 +2638,12 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                   };
                   const handleShareClick = () => {
                     if (canShare) {
+                      // Track share button click with tooltip context
+                      trackShareButtonClick({
+                        characterName: figure.name,
+                        tooltipShown: showShareOverlay,
+                      });
+
                       dismissShareOverlay();
                       setIsScoreCardOpen(true);
                     }
