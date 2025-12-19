@@ -1949,11 +1949,111 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   const [isScoreCardOpen, setIsScoreCardOpen] = useState(false);
   const [attestationData, setAttestationData] = useState<any>(null);
   const [shareHintVisible, setShareHintVisible] = useState(false);
+  const [showShareOverlay, setShowShareOverlay] = useState(false);
+  const [overlayDismissed, setOverlayDismissed] = useState(false);
+  const [buttonPosition, setButtonPosition] = useState<{
+    top: number;
+    left: number;
+    width: number;
+    height: number;
+  } | null>(null);
+  const shareButtonRef = useRef<HTMLButtonElement | null>(null);
   const sendSoundRef = useRef<HTMLAudioElement | null>(null);
   const receiveSoundRef = useRef<HTMLAudioElement | null>(null);
 
+  const getShareOverlayPreview = useCallback(() => {
+    type Preview = {
+      mood: "Happy" | "Sad" | "Angry";
+      score: number;
+      response: string;
+      moodImage: string;
+    };
+
+    const key = (figure.id || figure.name || "").toLowerCase().trim();
+
+    // Helper to get mood image path
+    const getMoodImagePath = (charKey: string, mood: string) => {
+      const folderMap: Record<string, string> = {
+        ao: "AO",
+        satoshi: "Satoshi",
+        trump: "Trump",
+        obama: "Obama",
+        orwell: "Orwell",
+        rand: "Rand",
+      };
+      const folder = folderMap[charKey] || "Rand";
+      const moodLower = mood.toLowerCase();
+      if (mood === "Happy" && charKey === "trump") {
+        return `/resources/moods/${folder}/trump_smile.webp`;
+      }
+      return `/resources/moods/${folder}/${folder.toLowerCase()}_${moodLower}.webp`;
+    };
+
+    // Deterministic, per-character defaults (no AI evaluation / no compute).
+    const byId: Record<string, Omit<Preview, "moodImage">> = {
+      ao: {
+        mood: "Happy",
+        score: 92,
+        response: "Clean prompts. Strong signal. I'd talk to you again.",
+      },
+      satoshi: {
+        mood: "Happy",
+        score: 88,
+        response:
+          "Good curiosity. Thoughtful questions that show genuine interest.",
+      },
+      trump: {
+        mood: "Happy",
+        score: 91,
+        response: "Big energy. Great conversation. Keep it up!",
+      },
+      obama: {
+        mood: "Happy",
+        score: 88,
+        response: "Thoughtful questions. Solid pace. Nice conversational flow.",
+      },
+      orwell: {
+        mood: "Happy",
+        score: 87,
+        response:
+          "Sharp insights. Well-articulated thoughts that cut to the core.",
+      },
+      rand: {
+        mood: "Happy",
+        score: 89,
+        response: "Clear intent. Strong principles. Excellent exchange.",
+      },
+    };
+
+    // Try exact id match; fallback to substring matches on name.
+    const addMoodImage = (
+      charKey: string,
+      data: Omit<Preview, "moodImage">
+    ): Preview => ({
+      ...data,
+      moodImage: getMoodImagePath(charKey, data.mood),
+    });
+
+    const direct = byId[key];
+    if (direct) return addMoodImage(key, direct);
+    if (key.includes("satoshi") || key.includes("nakamoto"))
+      return addMoodImage("satoshi", byId.satoshi);
+    if (key.includes("obama")) return addMoodImage("obama", byId.obama);
+    if (key.includes("orwell")) return addMoodImage("orwell", byId.orwell);
+    if (key.includes("trump")) return addMoodImage("trump", byId.trump);
+    if (key.includes("rand")) return addMoodImage("rand", byId.rand);
+
+    // Generic fallback
+    return {
+      mood: "Happy",
+      score: 85,
+      response: "Good exchange. A solid conversation worth sharing.",
+      moodImage: getMoodImagePath("rand", "Happy"),
+    } satisfies Preview;
+  }, [figure.id, figure.name]);
+
   // Typewriter effect constants and refs
-  const TYPING_SPEED = 15; // ms per character
+  const TYPING_SPEED = 8; // ms per character
   const charQueueRef = useRef<string[]>([]);
   const isTypingRef = useRef(false);
   const displayedContentRef = useRef("");
@@ -2028,7 +2128,11 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
       //   }
       // }
 
-      const session = startChatSession(figure.systemPrompt, permanentPrompt, figure.id);
+      const session = startChatSession(
+        figure.systemPrompt,
+        permanentPrompt,
+        figure.id
+      );
       setChatSession(session);
       // Show typing state first for the initial AI message, then reveal welcome text
       const welcomeId = "welcome";
@@ -2123,12 +2227,62 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
     });
   }, [messages]);
 
+  // Show overlay after 3 user messages (only if not dismissed)
+  useEffect(() => {
+    const userMessageCount = messages.filter(
+      (m) => m.author === MessageAuthor.User
+    ).length;
+    if (userMessageCount >= 3 && !showShareOverlay && !overlayDismissed) {
+      // Update button position when showing overlay
+      if (shareButtonRef.current) {
+        const rect = shareButtonRef.current.getBoundingClientRect();
+        setButtonPosition({
+          top: rect.top,
+          left: rect.left,
+          width: rect.width,
+          height: rect.height,
+        });
+      }
+      setShowShareOverlay(true);
+    }
+  }, [messages, showShareOverlay, overlayDismissed]);
+
+  // Update button position on scroll/resize when overlay is visible
+  useEffect(() => {
+    if (!showShareOverlay || !shareButtonRef.current) return;
+
+    const updatePosition = () => {
+      if (shareButtonRef.current) {
+        const rect = shareButtonRef.current.getBoundingClientRect();
+        setButtonPosition({
+          top: rect.top,
+          left: rect.left,
+          width: rect.width,
+          height: rect.height,
+        });
+      }
+    };
+
+    window.addEventListener("scroll", updatePosition, true);
+    window.addEventListener("resize", updatePosition);
+
+    return () => {
+      window.removeEventListener("scroll", updatePosition, true);
+      window.removeEventListener("resize", updatePosition);
+    };
+  }, [showShareOverlay]);
+
   const handleConnectClick = (platform: string) => {
     setModalPlatform(platform);
   };
 
   const handleCloseModal = () => {
     setModalPlatform(null);
+  };
+
+  const dismissShareOverlay = () => {
+    setShowShareOverlay(false);
+    setOverlayDismissed(true);
   };
 
   const handleSubmit = async (e: FormEvent) => {
@@ -2221,6 +2375,176 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
 
   return (
     <>
+      {/* Dark overlay after 3 messages */}
+      {showShareOverlay && buttonPosition && (
+        <>
+          <div
+            className="fixed inset-0 bg-black/50 z-[9998] animate-fade-in cursor-pointer"
+            onClick={dismissShareOverlay}
+            style={{
+              clipPath: `polygon(
+                0% 0%,
+                0% 100%,
+                ${buttonPosition.left}px 100%,
+                ${buttonPosition.left}px ${buttonPosition.top}px,
+                ${buttonPosition.left + buttonPosition.width}px ${
+                buttonPosition.top
+              }px,
+                ${buttonPosition.left + buttonPosition.width}px ${
+                buttonPosition.top + buttonPosition.height
+              }px,
+                ${buttonPosition.left}px ${
+                buttonPosition.top + buttonPosition.height
+              }px,
+                ${buttonPosition.left}px 100%,
+                100% 100%,
+                100% 0%
+              )`,
+            }}
+          />
+          {/* Fixed tooltip below button */}
+          <div
+            className="fixed bg-white border shadow-xl z-[10001] text-center"
+            style={{
+              top: buttonPosition.top + buttonPosition.height + 12,
+              left: buttonPosition.left + buttonPosition.width / 2,
+              transform: "translateX(-50%)",
+              width: "100%",
+              maxWidth: 350,
+              height: "fit-content",
+              borderColor: "var(--color-white)",
+            }}
+          >
+            {/* Pointer triangle (border + fill) */}
+            <div
+              className="absolute -top-2 left-1/2 -translate-x-1/2 w-0 h-0"
+              style={{
+                borderLeft: "10px solid transparent",
+                borderRight: "10px solid transparent",
+                borderBottom: "10px solid var(--color-white)",
+              }}
+              aria-hidden="true"
+            />
+            <div
+              className="absolute -top-[7px] left-1/2 -translate-x-1/2 w-0 h-0"
+              style={{
+                borderLeft: "8px solid transparent",
+                borderRight: "8px solid transparent",
+                borderBottom: "8px solid rgba(255, 255, 255, 1)",
+              }}
+              aria-hidden="true"
+            />
+            <button
+              onClick={dismissShareOverlay}
+              className="absolute top-2 right-2 p-1 text-neutral-400 hover:text-neutral-600 transition-colors z-10"
+              aria-label="Dismiss tooltip"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+
+            {/* Header text */}
+            <div className="px-4 py-3 font-mono text-xs text-neutral-800">
+              Click Button for {figure.name} to give you
+              <br />
+              their score on your conversation.
+            </div>
+
+            {/* Preview card mimicking the actual score card */}
+            {(() => {
+              const preview = getShareOverlayPreview();
+              const moodColor =
+                preview.mood === "Happy"
+                  ? "text-emerald-500"
+                  : preview.mood === "Sad"
+                  ? "text-blue-400"
+                  : "text-red-500";
+              const moodEmoji =
+                preview.mood === "Happy"
+                  ? "ph-[smiley--duotone]"
+                  : preview.mood === "Sad"
+                  ? "ph-[smiley-sad--duotone]"
+                  : "ph-[smiley-angry--duotone]";
+              return (
+                <div className="mx-3 mb-3 bg-white border border-neutral-200 overflow-hidden">
+                  {/* Card content - 16:9-ish layout */}
+                  <div
+                    className="relative flex"
+                    style={{ aspectRatio: "16/9" }}
+                  >
+                    {/* Left side - mood image */}
+                    <div className="relative w-1/2 overflow-hidden">
+                      <img
+                        src={preview.moodImage}
+                        alt={`${figure.name} ${preview.mood} mood`}
+                        className="absolute inset-0 w-full h-full object-cover object-top"
+                      />
+                      {/* Twin logo */}
+                      <div className="absolute top-2 left-2">
+                        <img
+                          src="/resources/Twin_Logo.svg"
+                          alt="Twin"
+                          className="w-12"
+                        />
+                      </div>
+                      {/* Name and title at bottom */}
+                      <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-white/90 to-transparent">
+                        <div className="text-xs font-bold uppercase tracking-wide text-neutral-900 text-left">
+                          {figure.name}
+                        </div>
+                        <div className="text-[9px] text-neutral-600 text-left">
+                          {figure.title}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Right side - score and quote */}
+                    <div className="w-1/2 p-3 flex flex-col justify-between">
+                      {/* Score */}
+                      <div
+                        className={`flex items-center gap-1 text-2xl font-light ${moodColor}`}
+                      >
+                        <span className={`ph ${moodEmoji} text-2xl`}></span>
+                        <span className="tabular-nums">
+                          {preview.score}/100
+                        </span>
+                      </div>
+
+                      {/* Quote */}
+                      <div
+                        className={`text-xs italic leading-snug ${moodColor} font-quote text-left mb-7`}
+                        style={{ marginTop: 0, marginBottom: "28px" }}
+                      >
+                        "{preview.response}"
+                      </div>
+
+                      {/* TEE badge */}
+                      <div className="flex justify-end">
+                        <div className="text-[8px] px-1.5 py-0.5 border border-green-500 text-green-600 flex items-center gap-0.5">
+                          <span className="ph ph-[shield-check]"></span>
+                          TEE Verified
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
+          </div>
+        </>
+      )}
       <div className="max-w-[95vw] mx-auto flex flex-col xl:flex-row gap-6 animate-fade-in">
         <div className="flex w-full flex-col xl:flex-row gap-6">
           {/* Figure*/}
@@ -2243,7 +2567,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
               <div className="border border-border bg-white p-3 w-full xl:w-auto">
                 <h2 className="text-xl font-bold">{figure.name}</h2>
                 <p className="text-sm text-neutral-500">{figure.title}</p>
-                {figure.id !== 'ao' && (
+                {figure.id !== "ao" && (
                   <div className="flex items-center mt-1">
                     <span className="text-xs text-neutral-500 mr-2">
                       Permanent Prompt:
@@ -2311,10 +2635,17 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                     setShareHintVisible(true);
                     window.setTimeout(() => setShareHintVisible(false), 2200);
                   };
+                  const handleShareClick = () => {
+                    if (canShare) {
+                      dismissShareOverlay();
+                      setIsScoreCardOpen(true);
+                    }
+                  };
                   return (
                     <div className="relative">
                       <button
-                        onClick={() => canShare && setIsScoreCardOpen(true)}
+                        ref={shareButtonRef}
+                        onClick={handleShareClick}
                         disabled={!canShare}
                         aria-disabled={!canShare}
                         title={
@@ -2327,6 +2658,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                             ? "cursor-pointer border-amber-300 bg-amber-100 hover:bg-neutral-50"
                             : "cursor-not-allowed border-neutral-300 bg-neutral-100 opacity-70"
                         }`}
+                        style={{ zIndex: showShareOverlay ? 9999 : "auto" }}
                       >
                         <span className="relative z-10 inline-flex items-center gap-2">
                           <div
