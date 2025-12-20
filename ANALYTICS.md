@@ -42,11 +42,67 @@ Google Analytics is configured in `index.html` with tracking ID: `G-W05SKVSQYE`
 
 ---
 
-### 3. Number of Social Shares
+### 3. Share Button Click
+
+**Event Name:** `share_button_click`
+
+**When Tracked:** Every time a user clicks the "Share Your Score Card" button.
+
+**Parameters:**
+- `event_category`: "Social"
+- `event_label`: Character name
+- `character_name`: Character name
+- `tooltip_shown`: `true` if tooltip was visible when clicked, `false` if tooltip was dismissed or never shown
+
+**Location:** `ChatInterface.tsx` - `handleShareClick()` function
+
+**Use Cases:**
+- **Total clicks:** Count all `share_button_click` events
+- **Tooltip effectiveness:** Filter by `tooltip_shown: true` vs `tooltip_shown: false`
+
+---
+
+### 4. Copy to X (Clipboard)
+
+**Event Name:** `share_copy_to_x`
+
+**When Tracked:** When a user clicks "Copy photo and post to X" in the share modal.
+
+**Parameters:**
+- `event_category`: "Social"
+- `event_label`: Character name
+- `character_name`: Character name
+- `action_type`: "copy_to_x"
+
+**Location:** `ChatInterface.tsx` - Score card modal "Copy photo and post to X" button
+
+**Use Case:** Track how many users copy the score card to clipboard for sharing on X/Twitter.
+
+---
+
+### 5. Download to Desktop
+
+**Event Name:** `share_download`
+
+**When Tracked:** When a user clicks "Save to desktop" in the share modal.
+
+**Parameters:**
+- `event_category`: "Social"
+- `event_label`: Character name
+- `character_name`: Character name
+- `action_type`: "download"
+
+**Location:** `ChatInterface.tsx` - Score card modal "Save to desktop" button
+
+**Use Case:** Track how many users download the score card to their desktop.
+
+---
+
+### Legacy: Social Share (Backward Compatibility)
 
 **Event Name:** `social_share`
 
-**When Tracked:** When a user shares their score card via X/Twitter or downloads it.
+**When Tracked:** Automatically fired alongside `share_copy_to_x` and `share_download` for backward compatibility with existing GA data.
 
 **Parameters:**
 - `event_category`: "Social"
@@ -54,11 +110,7 @@ Google Analytics is configured in `index.html` with tracking ID: `G-W05SKVSQYE`
 - `share_type`: "x" or "download"
 - `character_name`: Character name
 
-**Location:** `ChatInterface.tsx` - Score card modal share buttons
-
-**Share Types:**
-- `x`: User clicked "Copy photo and post to X"
-- `download`: User clicked "Save to desktop"
+**Note:** This event is maintained for continuity with historical data. Use `share_copy_to_x` and `share_download` for new analyses.
 
 ---
 
@@ -72,4 +124,19 @@ Google Analytics is configured in `index.html` with tracking ID: `G-W05SKVSQYE`
 To view these events in Google Analytics:
 1. Go to Google Analytics dashboard
 2. Navigate to Events > All Events
-3. Look for: `chat_per_character`, `prompt_submission_reward`, `social_share`
+3. Look for the following events:
+   - `chat_per_character`
+   - `prompt_submission_reward`
+   - `share_button_click`
+   - `share_copy_to_x`
+   - `share_download`
+   - `social_share` (legacy, for backward compatibility)
+
+### Filtering by Parameters
+
+You can filter events by their parameters to answer specific questions:
+
+- **Total share button clicks:** Count all `share_button_click` events
+- **Tooltip effectiveness:** Filter `share_button_click` by `tooltip_shown: true` vs `tooltip_shown: false`
+- **Copy vs Download preference:** Compare counts of `share_copy_to_x` vs `share_download` events
+- **Character-specific metrics:** Filter any event by `character_name` parameter

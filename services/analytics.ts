@@ -68,19 +68,54 @@ export const trackPromptSubmissionWithReward = (params: {
 };
 
 /**
- * 3. Track social shares
+ * 3. Track share button clicks
  * 
- * @param shareType - Type of share action ('x', 'download')
+ * Tracks when "Share Your Score Card" button is clicked.
+ * Includes tooltip context to measure tooltip effectiveness.
+ * 
+ * @param characterName - Name of the character/twin
+ * @param tooltipShown - Whether the tooltip was visible when button was clicked
+ */
+export const trackShareButtonClick = (params: {
+  characterName: string;
+  tooltipShown: boolean;
+}) => {
+  trackEvent('share_button_click', {
+    event_category: 'Social',
+    event_label: params.characterName,
+    character_name: params.characterName,
+    tooltip_shown: params.tooltipShown,
+  });
+};
+
+/**
+ * 4. Track share actions (copy to X or download)
+ * 
+ * Tracks when user shares via "Copy to X" or "Download".
+ * Also fires legacy 'social_share' event for backward compatibility with existing GA data.
+ * 
+ * @param actionType - Type of share action ('copy_to_x' or 'download')
  * @param characterName - Name of the character/twin
  */
-export const trackSocialShare = (params: {
-  shareType: 'x' | 'download';
+export const trackShareAction = (params: {
+  actionType: 'copy_to_x' | 'download';
   characterName: string;
 }) => {
+  // Fire new granular event
+  const eventName = params.actionType === 'copy_to_x' ? 'share_copy_to_x' : 'share_download';
+  trackEvent(eventName, {
+    event_category: 'Social',
+    event_label: params.characterName,
+    character_name: params.characterName,
+    action_type: params.actionType,
+  });
+
+  // Fire legacy event for backward compatibility with existing GA data
+  const legacyShareType = params.actionType === 'copy_to_x' ? 'x' : 'download';
   trackEvent('social_share', {
     event_category: 'Social',
-    event_label: `${params.shareType}_${params.characterName}`,
-    share_type: params.shareType,
+    event_label: `${legacyShareType}_${params.characterName}`,
+    share_type: legacyShareType,
     character_name: params.characterName,
   });
 };

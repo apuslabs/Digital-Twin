@@ -18,7 +18,7 @@ const HowToBanner: React.FC<HowToBannerProps> = ({ onStartRandom }) => {
         />
       </div>
       {/* Right-side overlay image occupying half of the banner */}
-      <div className="absolute right-8 top-0 w-1/2 z-20 pointer-events-none">
+      <div className="absolute right-8 bottom-0 sm:top-0 w-3/4 sm:w-1/2 z-20 pointer-events-none">
         <img
           src="/resources/screens_share.png"
           alt="Screens preview"
