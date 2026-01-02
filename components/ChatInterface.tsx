@@ -7,6 +7,7 @@ import React, {
 } from "react";
 import MessageComposer from "./chat/MessageComposer";
 import ContributionDetailCard from "./ContributionDetailCard";
+import * as Drawer from "vaul";
 
 import { Figure, ChatMessage, MessageAuthor } from "../types";
 import {
@@ -1952,6 +1953,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   const [shareHintVisible, setShareHintVisible] = useState(false);
   const [showShareOverlay, setShowShareOverlay] = useState(false);
   const [overlayDismissed, setOverlayDismissed] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const [buttonPosition, setButtonPosition] = useState<{
     top: number;
     left: number;
@@ -2228,6 +2230,17 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
     });
   }, [messages]);
 
+  // Detect mobile screen size
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768); // md breakpoint
+    };
+
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
   // Show overlay after 3 user messages (only if not dismissed)
   useEffect(() => {
     const userMessageCount = messages.filter(
@@ -2374,11 +2387,162 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
     }
   };
 
+  // Render overlay content (shared between mobile drawer and desktop tooltip)
+  const renderOverlayContent = ({
+    isMobile = false,
+  }: { isMobile?: boolean } = {}) => {
+    const preview = getShareOverlayPreview();
+    const moodColor =
+      preview.mood === "Happy"
+        ? "text-emerald-500"
+        : preview.mood === "Sad"
+        ? "text-blue-400"
+        : "text-red-500";
+    const moodEmoji =
+      preview.mood === "Happy"
+        ? "ph-[smiley--duotone]"
+        : preview.mood === "Sad"
+        ? "ph-[smiley-sad--duotone]"
+        : "ph-[smiley-angry--duotone]";
+
+    return (
+      <>
+        {/* Header text or Button */}
+        {isMobile ? (
+          <div className="px-4 py-3 w-full">
+            <button
+              onClick={() => {
+                trackShareButtonClick({
+                  characterName: figure.name,
+                  tooltipShown: true,
+                });
+                dismissShareOverlay();
+                setIsScoreCardOpen(true);
+              }}
+              className="relative w-full flex gap-2 items-center justify-center py-2 px-4 border text-neutral-800 transition-colors text-[10px] sm:text-xs md:text-sm overflow-hidden active:scale-95 cursor-pointer border-amber-300 bg-amber-100 hover:bg-neutral-50"
+            >
+              <span className="relative z-10 inline-flex items-center gap-2">
+                <div className="ph ph-[star--duotone] text-amber-400" />
+                Share Your Score Card
+              </span>
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-400 to-transparent opacity-20 transform -skew-x-12 -translate-x-full animate-shimmer"></div>
+            </button>
+          </div>
+        ) : (
+          <div className="px-4 py-3 font-mono text-xs text-neutral-800">
+            Click Button for {figure.name} to give you
+            <br />
+            their score on your conversation.
+          </div>
+        )}
+
+        {/* Preview card mimicking the actual score card */}
+        <div className="mx-3 mb-3 bg-white border border-neutral-200 overflow-hidden relative">
+          {/* Darkening overlay and EXAMPLE label */}
+          <div className="absolute inset-0 bg-black/30 z-10 pointer-events-none" />
+          <div className="absolute top-0 left-0 right-0 z-20 pointer-events-none">
+            <div className="relative w-full h-8">
+              <div className="absolute top-2 left-2 font-mono text-[10px] font-bold text-white uppercase tracking-widest">
+                EXAMPLE
+              </div>
+            </div>
+          </div>
+          {/* Card content - 16:9-ish layout */}
+          <div className="relative flex" style={{ aspectRatio: "16/9" }}>
+            {/* Left side - mood image */}
+            <div className="relative w-1/2 overflow-hidden">
+              <img
+                src={preview.moodImage}
+                alt={`${figure.name} ${preview.mood} mood`}
+                className="absolute inset-0 w-full h-full object-cover object-top"
+              />
+              {/* Twin logo */}
+              <div className="absolute top-2 left-2">
+                <img
+                  src="/resources/Twin_Logo.svg"
+                  alt="Twin"
+                  className="w-12"
+                />
+              </div>
+              {/* Name and title at bottom */}
+              <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-white/90 to-transparent">
+                <div className="text-xs font-bold uppercase tracking-wide text-neutral-900 text-left">
+                  {figure.name}
+                </div>
+                <div className="text-[9px] text-neutral-600 text-left">
+                  {figure.title}
+                </div>
+              </div>
+            </div>
+
+            {/* Right side - score and quote */}
+            <div className="w-1/2 p-3 flex flex-col justify-between">
+              {/* Score */}
+              <div
+                className={`flex items-center gap-1 text-2xl font-light ${moodColor}`}
+              >
+                <span className={`ph ${moodEmoji} text-2xl`}></span>
+                <span className="tabular-nums">{preview.score}/100</span>
+              </div>
+
+              {/* Quote */}
+              <div
+                className={`text-xs italic leading-snug ${moodColor} font-quote text-left mb-7`}
+                style={{ marginTop: 0, marginBottom: "28px" }}
+              >
+                "{preview.response}"
+              </div>
+
+              {/* TEE badge */}
+              <div className="flex justify-end">
+                <div className="text-[8px] px-1.5 py-0.5 border border-green-500 text-green-600 flex items-center gap-0.5">
+                  <span className="ph ph-[shield-check]"></span>
+                  TEE Verified
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  };
+
   return (
     <>
-      {/* Dark overlay after 3 messages */}
+      {/* Mobile: Vaul Drawer from bottom (only on mobile) */}
+      {isMobile && (
+        <Drawer.Root
+          open={showShareOverlay && isMobile}
+          onOpenChange={(open) => {
+            if (!open) {
+              dismissShareOverlay();
+            } else if (isMobile) {
+              setShowShareOverlay(true);
+            }
+          }}
+          dismissible={true}
+        >
+          <Drawer.Portal>
+            <Drawer.Overlay className="fixed inset-0 z-[10000] bg-black/40" />
+            <Drawer.Content className="fixed bottom-0 left-0 right-0 z-[10001] bg-white border-t border-neutral-300 shadow-2xl rounded-t-[16px] max-h-[80vh] flex flex-col">
+              <div className="flex justify-center pt-3 pb-2">
+                <div className="w-12 h-1 bg-neutral-300 rounded-full" />
+              </div>
+              {/* Close button removed on mobile as per request */}
+
+              <div className="overflow-y-auto pb-4 flex-1">
+                <div className="text-center">
+                  {renderOverlayContent({ isMobile: true })}
+                </div>
+              </div>
+            </Drawer.Content>
+          </Drawer.Portal>
+        </Drawer.Root>
+      )}
+
+      {/* Desktop: Dark overlay and tooltip (hidden on mobile) */}
       {showShareOverlay && buttonPosition && (
-        <>
+        <div className="hidden md:block">
           <div
             className="fixed inset-0 bg-black/50 z-[9998] animate-fade-in cursor-pointer"
             onClick={dismissShareOverlay}
@@ -2456,96 +2620,11 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
               </svg>
             </button>
 
-            {/* Header text */}
-            <div className="px-4 py-3 font-mono text-xs text-neutral-800">
-              Click Button for {figure.name} to give you
-              <br />
-              their score on your conversation.
-            </div>
-
-            {/* Preview card mimicking the actual score card */}
-            {(() => {
-              const preview = getShareOverlayPreview();
-              const moodColor =
-                preview.mood === "Happy"
-                  ? "text-emerald-500"
-                  : preview.mood === "Sad"
-                  ? "text-blue-400"
-                  : "text-red-500";
-              const moodEmoji =
-                preview.mood === "Happy"
-                  ? "ph-[smiley--duotone]"
-                  : preview.mood === "Sad"
-                  ? "ph-[smiley-sad--duotone]"
-                  : "ph-[smiley-angry--duotone]";
-              return (
-                <div className="mx-3 mb-3 bg-white border border-neutral-200 overflow-hidden">
-                  {/* Card content - 16:9-ish layout */}
-                  <div
-                    className="relative flex"
-                    style={{ aspectRatio: "16/9" }}
-                  >
-                    {/* Left side - mood image */}
-                    <div className="relative w-1/2 overflow-hidden">
-                      <img
-                        src={preview.moodImage}
-                        alt={`${figure.name} ${preview.mood} mood`}
-                        className="absolute inset-0 w-full h-full object-cover object-top"
-                      />
-                      {/* Twin logo */}
-                      <div className="absolute top-2 left-2">
-                        <img
-                          src="/resources/Twin_Logo.svg"
-                          alt="Twin"
-                          className="w-12"
-                        />
-                      </div>
-                      {/* Name and title at bottom */}
-                      <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-white/90 to-transparent">
-                        <div className="text-xs font-bold uppercase tracking-wide text-neutral-900 text-left">
-                          {figure.name}
-                        </div>
-                        <div className="text-[9px] text-neutral-600 text-left">
-                          {figure.title}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Right side - score and quote */}
-                    <div className="w-1/2 p-3 flex flex-col justify-between">
-                      {/* Score */}
-                      <div
-                        className={`flex items-center gap-1 text-2xl font-light ${moodColor}`}
-                      >
-                        <span className={`ph ${moodEmoji} text-2xl`}></span>
-                        <span className="tabular-nums">
-                          {preview.score}/100
-                        </span>
-                      </div>
-
-                      {/* Quote */}
-                      <div
-                        className={`text-xs italic leading-snug ${moodColor} font-quote text-left mb-7`}
-                        style={{ marginTop: 0, marginBottom: "28px" }}
-                      >
-                        "{preview.response}"
-                      </div>
-
-                      {/* TEE badge */}
-                      <div className="flex justify-end">
-                        <div className="text-[8px] px-1.5 py-0.5 border border-green-500 text-green-600 flex items-center gap-0.5">
-                          <span className="ph ph-[shield-check]"></span>
-                          TEE Verified
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              );
-            })()}
+            {renderOverlayContent()}
           </div>
-        </>
+        </div>
       )}
+
       <div className="max-w-[95vw] mx-auto flex flex-col xl:flex-row gap-6 animate-fade-in">
         <div className="flex w-full flex-col xl:flex-row gap-6">
           {/* Figure*/}
