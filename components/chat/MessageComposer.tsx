@@ -42,8 +42,9 @@ const MessageComposer: React.FC<MessageComposerProps> = ({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
-          className="flex-1 w-full border border-border bg-white  py-3 px-3  placeholder-neutral-300 focus:outline-none focus:ring-2 focus:ring-blue-300 transition-all"
+          className="flex-1 w-full border border-border bg-white py-3 px-3 placeholder-neutral-300 focus:outline-none focus:ring-2 focus:ring-blue-300 transition-all text-base"
           disabled={isLoading}
+          style={{ fontSize: '16px' }}
         />
         <button
           type="submit"
