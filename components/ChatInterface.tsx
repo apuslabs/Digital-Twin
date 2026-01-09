@@ -9,7 +9,13 @@ import MessageComposer from "./chat/MessageComposer";
 import ContributionDetailCard from "./ContributionDetailCard";
 import * as Drawer from "vaul";
 
-import { Figure, ChatMessage, MessageAuthor } from "../types";
+import {
+  Figure,
+  ChatMessage,
+  MessageAuthor,
+  ShareCategory,
+  CATEGORY_METADATA,
+} from "../types";
 import {
   startChatSession,
   sendMessageStream,
@@ -1103,6 +1109,7 @@ const ScoreCardModal: React.FC<{
   const aspectRef = useRef<HTMLDivElement>(null);
   const blurUnderlayRef = useRef<HTMLDivElement>(null);
   const rightPanelRef = useRef<HTMLDivElement>(null);
+  const contextInputRef = useRef<HTMLTextAreaElement>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [evaluationData, setEvaluationData] = useState<EvaluationData | null>(
@@ -1112,8 +1119,9 @@ const ScoreCardModal: React.FC<{
   const [evaluationError, setEvaluationError] = useState<string | null>(null);
   const shareSoundRef = useRef<HTMLAudioElement | null>(null);
   const [showFinal, setShowFinal] = useState(false);
-  const [shareChoiceOpen, setShareChoiceOpen] = useState(false);
-  const [capturedBlob, setCapturedBlob] = useState<Blob | null>(null);
+  const [selectedCategory, setSelectedCategory] =
+    useState<ShareCategory | null>(null);
+  const [contextInput, setContextInput] = useState<string>("");
 
   const isFigureMessage = (author: MessageAuthor | string) =>
     isFigureAuthor(author, figure.name);
@@ -1167,6 +1175,8 @@ const ScoreCardModal: React.FC<{
       setShowFinal(false);
       setEvaluationData(null);
       setEvaluationError(null);
+      setSelectedCategory(null);
+      setContextInput("");
     }
   }, [isOpen]);
 
@@ -1177,6 +1187,15 @@ const ScoreCardModal: React.FC<{
       return () => window.clearTimeout(id);
     }
   }, [isOpen, isEvaluating]);
+
+  // Auto-resize textarea when content changes
+  useEffect(() => {
+    const textarea = contextInputRef.current;
+    if (textarea) {
+      textarea.style.height = "auto";
+      textarea.style.height = `${textarea.scrollHeight}px`;
+    }
+  }, [contextInput]);
 
   const playShareSound = () => {
     const audio = shareSoundRef.current;
@@ -1221,82 +1240,32 @@ const ScoreCardModal: React.FC<{
   };
 
   const getConversationHighlights = () => {
-    const userMessages = messages.filter(
-      (m) => m.author === MessageAuthor.User
-    );
-    const aiMessages = messages.filter(
-      (m) => isFigureMessage(m.author) && m.text.trim() !== ""
-    );
-
     // Use evaluation data if available, otherwise fallback to mock data
     if (evaluationData) {
-      const overallScore =
-        evaluationData.score ?? evaluationData.overall_score ?? 75;
-      const mood =
-        evaluationData.mood ||
-        (overallScore >= 85 ? "Happy" : overallScore >= 70 ? "Sad" : "Angry");
       const quoteSource =
         evaluationData.comments ??
+        evaluationData.comment ??
         `${figure.name} found this conversation engaging.`;
 
       return {
-        messageCount: messages.length - 1, // Exclude welcome message
-        userMessages: userMessages.length,
-        aiMessages: aiMessages.length,
-        conversationDuration: Math.max(5, Math.floor(Math.random() * 30) + 10), // Mock duration in minutes
-        mood,
-        rating: overallScore,
         quote: ellipsize(quoteSource, 210),
       };
     }
 
     // Fallback to mock data if evaluation is not available yet
-    const mood = getRandomMood();
-    const rating = Math.floor(60 + Math.random() * 41); // 60–100 mock
-    const judgement = getMockJudgement(figure.name, rating, mood);
+    const mockJudgement = `${figure.name} found this conversation engaging and thought-provoking.`;
 
     return {
-      messageCount: messages.length - 1, // Exclude welcome message
-      userMessages: userMessages.length,
-      aiMessages: aiMessages.length,
-      conversationDuration: Math.max(5, Math.floor(Math.random() * 30) + 10), // Mock duration in minutes
-      mood,
-      rating,
-      quote: judgement,
+      quote: ellipsize(mockJudgement, 210),
     };
   };
 
-  const getRandomMood = () => {
-    const moods = ["Happy", "Sad", "Angry"];
-    return moods[Math.floor(Math.random() * moods.length)];
-  };
-  const getMoodColorClass = (mood: string) => {
-    switch (mood) {
-      case "Happy":
-        return "text-emerald-400";
-      case "Sad":
-        return "text-blue-300";
-      case "Angry":
-        return "text-red-400";
-      default:
-        return "text-foreground";
-    }
-  };
+  const getCategoryImage = (category: ShareCategory | null) => {
+    if (!category) return figure.imageUrl;
 
-  const getMoodIconClass = (mood: string) => {
-    switch (mood) {
-      case "Happy":
-        return "ph ph-[smiley--duotone]";
-      case "Sad":
-        return "ph ph-[smiley-sad--duotone]";
-      case "Angry":
-        return "ph ph-[smiley-angry--duotone]";
-      default:
-        return "ph ph-[star--duotone]";
-    }
-  };
+    const categoryMeta = CATEGORY_METADATA[category];
+    const moodImage = categoryMeta.moodImage;
 
-  const getMoodImage = (mood: string) => {
     // Get the figure name to determine the correct mood folder
     const figureName = figure.name.toLowerCase().replace(/\s+/g, "");
     let moodFolder = "Rand"; // Default fallback
@@ -1319,57 +1288,21 @@ const ScoreCardModal: React.FC<{
       moodFolder = "Satoshi";
     }
 
-    switch (mood) {
-      case "Happy":
+    switch (moodImage) {
+      case "happy":
         // Trump uses "smile" instead of "happy"
         const happyFileName =
           moodFolder === "Trump"
             ? "trump_smile.webp"
             : `${moodFolder.toLowerCase()}_happy.webp`;
         return `/resources/moods/${moodFolder}/${happyFileName}`;
-      case "Sad":
+      case "sad":
         return `/resources/moods/${moodFolder}/${moodFolder.toLowerCase()}_sad.webp`;
-      case "Angry":
+      case "angry":
         return `/resources/moods/${moodFolder}/${moodFolder.toLowerCase()}_angry.webp`;
       default:
-        return "";
+        return figure.imageUrl;
     }
-  };
-
-  const getMockJudgement = (name: string, rating: number, mood: string) => {
-    const templates = [
-      `${name} found your conversation ${
-        rating >= 85
-          ? "insightful and engaging"
-          : rating >= 70
-          ? "balanced and constructive"
-          : "a bit uneven, but promising"
-      }`,
-      `${
-        rating >= 85
-          ? "Strong signal"
-          : rating >= 70
-          ? "Solid effort"
-          : "Needs polish"
-      }—clear ideas and a ${mood.toLowerCase()} tone.`,
-      `Overall, ${name} rates this exchange ${rating}/100 and ${
-        rating >= 85
-          ? "would continue the thread"
-          : rating >= 70
-          ? "sees room to go deeper"
-          : "suggests refining your prompts"
-      }.`,
-    ];
-    const first = templates[Math.floor(Math.random() * templates.length)];
-    const second =
-      rating >= 85
-        ? "Great flow and clarity."
-        : rating >= 70
-        ? "Good direction; a few details could be sharper."
-        : "Try focusing the next question more narrowly.";
-    const includeSecond = Math.random() > 0.5;
-    const result = includeSecond ? `${first} ${second}` : first;
-    return ellipsize(result, 210);
   };
 
   const handleSaveScoreCard = async () => {
@@ -1404,10 +1337,22 @@ const ScoreCardModal: React.FC<{
       new Date().toISOString().split("T")[0]
     }.png`;
 
-    // New flow: capture first, open choice modal; actions execute from modal
-    const openShareChoice = (blob: Blob) => {
-      setCapturedBlob(blob);
-      setShareChoiceOpen(true);
+    // Download directly and track analytics
+    const downloadScoreCard = (blob: Blob) => {
+      // Track download action
+      trackShareAction({
+        actionType: "download",
+        characterName: figure.name,
+      });
+
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
     };
 
     // Strategy A: html2canvas
@@ -1453,13 +1398,13 @@ const ScoreCardModal: React.FC<{
         );
 
         if (blob) {
-          openShareChoice(blob);
+          downloadScoreCard(blob);
           return true;
         } else {
           // Fallback to data URL path
           const dataUrl = canvasElement.toDataURL("image/png");
           const blobFromDataUrl = await dataUrlToBlob(dataUrl);
-          openShareChoice(blobFromDataUrl);
+          downloadScoreCard(blobFromDataUrl);
           return true;
         }
       } finally {
@@ -1513,7 +1458,7 @@ const ScoreCardModal: React.FC<{
       });
 
       const blob = await dataUrlToBlob(dataUrl);
-      openShareChoice(blob);
+      downloadScoreCard(blob);
       return true;
     };
 
@@ -1542,17 +1487,7 @@ const ScoreCardModal: React.FC<{
   };
 
   const highlights = getConversationHighlights();
-  const sessionId = attestationData?.sessionId || "loading...";
-  const displaySessionId = sessionId;
-  const pairLabel = `${figure.name.split(" ")[0].toUpperCase()}/MOOD`;
-  const headlinePercent = (() => {
-    const total = Math.max(0, highlights.messageCount);
-    return `+${total.toLocaleString(undefined, {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    })}%`;
-  })();
-  const saveDisabled = isSaving || isEvaluating;
+  const saveDisabled = isSaving || isEvaluating || !selectedCategory;
 
   if (!isOpen) return null;
 
@@ -1587,6 +1522,84 @@ const ScoreCardModal: React.FC<{
             </button>
           </div>
 
+          {/* Category Selection */}
+          <div className="mb-6 sm:mb-8">
+            <label className="block text-sm sm:text-base font-semibold mb-4 text-neutral-800 tracking-tight">
+              Tag your submission
+            </label>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
+              {(
+                Object.keys(ShareCategory) as Array<keyof typeof ShareCategory>
+              ).map((key) => {
+                const category = ShareCategory[key];
+                const meta = CATEGORY_METADATA[category];
+                const isSelected = selectedCategory === category;
+                return (
+                  <button
+                    key={category}
+                    onClick={() => setSelectedCategory(category)}
+                    className={`group flex flex-col items-center justify-center gap-2 px-4 py-3 sm:px-5 sm:py-4 border-2 text-center transition-all duration-200 ${
+                      isSelected
+                        ? "text-white shadow-lg scale-[1.02]"
+                        : "border-neutral-200 bg-white text-neutral-800 hover:border-neutral-400 hover:bg-neutral-50 hover:shadow-md active:scale-[0.98]"
+                    }`}
+                    style={
+                      isSelected
+                        ? {
+                            backgroundColor: meta.color,
+                            borderColor: meta.color,
+                          }
+                        : undefined
+                    }
+                  >
+                    <span
+                      className={`text-2xl sm:text-3xl transition-transform ${
+                        isSelected ? "scale-110" : "group-hover:scale-110"
+                      }`}
+                    >
+                      {meta.emoji}
+                    </span>
+                    <span
+                      className={`text-[10px] sm:text-xs font-semibold uppercase tracking-wider leading-tight ${
+                        isSelected ? "text-white" : "text-neutral-700"
+                      }`}
+                    >
+                      {meta.label}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Context Input */}
+          <div className="mb-6 sm:mb-8">
+            <label className="block text-sm sm:text-base font-semibold mb-3 text-neutral-800 tracking-tight">
+              I asked {figure.name.split(" ")[0]} about...{" "}
+              <span className="text-neutral-400 font-normal">(optional)</span>
+            </label>
+            <div className="relative">
+              <textarea
+                ref={contextInputRef}
+                value={contextInput}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (value.length <= 60) {
+                    setContextInput(value);
+                  }
+                }}
+                placeholder="e.g., cryptocurrency regulations"
+                maxLength={60}
+                rows={1}
+                className="w-full px-4 pb-4 pt-2 sm:px-5 sm:py-5 border-2 border-neutral-200 bg-white text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-black transition-all text-sm sm:text-base resize-none overflow-hidden"
+                style={{ minHeight: "56px" }}
+              />
+              <div className="absolute right-3 bottom-3 text-xs text-neutral-400 font-mono">
+                {contextInput.length}/60
+              </div>
+            </div>
+          </div>
+
           {/* Score Card Content - 16:9 split layout */}
           <div
             ref={scoreCardRef}
@@ -1597,33 +1610,6 @@ const ScoreCardModal: React.FC<{
               className="aspect-[16/9] relative flex overflow-hidden"
             >
               <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-white/100 to-transparent group-hover:opacity-50 transition-opacity duration-1000 ease-out-circ h-96 pointer-events-none z-20"></div>
-              {/* TEE badge */}
-              <div className="absolute bottom-0 right-0 p-1 sm:p-4 z-30">
-                <div
-                  className={`sm:px-2 sm:py-1.5 px-1 py-1 border bg-white/80 text-[11px] ${
-                    attestationData?.status === "VERIFIED"
-                      ? "border-green-600 text-green-700"
-                      : attestationData?.error
-                      ? "border-red-600 text-red-700"
-                      : "border-yellow-600 text-yellow-700"
-                  }`}
-                  title={displaySessionId}
-                >
-                  <div className="flex items-center gap-1">
-                    <span
-                      className="ph ph-[shield-check--duotone]"
-                      aria-hidden
-                    ></span>
-                    <span className="text-[6px] sm:text-xs">
-                      {attestationData?.status === "VERIFIED"
-                        ? "TEE Verified"
-                        : attestationData?.error
-                        ? "TEE Error"
-                        : "TEE Verifying"}
-                    </span>
-                  </div>
-                </div>
-              </div>
               {/* Background stripes overlay clipped to right diagonal half */}
               <div
                 className="pointer-events-none absolute inset-0 z-0 opacity-50"
@@ -1647,10 +1633,10 @@ const ScoreCardModal: React.FC<{
                     showFinal ? "opacity-0" : "opacity-100"
                   }`}
                 />
-                {/* Final mood image */}
+                {/* Final category image */}
                 <img
                   crossOrigin="anonymous"
-                  src={getMoodImage(highlights.mood) || figure.imageUrl}
+                  src={getCategoryImage(selectedCategory) || figure.imageUrl}
                   alt={figure.name}
                   className={`absolute inset-0 w-full h-full object-cover lg:object-left transition-opacity duration-1000 z-10 ${
                     showFinal ? "opacity-100" : "opacity-0"
@@ -1685,86 +1671,86 @@ const ScoreCardModal: React.FC<{
               {/* Floating light right panel */}
               <div
                 ref={rightPanelRef}
-                className="inset-y-0 right-0 w-[50%] sm:w-[40%] max-w-[520px] p-4 md:p-7 flex flex-col overflow-hidden relative z-30"
+                className="inset-y-0 right-0 w-[50%] sm:w-[40%] max-w-[520px] p-5 md:p-8 flex flex-col justify-between overflow-hidden relative z-30"
               >
-                {/* (badge moved to absolute top-right) */}
-                {/* Rating */}
-                <div className="relative min-h-[40px] sm:min-h-[80px]">
+                {/* Content area */}
+                <div className="flex-1 flex flex-col justify-center min-h-0">
                   {/* Evaluating state */}
-                  <div
-                    className={`absolute inset-0 flex items-center gap-2 text-[0.9rem] sm:text-3xl md:text-4xl mt-1 sm:mt-4 tabular-nums text-neutral-400 transition-opacity duration-500 ${
-                      showFinal
-                        ? "opacity-0 pointer-events-none"
-                        : "opacity-100"
-                    }`}
-                  >
-                    <span className="w-4 h-4 ph ph-[hourglass--duotone] animate-spin"></span>
-                    Evaluating...
-                  </div>
-                  {/* Final state (rating or error) */}
-                  <div
-                    className={`absolute inset-0 transition-opacity duration-500 ${
-                      showFinal
-                        ? "opacity-100"
-                        : "opacity-0 pointer-events-none"
-                    }`}
-                  >
-                    {evaluationError ? (
-                      <div className="flex items-center gap-2 text-[0.9rem] sm:text-3xl md:text-4xl mt-1 sm:mt-4 tabular-nums text-red-400">
-                        <span className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 ph ph-[warning--duotone]"></span>
-                        Error
-                      </div>
-                    ) : (
-                      <div
-                        className={`flex items-center gap-2 text-[1.0rem] sm:text-5xl lg:text-6xl mt-1 sm:mt-4 tabular-nums ${getMoodColorClass(
-                          highlights.mood
-                        )}`}
-                      >
-                        <span
-                          className={`w-6 h-6 sm:w-12 sm:h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 ${getMoodIconClass(
-                            highlights.mood
-                          )}`}
-                        ></span>
-                        {highlights.rating}/100
-                      </div>
-                    )}
-                  </div>
-                </div>
+                  {!showFinal && isEvaluating && (
+                    <div className="text-[0.9rem] sm:text-xl md:text-2xl font-quote leading-tight text-neutral-400">
+                      "Analyzing conversation quality..."
+                    </div>
+                  )}
 
-                {/* Hero mood/engagement area */}
-                <div className="relative min-h-[72px]">
-                  {/* Evaluating message */}
-                  <div
-                    className={`absolute inset-0 text-[0.9rem] sm:text-xl md:text-2xl font-quote leading-tight z-20 mt-1 sm:mt-8 text-neutral-400 transition-opacity duration-500 ${
-                      showFinal
-                        ? "opacity-0 pointer-events-none"
-                        : "opacity-100"
-                    }`}
-                  >
-                    "Analyzing conversation quality..."
-                  </div>
-                  {/* Final quote or error */}
-                  <div
-                    className={`absolute inset-0 transition-opacity duration-500 ${
-                      showFinal
-                        ? "opacity-100"
-                        : "opacity-0 pointer-events-none"
-                    }`}
-                  >
-                    {evaluationError ? (
-                      <div className="text-[0.9rem] sm:text-xl md:text-2xl font-quote leading-tight z-20 mt-1 sm:mt-8 text-red-400">
-                        "Unable to evaluate conversation"
-                      </div>
-                    ) : (
-                      <div
-                        className={`text-[0.9rem] sm:text-2xl lg:text-3xl font-quote leading-tight z-20 mt-1 sm:mt-8 ${getMoodColorClass(
-                          highlights.mood
-                        )}`}
-                      >
-                        "{highlights.quote}"
-                      </div>
-                    )}
-                  </div>
+                  {/* Final content */}
+                  {showFinal && (
+                    <>
+                      {evaluationError ? (
+                        <div className="text-[0.9rem] sm:text-xl md:text-2xl font-quote leading-tight text-red-400">
+                          "Unable to evaluate conversation"
+                        </div>
+                      ) : (
+                        <div className="flex flex-col">
+                          {/* Category Badge */}
+                          {selectedCategory && (
+                            <div className="mb-2 sm:mb-8">
+                              <div
+                                className="flex flex-col items-center justify-center gap-2 px-2 py-1 sm:px-5 sm:py-3 border-2 shadow-sm w-full"
+                                style={{
+                                  backgroundColor:
+                                    CATEGORY_METADATA[selectedCategory].color,
+                                  borderColor:
+                                    CATEGORY_METADATA[selectedCategory].color,
+                                  color: "white",
+                                }}
+                              >
+                                <span
+                                  style={{
+                                    fontSize:
+                                      "clamp(0.3rem, 1vw + 0.2rem, 10.0rem)",
+                                  }}
+                                >
+                                  {CATEGORY_METADATA[selectedCategory].emoji}
+                                </span>
+                                <span
+                                  className="font-bold uppercase tracking-wider"
+                                  style={{
+                                    fontSize:
+                                      "clamp(0.3rem, 1vw + 0.2rem, 1rem)",
+                                  }}
+                                >
+                                  {CATEGORY_METADATA[selectedCategory].label}
+                                </span>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Context line */}
+                          {contextInput && (
+                            <div
+                              className="mb-2 sm:mb-5 text-neutral-400 font-medium italic"
+                              style={{
+                                fontSize: "clamp(0.1rem, 0.1rem + 1vw, 1rem)",
+                              }}
+                            >
+                              I asked {figure.name.split(" ")[0]} about{" "}
+                              {contextInput}
+                            </div>
+                          )}
+
+                          {/* Character quote */}
+                          <div
+                            className="font-quote leading-relaxed text-neutral-800"
+                            style={{
+                              fontSize: "clamp(0.1rem, 0.3rem + 1vw, 1.875rem)",
+                            }}
+                          >
+                            "{highlights.quote}"
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  )}
                 </div>
               </div>
             </div>
@@ -1814,7 +1800,11 @@ const ScoreCardModal: React.FC<{
             onClick={handleSaveScoreCard}
             disabled={saveDisabled}
             title={
-              isEvaluating ? "Please wait for evaluation to finish" : undefined
+              isEvaluating
+                ? "Please wait for evaluation to finish"
+                : !selectedCategory
+                ? "Please select a category to continue"
+                : undefined
             }
             className={`relative flex gap-2 items-center py-2 px-4 text-[10px] sm:text-xs md:text-sm overflow-hidden
               ${
@@ -1841,87 +1831,6 @@ const ScoreCardModal: React.FC<{
             )}
           </button>
         </div>
-        {/* Share Choice Modal */}
-        <Modal
-          isOpen={shareChoiceOpen}
-          onClose={() => setShareChoiceOpen(false)}
-          title="Share Score Card"
-        >
-          <div className="space-y-4">
-            <p className="text-sm">
-              Choose how you want to share your score card.
-            </p>
-            <div className="grid sm:grid-cols-2 gap-3">
-              <button
-                className="flex items-center justify-center gap-2 border border-neutral-300 bg-black text-white px-4 py-2 text-sm hover:opacity-90 active:scale-95 transition"
-                onClick={async () => {
-                  if (!capturedBlob) return;
-                  try {
-                    const ClipboardItemCtor = (window as any).ClipboardItem;
-                    if (
-                      ClipboardItemCtor &&
-                      (navigator as any).clipboard &&
-                      "write" in (navigator as any).clipboard
-                    ) {
-                      await (navigator as any).clipboard.write([
-                        new ClipboardItemCtor({
-                          [capturedBlob.type]: capturedBlob,
-                        }),
-                      ]);
-                    }
-                  } catch (_) {}
-
-                  // Track copy to X action
-                  trackShareAction({
-                    actionType: "copy_to_x",
-                    characterName: figure.name,
-                  });
-
-                  try {
-                    const url =
-                      typeof window !== "undefined" ? window.location.href : "";
-                    const intent = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
-                      "Had a conversation that will live forever. #DigitalImmortality https://twin.ar.io/"
-                    )}`;
-                    window.open(intent, "_blank", "noopener,noreferrer");
-                  } catch (_) {}
-                  setShareChoiceOpen(false);
-                }}
-              >
-                <span className="ph ph-[paperclip]" aria-hidden></span>
-                Copy photo and post to X
-              </button>
-              <button
-                className="flex items-center justify-center gap-2 border border-neutral-300 bg-white text-neutral-800 px-4 py-2 text-sm hover:bg-neutral-50 active:scale-95 transition"
-                onClick={() => {
-                  if (!capturedBlob) return;
-
-                  // Track download action
-                  trackShareAction({
-                    actionType: "download",
-                    characterName: figure.name,
-                  });
-
-                  const name = `${figure.name.replace(/\s+/g, "_")}_ScoreCard_${
-                    new Date().toISOString().split("T")[0]
-                  }.png`;
-                  const url = URL.createObjectURL(capturedBlob);
-                  const link = document.createElement("a");
-                  link.href = url;
-                  link.download = name;
-                  document.body.appendChild(link);
-                  link.click();
-                  document.body.removeChild(link);
-                  URL.revokeObjectURL(url);
-                  setShareChoiceOpen(false);
-                }}
-              >
-                <span className="ph ph-[download-simple]" aria-hidden></span>
-                Save to desktop
-              </button>
-            </div>
-          </div>
-        </Modal>
       </div>
     </div>
   );
