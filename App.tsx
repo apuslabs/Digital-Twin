@@ -105,8 +105,13 @@ const App: React.FC = () => {
 
   return (
     <div className="bg-surface min-h-screen text-foreground">
-      <Header onLogoClick={handleBackToSelector} />
-      <main className="container mx-auto px-4 py-8 font-mono">
+      <Header 
+        onLogoClick={handleBackToSelector} 
+        isHomePage={currentView === "selector"}
+      />
+      <main className={`mx-auto px-4 py-8 font-mono ${
+        currentView === "selector" ? "max-w-[2000px]" : "container"
+      }`}>
         {renderContent()}
       </main>
     </div>

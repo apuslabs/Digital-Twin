@@ -1,9 +1,14 @@
 import React from "react";
 
-const Header: React.FC<{ onLogoClick?: () => void }> = ({ onLogoClick }) => {
+const Header: React.FC<{ onLogoClick?: () => void; isHomePage?: boolean }> = ({ 
+  onLogoClick,
+  isHomePage = false
+}) => {
   return (
     <header className="bg-white backdrop-blur-sm py-4 border-b border-border sticky top-0 z-20">
-      <div className="container mx-auto px-4">
+      <div className={`mx-auto px-4 ${
+        isHomePage ? "max-w-[2000px]" : "container"
+      }`}>
         <div className="flex items-center justify-between">
           <button
             type="button"
