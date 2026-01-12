@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { Category, Figure } from "./types";
 import { CATEGORIES, FIGURES } from "./constants";
 import Header from "./components/Header";
@@ -6,20 +6,42 @@ import FigureSelector from "./components/FigureSelector";
 import ChatInterface from "./components/ChatInterface";
 import HowToBanner from "./components/HowToBanner";
 import CompetitionPage from "./components/CompetitionPage";
+import ContestRulesPage from "./components/ContestRulesPage";
 
 const dreamVideoUrl = new URL(
   "./resources/videos/network-is-dreaming.mp4",
   import.meta.url
 ).href;
 
-type View = "selector" | "chat" | "competition";
+type View = "selector" | "chat" | "competition" | "contest";
+
+const isContestRoute = () => {
+  if (typeof window === "undefined") return false;
+  const path = window.location.pathname.toLowerCase();
+  return path.includes("contest") || path.includes("outofcontext");
+};
 
 const App: React.FC = () => {
   const [activeCategory, setActiveCategory] = useState<Category>(
     Category.Politics
   );
   const [selectedFigure, setSelectedFigure] = useState<Figure | null>(null);
-  const [currentView, setCurrentView] = useState<View>("selector");
+  const [currentView, setCurrentView] = useState<View>(() =>
+    isContestRoute() ? "contest" : "selector"
+  );
+
+  useEffect(() => {
+    const handlePopState = () => {
+      if (isContestRoute()) {
+        setCurrentView("contest");
+        return;
+      }
+      setCurrentView("selector");
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
 
   const filteredFigures = useMemo(() => {
     return FIGURES.filter((figure) => figure.category === activeCategory);
@@ -33,6 +55,9 @@ const App: React.FC = () => {
   const handleBackToSelector = () => {
     setSelectedFigure(null);
     setCurrentView("selector");
+    if (typeof window !== "undefined") {
+      window.history.pushState(null, "", "/");
+    }
   };
 
   const handleNextTwin = () => {
@@ -76,6 +101,8 @@ const App: React.FC = () => {
         return (
           <CompetitionPage figures={FIGURES} onBack={handleBackToSelector} />
         );
+      case "contest":
+        return <ContestRulesPage onBackHome={handleBackToSelector} />;
       case "selector":
       default:
         return (
