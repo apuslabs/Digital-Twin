@@ -102,7 +102,7 @@ const App: React.FC = () => {
           <CompetitionPage figures={FIGURES} onBack={handleBackToSelector} />
         );
       case "contest":
-        return <ContestRulesPage onBackHome={handleBackToSelector} />;
+        return <ContestRulesPage onBackHome={handleBackToSelector} onStartRandom={handleStartRandom} />;
       case "selector":
       default:
         return (

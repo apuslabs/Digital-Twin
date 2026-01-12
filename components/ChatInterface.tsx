@@ -1098,14 +1098,14 @@ const ConnectionModal: React.FC<{
   );
 };
 
-const ScoreCardModal: React.FC<{
+const OutOfContextCardModal: React.FC<{
   figure: Figure;
   messages: ChatMessage[];
   attestationData: any;
   isOpen: boolean;
   onClose: () => void;
 }> = ({ figure, messages, attestationData, isOpen, onClose }) => {
-  const scoreCardRef = useRef<HTMLDivElement>(null);
+  const outOfContextCardRef = useRef<HTMLDivElement>(null);
   const aspectRef = useRef<HTMLDivElement>(null);
   const blurUnderlayRef = useRef<HTMLDivElement>(null);
   const rightPanelRef = useRef<HTMLDivElement>(null);
@@ -1305,8 +1305,8 @@ const ScoreCardModal: React.FC<{
     }
   };
 
-  const handleSaveScoreCard = async () => {
-    if (!scoreCardRef.current) return;
+  const handleSaveOutOfContextCard = async () => {
+      if (!outOfContextCardRef.current) return;
     if (isEvaluating) return; // Do not allow saving while evaluation is in progress
 
     // Play share sound on click
@@ -1333,12 +1333,12 @@ const ScoreCardModal: React.FC<{
       return await res.blob();
     };
 
-    const fileName = `${figure.name.replace(/\s+/g, "_")}_ScoreCard_${
+    const fileName = `${figure.name.replace(/\s+/g, "_")}_OutOfContextCard_${
       new Date().toISOString().split("T")[0]
     }.png`;
 
     // Download directly and track analytics
-    const downloadScoreCard = (blob: Blob) => {
+    const downloadOutOfContextCard = (blob: Blob) => {
       // Track download action
       trackShareAction({
         actionType: "download",
@@ -1364,7 +1364,7 @@ const ScoreCardModal: React.FC<{
       if (aspectRef.current) {
         previousAspectHeight = aspectRef.current.style.height;
         const width =
-          aspectRef.current.clientWidth || scoreCardRef.current!.clientWidth;
+          aspectRef.current.clientWidth || outOfContextCardRef.current!.clientWidth;
         if (width) {
           aspectRef.current.style.height = `${Math.round((width * 9) / 16)}px`;
         }
@@ -1383,7 +1383,7 @@ const ScoreCardModal: React.FC<{
       }
 
       try {
-        const canvasElement = await html2canvas(scoreCardRef.current!, {
+        const canvasElement = await html2canvas(outOfContextCardRef.current!, {
           backgroundColor: "#ffffff",
           scale: Math.max(2, Math.ceil(window.devicePixelRatio || 1)),
           useCORS: true,
@@ -1398,7 +1398,7 @@ const ScoreCardModal: React.FC<{
         );
 
         if (blob) {
-          downloadScoreCard(blob);
+          downloadOutOfContextCard(blob);
           return true;
         } else {
           // Fallback to data URL path
@@ -1444,11 +1444,11 @@ const ScoreCardModal: React.FC<{
         return true;
       };
 
-      const width = scoreCardRef.current!.clientWidth;
-      const height = scoreCardRef.current!.clientHeight;
+      const width = outOfContextCardRef.current!.clientWidth;
+      const height = outOfContextCardRef.current!.clientHeight;
       const pixelRatio = Math.max(2, Math.ceil(window.devicePixelRatio || 1));
 
-      const dataUrl = await toPng(scoreCardRef.current!, {
+      const dataUrl = await toPng(outOfContextCardRef.current!, {
         cacheBust: true,
         backgroundColor: "#ffffff",
         pixelRatio,
@@ -1458,7 +1458,7 @@ const ScoreCardModal: React.FC<{
       });
 
       const blob = await dataUrlToBlob(dataUrl);
-      downloadScoreCard(blob);
+      downloadOutOfContextCard(blob);
       return true;
     };
 
@@ -1476,11 +1476,11 @@ const ScoreCardModal: React.FC<{
       if (okB) return;
 
       const errorText = errors.join("\n");
-      console.error("Failed to save score card:", errorText);
+      console.error("Failed to save Out of Context card:", errorText);
       setSaveError(
         `${errorText}\n\nTips: If the twin image is remote without CORS, remove it or host locally. Avoid CSS filters/backdrop-filter on captured nodes.`
       );
-      alert("Failed to save score card. See details in the modal.");
+      alert("Failed to save Out of Context card. See details in the modal.");
     } finally {
       setIsSaving(false);
     }
@@ -1497,7 +1497,7 @@ const ScoreCardModal: React.FC<{
       onClick={onClose}
       role="dialog"
       aria-modal="true"
-      aria-labelledby="score-card-title"
+      aria-labelledby="out-of-context-card-title"
     >
       <div
         className="relative bg-white p-2 sm:p-6 m-2 sm:m-4 max-w-5xl w-full max-h-[90vh] overflow-y-auto transform transition-all duration-300 animate-slide-up border border-neutral-300"
@@ -1516,7 +1516,7 @@ const ScoreCardModal: React.FC<{
             <button
               onClick={onClose}
               className="p-2 hover:bg-neutral-100 transition-colors"
-              aria-label="Close score card"
+              aria-label="Close Out of Context card"
             >
               <CloseIcon />
             </button>
@@ -1600,9 +1600,9 @@ const ScoreCardModal: React.FC<{
             </div>
           </div>
 
-          {/* Score Card Content - 16:9 split layout */}
+          {/* Out of Context Card Content - 16:9 split layout */}
           <div
-            ref={scoreCardRef}
+            ref={outOfContextCardRef}
             className="relative w-full border border-neutral-300 bg-white"
           >
             <div
@@ -1783,7 +1783,7 @@ const ScoreCardModal: React.FC<{
             <div className="font-semibold mb-1">Evaluation error</div>
             <p className="text-sm leading-snug">{evaluationError}</p>
             <p className="text-xs mt-2 opacity-75">
-              The score card is showing mock data due to evaluation failure.
+              The Out of Context card is showing mock data due to evaluation failure.
             </p>
           </div>
         )}
@@ -1797,7 +1797,7 @@ const ScoreCardModal: React.FC<{
             Close
           </button>
           <button
-            onClick={handleSaveScoreCard}
+            onClick={handleSaveOutOfContextCard}
             disabled={saveDisabled}
             title={
               isEvaluating
@@ -1824,7 +1824,7 @@ const ScoreCardModal: React.FC<{
                 ? "Saving…"
                 : isEvaluating
                 ? "Evaluating…"
-                : "Save Your Score Card"}
+                : "Save Your Out of Context Card"}
             </span>
             {!saveDisabled && (
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-400 to-transparent opacity-20 transform -skew-x-12 -translate-x-full animate-shimmer"></div>
@@ -1857,7 +1857,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
     null
   );
   const hotkeyTimerRef = useRef<number | null>(null);
-  const [isScoreCardOpen, setIsScoreCardOpen] = useState(false);
+  const [isOutOfContextCardOpen, setIsOutOfContextCardOpen] = useState(false);
   const [attestationData, setAttestationData] = useState<any>(null);
   const [shareHintVisible, setShareHintVisible] = useState(false);
   const [showShareOverlay, setShowShareOverlay] = useState(false);
@@ -2077,7 +2077,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
     initializeChat();
   }, [figure]);
 
-  // Fetch TEE attestation data for score card
+  // Fetch TEE attestation data for Out of Context card
   useEffect(() => {
     const fetchAttestation = async () => {
       if (chatSession?.sessionId) {
@@ -2088,7 +2088,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
           setAttestationData(attestation);
         } catch (error) {
           console.error(
-            "Failed to fetch TEE attestation for score card:",
+            "Failed to fetch TEE attestation for Out of Context card:",
             error
           );
           setAttestationData({ error: "Failed to fetch attestation" });
@@ -2326,13 +2326,13 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                   tooltipShown: true,
                 });
                 dismissShareOverlay();
-                setIsScoreCardOpen(true);
+                setIsOutOfContextCardOpen(true);
               }}
               className="relative w-full flex gap-2 items-center justify-center py-2 px-4 border text-neutral-800 transition-colors text-[10px] sm:text-xs md:text-sm overflow-hidden active:scale-95 cursor-pointer border-amber-300 bg-amber-100 hover:bg-neutral-50"
             >
               <span className="relative z-10 inline-flex items-center gap-2">
                 <div className="ph ph-[star--duotone] text-amber-400" />
-                Share Your Score Card
+                Share Your Out of Context Card
               </span>
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-400 to-transparent opacity-20 transform -skew-x-12 -translate-x-full animate-shimmer"></div>
             </button>
@@ -2345,7 +2345,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
           </div>
         )}
 
-        {/* Preview card mimicking the actual score card */}
+        {/* Preview card mimicking the actual Out of Context card */}
         <div className="mx-3 mb-3 bg-white border border-neutral-200 overflow-hidden relative">
           {/* Darkening overlay and EXAMPLE label */}
           <div className="absolute inset-0 bg-black/30 z-10 pointer-events-none" />
@@ -2613,7 +2613,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                 >
                   ▶
                 </button>
-                {/* Share Score Card (disabled until at least 1 user message) */}
+                {/* Share Out of Context Card (disabled until at least 1 user message) */}
                 {(() => {
                   const userMessageCount = messages.filter(
                     (m) => m.author === MessageAuthor.User
@@ -2633,7 +2633,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                       });
 
                       dismissShareOverlay();
-                      setIsScoreCardOpen(true);
+                      setIsOutOfContextCardOpen(true);
                     }
                   };
                   return (
@@ -2645,8 +2645,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                         aria-disabled={!canShare}
                         title={
                           canShare
-                            ? "Share your score card"
-                            : `Send at least 1 message with ${figure.name} to share your score card`
+                            ? "Share your Out of Context card"
+                            : `Send at least 1 message with ${figure.name} to share your Out of Context card`
                         }
                         className={`relative flex gap-2 items-center py-2 px-4 border text-neutral-800 transition-colors text-[10px] sm:text-xs md:text-sm overflow-hidden active:scale-95 ${
                           canShare
@@ -2661,7 +2661,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                               canShare ? "text-amber-400" : "text-neutral-400"
                             }`}
                           />
-                          Share Your Score Card
+                          Share Your Out of Context Card
                         </span>
                         {canShare && (
                           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-400 to-transparent opacity-20 transform -skew-x-12 -translate-x-full animate-shimmer"></div>
@@ -2671,7 +2671,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                         <button
                           type="button"
                           onClick={showHint}
-                          aria-label="Share score card disabled overlay"
+                          aria-label="Share Out of Context card disabled overlay"
                           className="absolute inset-0 bg-transparent"
                         />
                       )}
@@ -2806,13 +2806,13 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
           onClose={handleCloseModal}
         />
       )}
-      <ScoreCardModal
+      <OutOfContextCardModal
         key={figure.id}
         figure={figure}
         messages={messages}
         attestationData={attestationData}
-        isOpen={isScoreCardOpen}
-        onClose={() => setIsScoreCardOpen(false)}
+        isOpen={isOutOfContextCardOpen}
+        onClose={() => setIsOutOfContextCardOpen(false)}
       />
     </>
   );

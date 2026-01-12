@@ -45,10 +45,10 @@ const HowToBanner: React.FC<HowToBannerProps> = ({ onStartRandom }) => {
         <div className="flex justify-between gap-6 w-full">
           <div>
             <h2 className="font-bold scale-y-125 text-lg">
-              Chat with a Twin and Share your Social Card
+              Chat with a Twin and Share your Out of Context card
             </h2>
             <p className="mt-1 max-w-lg">
-              Start a chat, and share your social card online. Everything
+              Start a chat, and share your Out of Context card online. Everything
               transparent and onchain. Consciousness spread at scale.
             </p>
           </div>

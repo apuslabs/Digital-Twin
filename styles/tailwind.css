@@ -130,7 +130,7 @@
         animation-timing-function: cubic-bezier(.785, .135, .15, .86);
     }
 
-    /* Sparkling animations for score card button */
+    /* Sparkling animations for Out of Context card button */
     @keyframes sparkle {
         0% {
             background-position: 0% 50%;
