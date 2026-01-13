@@ -9,11 +9,11 @@ export const EnterCompetitionButton: React.FC<EnterCompetitionButtonProps> = ({
   onClick,
 }) => {
   return (
-    <div className="absolute bottom-4 right-4 md:bottom-8 md:left-8 z-30 flex flex-col items-start gap-2">
+    <div className="max-md:w-full max-md:mt-4 md:absolute bottom-4 right-4 lg:bottom-8 lg:left-8 z-30 flex flex-col items-start gap-2">
       <button
         type="button"
         onClick={onClick}
-        className="relative flex items-center gap-1.5 md:gap-3 px-3 py-1.5 md:px-6 md:py-3 border border-border/20 text-white hover:opacity-90 active:scale-95 transition-[opacity,transform] duration-150"
+        className="relative flex items-center gap-1.5 max-md:w-full lg:gap-3 px-3 py-1.5 lg:px-6 lg:py-3 bg-white/20 border border-border/20 text-white hover:opacity-90 active:scale-95 transition-[opacity,transform] duration-150"
         aria-label="Enter Competition"
       >
         {/* Corner brackets */}
@@ -23,7 +23,9 @@ export const EnterCompetitionButton: React.FC<EnterCompetitionButtonProps> = ({
         <div className="absolute bottom-0 right-0 w-1 h-1 border-b border-r border-white"></div>
 
         <ArweaveOrbit />
-        <span className="text-[10px] md:text-sm ">1000 $AR Prize Pool</span>
+        <span className="text-[10px] lg:text-sm ">
+          Enter for a chance at $1300 in $AR
+        </span>
       </button>
     </div>
   );
