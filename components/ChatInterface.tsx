@@ -1526,6 +1526,20 @@ const OutOfContextCardModal: React.FC<{
             >
               <CloseIcon />
             </button>
+            <a
+              href="#/outofcontext/"
+              onClick={(e) => {
+                e.preventDefault();
+                window.open(
+                  `${window.location.origin}${window.location.pathname}#/outofcontext/`,
+                  "_blank",
+                  "width=800,height=600,scrollbars=yes,resizable=yes"
+                );
+              }}
+              className="text-[10px] sm:text-xs font-semibold text-neutral-600 hover:text-neutral-900 underline transition-colors"
+            >
+              Read Out of Context contest rules
+            </a>
           </div>
 
           {/* Category Selection */}
@@ -1879,6 +1893,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   const shareButtonRef = useRef<HTMLButtonElement | null>(null);
   const sendSoundRef = useRef<HTMLAudioElement | null>(null);
   const receiveSoundRef = useRef<HTMLAudioElement | null>(null);
+  const [isBannerVisible, setIsBannerVisible] = useState(true);
+  const [isBannerCollapsing, setIsBannerCollapsing] = useState(false);
 
   const getShareOverlayPreview = useCallback(() => {
     type Preview = {
@@ -2145,6 +2161,28 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
       behavior: "smooth",
     });
   }, [messages]);
+
+  // Reset banner when figure changes
+  useEffect(() => {
+    setIsBannerVisible(true);
+    setIsBannerCollapsing(false);
+  }, [figure.id]);
+
+  // Collapse banner after first user message
+  useEffect(() => {
+    const userMessageCount = messages.filter(
+      (m) => m.author === MessageAuthor.User
+    ).length;
+
+    if (userMessageCount >= 1 && isBannerVisible && !isBannerCollapsing) {
+      setIsBannerCollapsing(true);
+      // After animation completes, hide the banner
+      const timer = setTimeout(() => {
+        setIsBannerVisible(false);
+      }, 300); // Match animation duration
+      return () => clearTimeout(timer);
+    }
+  }, [messages, isBannerVisible, isBannerCollapsing]);
 
   // Detect mobile screen size
   useEffect(() => {
@@ -2655,24 +2693,52 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                             ? "Share your Out of Context card"
                             : `Send at least 1 message with ${figure.name} to share your Out of Context card`
                         }
-                        className={`relative flex gap-2 items-center py-2 px-4 border text-neutral-800 transition-colors text-[10px] sm:text-xs md:text-sm overflow-hidden active:scale-95 ${
+                        className={`relative flex gap-2 items-center py-2 px-4 border transition-colors text-[10px] sm:text-xs md:text-sm overflow-hidden active:scale-95 ring-1 group ${
                           canShare
-                            ? "cursor-pointer border-amber-300 bg-amber-100 hover:bg-neutral-50"
-                            : "cursor-not-allowed border-neutral-300 bg-neutral-100 opacity-70"
+                            ? "cursor-pointer border-border bg-black text-white ring-white/10 hover:opacity-90"
+                            : "cursor-not-allowed border-neutral-300 bg-neutral-100 text-neutral-400 opacity-70"
                         }`}
                         style={{ zIndex: showShareOverlay ? 9999 : "auto" }}
                       >
-                        <span className="relative z-10 inline-flex items-center gap-2">
+                        {canShare && (
+                          <>
+                            <div className="absolute top-0 left-0 w-full h-full z-[1]">
+                              <video
+                                src={dreamVideoUrl}
+                                autoPlay
+                                muted
+                                loop
+                                playsInline
+                                className="h-full w-full object-cover object-left opacity-30 grayscale scale-150"
+                                aria-label="Network is dreaming"
+                              />
+                            </div>
+                            {/* Border shine effect on hover - only on border */}
+                            <div
+                              className="absolute -inset-[1px] z-[3] opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none rounded-sm"
+                              style={{
+                                background:
+                                  "linear-gradient(90deg, transparent 0%, transparent 30%, rgba(255,255,255,0.8) 50%, transparent 70%, transparent 100%)",
+                                backgroundSize: "200% 100%",
+                                WebkitMask:
+                                  "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+                                WebkitMaskComposite: "xor",
+                                mask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+                                maskComposite: "exclude",
+                                padding: "1px",
+                                animation: "shimmer 2s ease-in-out infinite",
+                              }}
+                            ></div>
+                          </>
+                        )}
+                        <span className="relative z-[2] inline-flex items-center gap-2">
                           <div
-                            className={`ph ph-[star--duotone] ${
-                              canShare ? "text-amber-400" : "text-neutral-400"
+                            className={`ph ph-[sparkle--duotone] ${
+                              canShare ? "text-white" : "text-neutral-400"
                             }`}
                           />
                           Share Your Out of Context Card
                         </span>
-                        {canShare && (
-                          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-400 to-transparent opacity-20 transform -skew-x-12 -translate-x-full animate-shimmer"></div>
-                        )}
                       </button>
                       {!canShare && (
                         <button
@@ -2701,22 +2767,45 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
             </div>
 
             {/* Thin Banner */}
-            <div className="relative w-full px-4 py-2 bg-black border-b border-border shrink-0 ring-1 ring-white/10 overflow-hidden">
-              <div className="absolute top-0 left-0 w-full h-full z-[1]">
-                <video
-                  src={dreamVideoUrl}
-                  autoPlay
-                  muted
-                  loop
-                  playsInline
-                  className="h-full w-full object-cover object-left opacity-30 grayscale scale-150"
-                  aria-label="Network is dreaming"
-                />
+            {isBannerVisible && (
+              <div
+                className={`relative w-full px-4 py-2 bg-black border-b border-border shrink-0 ring-1 ring-white/10 overflow-hidden transition-all duration-300 ease-in-out ${
+                  isBannerCollapsing
+                    ? "max-h-0 py-0 opacity-0 -mb-0"
+                    : "max-h-20 opacity-100"
+                }`}
+              >
+                <div className="absolute top-0 left-0 w-full h-full z-[1]">
+                  <video
+                    src={dreamVideoUrl}
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    className="h-full w-full object-cover object-left opacity-30 grayscale scale-150"
+                    aria-label="Network is dreaming"
+                  />
+                </div>
+                <p className="relative z-[2] text-xs text-white text-center">
+                  Keep chatting and share your Out of Context card for a $1300
+                  USDC prize pool.{" "}
+                  <a
+                    href="#/outofcontext/"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      window.open(
+                        `${window.location.origin}${window.location.pathname}#/outofcontext/`,
+                        "_blank",
+                        "width=800,height=600,scrollbars=yes,resizable=yes"
+                      );
+                    }}
+                    className="underline hover:text-neutral-300 transition-colors font-semibold"
+                  >
+                    See rules
+                  </a>
+                </p>
               </div>
-              <p className="relative z-[2] text-xs text-white text-center">
-                Chat with {figure.name} to unlock and share your Out of Context card
-              </p>
-            </div>
+            )}
 
             <div
               className="flex-1 p-6 overflow-y-auto space-y-6"

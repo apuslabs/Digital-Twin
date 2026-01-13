@@ -60,8 +60,7 @@ export const ContestBanner: React.FC<ContestBannerProps> = ({
             </h2>
             <p className="mt-4 text-xs sm:text-sm max-w-lg">
               Chat with a Digital Twin and share your most out of context
-              moments. Compete for daily highlights and showcase the wildest
-              conversations.
+              moments.
             </p>
           </div>
         </div>

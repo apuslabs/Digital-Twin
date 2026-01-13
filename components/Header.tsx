@@ -25,6 +25,7 @@ const Header: React.FC<{ onLogoClick?: () => void; isHomePage?: boolean }> = ({
           </button>
 
           <div className="flex-1 flex justify-end">
+            <p className="text-sm text-neutral-500">Built on ⓐ Arweave.</p>
           </div>
         </div>
       </div>

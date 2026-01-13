@@ -75,36 +75,19 @@ const FigureSelector: React.FC<FigureSelectorProps> = ({
 }) => {
   return (
     <div className="animate-fade-in">
-      <div className="flex justify-between items-start mb-6">
-        <div className="flex flex-col">
-          <h2 className="font mb-4 flex items-center gap-4">
-            <span className="scale-y-125 font-bold text-sm sm:text-lg">
-              Select a Digital Twin
-            </span>
-          </h2>
-          <p className="max-w-2xl text-xs sm:text-sm text-neutral-600">
-            <ClickIcon /> Click on a twin to start chatting.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 items-end">
-          <p className="text-sm text-neutral-500">Built on ⓐ Arweave.</p>
-          <p hidden>
-            <a
-              href="#"
-              onClick={(e) => {
-                e.preventDefault();
-                onNavigateToCompetition();
-              }}
-              className="underline hover:opacity-70"
-            >
-              Join the community to help improve their AI persona.
-            </a>
-          </p>
-        </div>
+      <div className="mb-6">
+        <h2 className="font mb-1 flex items-center gap-4">
+          <span className="scale-y-125 font-bold text-sm sm:text-lg">
+            Select a Digital Twin
+          </span>
+        </h2>
+        <p className="max-w-2xl text-xs sm:text-sm text-neutral-600">
+          <ClickIcon /> Click on a twin to start chatting.
+        </p>
       </div>
 
       {/* Modern CSS Grid Layout */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
         {figures.map((figure) => (
           <FigureCard
             key={figure.id}

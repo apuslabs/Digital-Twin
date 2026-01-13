@@ -18,7 +18,7 @@ export const Footer: React.FC = () => {
   }, []);
 
   return (
-    <footer className="mx-auto px-4 py-6 font-mono border-t border-border">
+    <footer className="mx-auto px-4 py-2 font-mono border-t border-border">
       <div className="max-w-[2000px] mx-auto text-xs text-neutral-600">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-4">

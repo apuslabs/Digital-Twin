@@ -8,7 +8,12 @@ export const EnterCompetitionButton: React.FC<EnterCompetitionButtonProps> = ({
   onClick,
 }) => {
   return (
-    <div className="absolute bottom-4 right-4 md:bottom-8 md:left-8 z-30">
+    <div className="absolute bottom-4 right-4 md:bottom-8 md:left-8 z-30 flex flex-col items-start gap-2">
+      <div className="px-3 py-1.5 md:px-6 md:py-2 bg-white text-black border border-border shadow-lg">
+        <p className="text-xs sm:text-sm font-semibold">
+          $1300 USDC Prize Pool
+        </p>
+      </div>
       <button
         type="button"
         onClick={onClick}

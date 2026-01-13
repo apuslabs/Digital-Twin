@@ -30,7 +30,7 @@ const ContestRulesPage: React.FC<ContestRulesPageProps> = ({
   onStartRandom,
 }) => {
   const [isLegalOpen, setIsLegalOpen] = useState(false);
-    const [expandedItem, setExpandedItem] = useState<number | null>(null);
+  const [expandedItem, setExpandedItem] = useState<number | null>(null);
 
   const tagOptions = useMemo<TagOption[]>(() => {
     return Object.values(ShareCategory).map((category) => {
@@ -72,16 +72,101 @@ const ContestRulesPage: React.FC<ContestRulesPageProps> = ({
           <div>
             <div className="flex items-center gap-2 text-[10px] sm:text-[11px] uppercase tracking-wide text-neutral-600">
               <span className="ph ph-[sparkle] text-sm sm:text-base"></span>
-              Sharing
+              How to enter
             </div>
             <h2 className="mt-2 text-base sm:text-lg font-semibold">
-              Share your out of context moments with a twin.
+              SHARE YOUR OUT OF CONTEXT MOMENTS ON X.
             </h2>
             <p className="mt-2 text-xs sm:text-xs text-neutral-700">
               AI judges score entries, category winners get highlighted, and the
               best posts live forever on Arweave.
             </p>
-            <div className="mt-4">
+
+            {/* Step-by-step guide */}
+            <div className="mt-4 sm:mt-6 space-y-4 sm:space-y-5">
+              {/* Step 1: Chat with a twin */}
+              <div className="flex items-start gap-2 sm:gap-3">
+                <div className="flex-shrink-0 w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-black text-white flex items-center justify-center text-[10px] sm:text-xs font-semibold mt-0.5">
+                  1
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs sm:text-sm text-neutral-900 font-medium mb-2 sm:mb-3">
+                    Chat with a twin
+                  </p>
+                  <div className="flex items-center -space-x-1.5 sm:-space-x-2">
+                    {FIGURES.slice(0, 6).map((figure, index) => (
+                      <div
+                        key={figure.id}
+                        className="relative w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 rounded-full border-2 border-white overflow-hidden"
+                        style={{ zIndex: 10 - index }}
+                      >
+                        <img
+                          src={figure.imageUrl}
+                          alt={figure.name}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Step 2: Download Out of Context card */}
+              <div className="flex items-start gap-2 sm:gap-3">
+                <div className="flex-shrink-0 w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-black text-white flex items-center justify-center text-[10px] sm:text-xs font-semibold mt-0.5">
+                  2
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs sm:text-sm text-neutral-900 font-medium mb-2 sm:mb-3">
+                    Download your Out of Context card
+                  </p>
+                  <div className="inline-block max-w-full">
+                    <button
+                      type="button"
+                      disabled
+                      className="relative flex gap-1.5 sm:gap-2 items-center py-1.5 sm:py-2 px-3 sm:px-4 border border-border bg-black text-white ring-1 ring-white/10 text-[10px] sm:text-xs md:text-sm pointer-events-none"
+                    >
+                      <div className="ph ph-[sparkle--duotone] text-white text-xs sm:text-sm flex-shrink-0" />
+                      <span className="whitespace-normal sm:whitespace-nowrap">
+                        Share Your Out of Context Card
+                      </span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Step 3: Share to X with hashtags */}
+              <div className="flex items-start gap-2 sm:gap-3">
+                <div className="flex-shrink-0 w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-black text-white flex items-center justify-center text-[10px] sm:text-xs font-semibold mt-0.5">
+                  3
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs sm:text-sm text-neutral-900 font-medium mb-2 sm:mb-3">
+                    Share to X with one of the correct hashtags
+                  </p>
+                  <div className="flex flex-wrap gap-1.5 sm:gap-2">
+                    {tagOptions.slice(0, 4).map((tag) => {
+                      const compact = tag.label
+                        .toUpperCase()
+                        .replace(/[^A-Z0-9]+/g, "");
+                      return (
+                        <span
+                          key={tag.label}
+                          className="inline-flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs bg-neutral-100 border border-neutral-300 rounded"
+                        >
+                          <span className="font-mono text-neutral-700 break-all">
+                            #{tag.emoji}
+                            {compact}
+                          </span>
+                        </span>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-4 grayscale hover:grayscale-0 transition-all duration-300">
               <XPostMock
                 tagOptions={tagOptions}
                 onClick={() => {
@@ -93,18 +178,14 @@ const ContestRulesPage: React.FC<ContestRulesPageProps> = ({
         </div>
 
         <div className="relative mt-4 sm:mt-10">
+          <div className="flex justify-center mb-4 sm:mb-6">
+            <p className="text-center text-xl sm:text-2xl md:text-3xl font-quote font-normal text-neutral-700 max-w-lg">
+              &ldquo;Before AI takes over the world, please read through this
+              checklist. Trust us, they&rsquo;re already watching.&rdquo;
+            </p>
+          </div>
           <div className="border border-border bg-white/70 p-4 md:p-5 shadow-sm backdrop-blur-sm">
-            <div className="flex flex-col gap-1">
-              <div className="flex items-center gap-2 text-[10px] sm:text-[11px] uppercase tracking-wide text-neutral-600">
-                <span className="ph ph-[check-circle] text-sm sm:text-base"></span>
-                Quick checklist
-              </div>
-              <p className="text-[10px] sm:text-[11px] text-neutral-500">
-                Keep submissions clean and easy to judge.
-              </p>
-            </div>
-
-            <div className="mt-4 grid grid-cols-1 gap-3 sm:gap-4">
+            <div className="grid grid-cols-1 gap-3 sm:gap-4">
               <button
                 type="button"
                 onClick={() => {
@@ -471,9 +552,6 @@ const ContestRulesPage: React.FC<ContestRulesPageProps> = ({
               <span className="ph ph-[calendar] text-sm sm:text-base"></span>
               Timeline
             </div>
-            <h2 className="mt-2 text-base sm:text-lg font-semibold">
-              Quick schedule for the competition window.
-            </h2>
             <div className="mt-4 relative">
               <div>
                 {timeline.map((item, index) => {
