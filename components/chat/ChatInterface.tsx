@@ -5,7 +5,7 @@ import React, {
   FormEvent,
   useCallback,
 } from "react";
-import MessageComposer from "./chat/MessageComposer";
+import MessageComposer from "./MessageComposer";
 import ContributionDetailCard from "./ContributionDetailCard";
 import * as Drawer from "vaul";
 
@@ -15,30 +15,27 @@ import {
   MessageAuthor,
   ShareCategory,
   CATEGORY_METADATA,
-} from "../types";
+} from "../../types";
 import {
   startChatSession,
   sendMessageStream,
   Chat,
   evaluateConversation,
   formatConversationForEvaluation,
-} from "../services/apusService";
-import { aoService, QueryResult } from "../services/LegacyAOService";
-import TEEService from "../services/teeService";
-import ArweaveService from "../services/arweaveService";
+} from "../../services/apusService";
+import { aoService, QueryResult } from "../../services/LegacyAOService";
+import TEEService from "../../services/teeService";
+import ArweaveService from "../../services/arweaveService";
 import Markdown from "react-markdown";
-import Modal from "./dialog/Modal";
+import Modal from "../common/Modal";
 import {
   trackChatPerCharacter,
   trackPromptSubmissionWithReward,
   trackShareButtonClick,
   trackShareAction,
-} from "../services/analytics";
+} from "../../services/analytics";
 
-const dreamVideoUrl = new URL(
-  "../resources/videos/Main_Web-banner-alt.mp4",
-  import.meta.url
-).href;
+import dreamVideoUrl from "../../resources/videos/Main_Web-banner-alt.mp4?url";
 
 interface ChatInterfaceProps {
   figure: Figure;

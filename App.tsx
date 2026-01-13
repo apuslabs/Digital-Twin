@@ -10,13 +10,12 @@ import {
 import { Category, Figure, ShareCategory, CATEGORY_METADATA } from "./types";
 import { CATEGORIES, FIGURES } from "./constants";
 import { TagOption } from "./types/app";
-import Header from "./components/Header";
-import FigureSelector from "./components/FigureSelector";
-import ChatInterface from "./components/ChatInterface";
-import CompetitionPage from "./components/CompetitionPage";
-import ContestRulesPage from "./components/ContestRulesPage";
-import { ContestBanner } from "./components/ContestBanner";
-import { Footer } from "./components/Footer";
+import Header from "./components/layout/Header";
+import FigureSelector from "./components/chat/FigureSelector";
+import ChatInterface from "./components/chat/ChatInterface";
+import ContestRulesPage from "./components/competition/ContestRulesPage";
+import { ContestBanner } from "./components/competition/ContestBanner";
+import { Footer } from "./components/layout/Footer";
 
 // Selector Page Component
 const SelectorPage: React.FC = () => {
@@ -131,17 +130,6 @@ const ContestPage: React.FC = () => {
   );
 };
 
-// Competition Page Component
-const CompetitionPageRoute: React.FC = () => {
-  const navigate = useNavigate();
-
-  const handleBackToSelector = () => {
-    navigate("/");
-  };
-
-  return <CompetitionPage figures={FIGURES} onBack={handleBackToSelector} />;
-};
-
 // Main App Layout Component
 const AppLayout: React.FC = () => {
   const location = useLocation();
@@ -164,7 +152,6 @@ const AppLayout: React.FC = () => {
           <Route path="/" element={<SelectorPage />} />
           <Route path="/chat/:figureId" element={<ChatPage />} />
           <Route path="/outofcontext/" element={<ContestPage />} />
-          <Route path="/competition/" element={<CompetitionPageRoute />} />
         </Routes>
       </main>
       <Footer />

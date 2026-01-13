@@ -1,9 +1,9 @@
 import React, { useState, useMemo, useRef } from "react";
-import { TagOption, PostOption } from "../types/app";
-import { FIGURES } from "../constants";
-import { ShareCategory, CATEGORY_METADATA } from "../types";
-import { useTypewriterPost } from "../hooks/useTypewriterPost";
-import { makeHashtag, makePrefix } from "../utils/postHelpers";
+import { TagOption, PostOption } from "../../types/app";
+import { FIGURES } from "../../constants";
+import { ShareCategory, CATEGORY_METADATA } from "../../types";
+import { useTypewriterPost } from "../../hooks/useTypewriterPost";
+import { makeHashtag, makePrefix } from "../../utils/postHelpers";
 import { MockWarningTooltip } from "./MockWarningTooltip";
 
 interface XPostMockProps {
@@ -130,29 +130,22 @@ export function XPostMock({ tagOptions, onClick }: XPostMockProps) {
 
   return (
     <>
-      {/* Terminal Window Wrapper */}
-      <div className="relative rounded-lg overflow-hidden bg-black border border-neutral-700">
-        {/* Terminal Title Bar */}
-        <div className="flex items-center justify-between px-3 py-1.5 bg-neutral-900 border-b border-neutral-700">
-          {/* Terminal prompt indicator */}
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] text-green-400 font-mono">$</span>
-          </div>
+      {/* Window Wrapper */}
+      <div className="relative rounded-lg overflow-hidden bg-neutral-200 border border-border">
+        {/* Window Title Bar */}
+        <div className="flex items-center justify-between px-3 py-0.5 bg-neutral-300">
           {/* Window Title */}
           <div className="flex-1 text-center">
-            <span className="text-[10px] text-green-400 font-mono">x.com</span>
-          </div>
-          {/* Terminal status indicator */}
-          <div className="w-12 flex justify-end">
-            <span className="text-[8px] text-neutral-500 font-mono">●</span>
+            <span className="text-[10px] text-neutral-700 font-medium">
+              x.com
+            </span>
           </div>
         </div>
 
         {/* Content Area */}
         <div
-          className="relative rounded-none bg-white p-4"
+          className="relative rounded-none bg-white p-4 border border-border"
           style={{
-            border: "1px solid #cfd9de",
             fontFamily:
               'system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif',
           }}

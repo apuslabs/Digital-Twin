@@ -1,5 +1,5 @@
 import React from "react";
-import { Category, Figure } from "../types";
+import { Category, Figure } from "../../types";
 
 interface FigureSelectorProps {
   categories: Category[];
