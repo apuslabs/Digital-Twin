@@ -35,6 +35,11 @@ import {
   trackShareAction,
 } from "../services/analytics";
 
+const dreamVideoUrl = new URL(
+  "../resources/videos/Main_Web-banner-alt.mp4",
+  import.meta.url
+).href;
+
 interface ChatInterfaceProps {
   figure: Figure;
   onBack: () => void;
@@ -2693,6 +2698,24 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                   Back to Home
                 </button>
               </div>
+            </div>
+
+            {/* Thin Banner */}
+            <div className="relative w-full px-4 py-2 bg-black border-b border-border shrink-0 ring-1 ring-white/10 overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-full z-[1]">
+                <video
+                  src={dreamVideoUrl}
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  className="h-full w-full object-cover object-left opacity-30 grayscale scale-150"
+                  aria-label="Network is dreaming"
+                />
+              </div>
+              <p className="relative z-[2] text-xs text-white text-center">
+                Chat with {figure.name} to unlock and share your Out of Context card
+              </p>
             </div>
 
             <div

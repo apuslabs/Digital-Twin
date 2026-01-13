@@ -30,7 +30,7 @@ const ContestRulesPage: React.FC<ContestRulesPageProps> = ({
   onStartRandom,
 }) => {
   const [isLegalOpen, setIsLegalOpen] = useState(false);
-  const [expandedItem, setExpandedItem] = useState<number | null>(null);
+    const [expandedItem, setExpandedItem] = useState<number | null>(null);
 
   const tagOptions = useMemo<TagOption[]>(() => {
     return Object.values(ShareCategory).map((category) => {
