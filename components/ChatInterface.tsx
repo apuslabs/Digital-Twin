@@ -1306,7 +1306,7 @@ const OutOfContextCardModal: React.FC<{
   };
 
   const handleSaveOutOfContextCard = async () => {
-      if (!outOfContextCardRef.current) return;
+    if (!outOfContextCardRef.current) return;
     if (isEvaluating) return; // Do not allow saving while evaluation is in progress
 
     // Play share sound on click
@@ -1364,7 +1364,8 @@ const OutOfContextCardModal: React.FC<{
       if (aspectRef.current) {
         previousAspectHeight = aspectRef.current.style.height;
         const width =
-          aspectRef.current.clientWidth || outOfContextCardRef.current!.clientWidth;
+          aspectRef.current.clientWidth ||
+          outOfContextCardRef.current!.clientWidth;
         if (width) {
           aspectRef.current.style.height = `${Math.round((width * 9) / 16)}px`;
         }
@@ -1404,7 +1405,7 @@ const OutOfContextCardModal: React.FC<{
           // Fallback to data URL path
           const dataUrl = canvasElement.toDataURL("image/png");
           const blobFromDataUrl = await dataUrlToBlob(dataUrl);
-          downloadScoreCard(blobFromDataUrl);
+          downloadOutOfContextCard(blobFromDataUrl);
           return true;
         }
       } finally {
@@ -1783,7 +1784,8 @@ const OutOfContextCardModal: React.FC<{
             <div className="font-semibold mb-1">Evaluation error</div>
             <p className="text-sm leading-snug">{evaluationError}</p>
             <p className="text-xs mt-2 opacity-75">
-              The Out of Context card is showing mock data due to evaluation failure.
+              The Out of Context card is showing mock data due to evaluation
+              failure.
             </p>
           </div>
         )}

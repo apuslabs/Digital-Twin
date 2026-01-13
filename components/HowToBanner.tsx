@@ -10,13 +10,6 @@ const HowToBanner: React.FC<HowToBannerProps> = ({ onStartRandom }) => {
       className="flex flex-col relative overflow-hidden p-8
       ring-1 ring-white/10 bg-white border border-border transition-transform duration-150 ease-out-quart animate-fade-in gap-8"
     >
-      <div className="absolute top-0 left-0 w-full z-10">
-        <img
-          src="/resources/UI_loop.gif"
-          className="h-[400px] w-full object-cover object-[20%_65%] opacity-20 invert"
-          aria-label="Twin animation"
-        />
-      </div>
       {/* Right-side overlay image occupying half of the banner */}
       <div className="absolute right-8 bottom-0 sm:top-0 w-3/4 sm:w-1/2 z-20 pointer-events-none">
         <img

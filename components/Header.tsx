@@ -19,8 +19,7 @@ const Header: React.FC<{ onLogoClick?: () => void; isHomePage?: boolean }> = ({
           >
             <img
               src="/resources/Twin_Logo.svg"
-              width="75"
-              height="24"
+              className="w-16 h-auto sm:w-20 md:w-[75px]"
               alt="Digital Twin logo"
             />
           </button>

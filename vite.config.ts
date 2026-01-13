@@ -5,6 +5,7 @@ import tailwindcss from '@tailwindcss/vite';
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, '.', '');
   return {
+    base: "",
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),
@@ -14,7 +15,7 @@ export default defineConfig(({ mode }) => {
     server: {
       allowedHosts: ['digital-twin-mba2.onrender.com'],
       host: '0.0.0.0',
-      port: 3000
+      port: 5173
     },
     plugins: [tailwindcss()]
   };

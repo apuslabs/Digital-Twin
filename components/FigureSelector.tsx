@@ -42,8 +42,8 @@ const FigureCard: React.FC<{
         <h3 className="text-base sm:text-lg font-bold">{figure.name}</h3>
         <p className="text-xs sm:text-sm text-neutral-500">{figure.title}</p>
       </div>
-      <span 
-        className="ph ph-[arrow-up-right] mr-2 text-lg transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" 
+      <span
+        className="ph ph-[arrow-up-right] mr-2 text-lg transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
         aria-hidden
       />
     </div>

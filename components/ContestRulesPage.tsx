@@ -1,7 +1,9 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { CATEGORY_METADATA, ShareCategory } from "../types";
 import { FIGURES } from "../constants";
+import { TagOption } from "../types/app";
 import Modal from "./dialog/Modal";
+import { XPostMock } from "./XPostMock";
 
 type ContestRulesPageProps = {
   onBackHome?: () => void;
@@ -23,594 +25,6 @@ const timeline = [
   },
 ];
 
-type TagOption = {
-  emoji: string;
-  label: string;
-  color: string;
-};
-
-type PostOption = {
-  tag: TagOption;
-  text: string;
-};
-
-function makeHashtag(tag: TagOption) {
-  const compact = tag.label.toUpperCase().replace(/[^A-Z0-9]+/g, "");
-  return `#${tag.emoji}${compact}`;
-}
-
-function makePrefix(label: string) {
-  const upper = label.toUpperCase();
-  if (upper.includes("UNHINGED")) return "Wow what a time to be alive.";
-  if (upper.includes("WHOLESOME"))
-    return "Did not expect this, but it's kind of perfect.";
-  if (upper.includes("ODDLY")) return "Why is this so oddly specific?";
-  if (upper.includes("CURSED"))
-    return "I regret reading this with my own eyes.";
-  if (upper.includes("ADVICE")) return "Absolutely do not do this.";
-  if (upper.includes("OUT OF CHARACTER"))
-    return "This is so out of character it's scary.";
-  return "This twin just surprised me.";
-}
-
-function useTypewriterPost(postOptions: PostOption[]) {
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [typed, setTyped] = useState("");
-  const [phase, setPhase] = useState<"typing" | "pause" | "deleting">("typing");
-
-  useEffect(() => {
-    if (postOptions.length === 0) return;
-
-    const current = postOptions[activeIndex % postOptions.length];
-    const target = current.text;
-
-    const typingDelayMs = 34;
-    const deletingDelayMs = 18;
-    const pauseDelayMs = 1100;
-
-    const timeout = window.setTimeout(
-      () => {
-        if (phase === "typing") {
-          const next = target.slice(0, typed.length + 1);
-          setTyped(next);
-          if (next.length >= target.length) setPhase("pause");
-          return;
-        }
-
-        if (phase === "pause") {
-          setPhase("deleting");
-          return;
-        }
-
-        const next = target.slice(0, Math.max(0, typed.length - 1));
-        setTyped(next);
-        if (next.length === 0) {
-          setActiveIndex((prev) => (prev + 1) % postOptions.length);
-          setPhase("typing");
-        }
-      },
-      phase === "typing"
-        ? typingDelayMs
-        : phase === "pause"
-        ? pauseDelayMs
-        : deletingDelayMs
-    );
-
-    return () => window.clearTimeout(timeout);
-  }, [activeIndex, phase, postOptions, typed]);
-
-  const current =
-    postOptions.length > 0
-      ? postOptions[activeIndex % postOptions.length]
-      : null;
-  return { current, typed };
-}
-
-function XPostMock({ tagOptions }: { tagOptions: TagOption[] }) {
-  const [hasImage, setHasImage] = useState(true);
-  const MAX_CHARS = 200;
-
-  const postOptions = useMemo<PostOption[]>(() => {
-    return tagOptions.map((tag) => {
-      const hashtag = makeHashtag(tag);
-      const prefix = makePrefix(tag.label);
-      return {
-        tag,
-        text: `${prefix} ${hashtag} `,
-      };
-    });
-  }, [tagOptions]);
-
-  const { current, typed } = useTypewriterPost(postOptions);
-  const charsUsed = typed.length;
-  const charsRemaining = MAX_CHARS - charsUsed;
-  const progress = Math.max(0, Math.min(1, charsUsed / MAX_CHARS));
-  const ringSize = 32;
-  const ringRadius = 13;
-  const ringCircumference = 2 * Math.PI * ringRadius;
-
-  // Pick a random figure for the mock Out of Context card
-  const mockFigure = useMemo(() => {
-    return FIGURES[Math.floor(Math.random() * FIGURES.length)];
-  }, []);
-
-  const getCategoryImage = (tagLabel: string) => {
-    if (!tagLabel || !mockFigure) return mockFigure?.imageUrl || "";
-
-    // Find matching ShareCategory by label
-    const matchingCategory = Object.values(ShareCategory).find(
-      (cat) =>
-        CATEGORY_METADATA[cat].label.toUpperCase() === tagLabel.toUpperCase()
-    );
-
-    if (!matchingCategory) return mockFigure.imageUrl;
-
-    const categoryMeta = CATEGORY_METADATA[matchingCategory];
-    const moodImage = categoryMeta.moodImage;
-    const figureName = mockFigure.name.toLowerCase().replace(/\s+/g, "");
-    let moodFolder = "Rand";
-
-    if (figureName === "ao") moodFolder = "AO";
-    else if (figureName.includes("obama")) moodFolder = "Obama";
-    else if (figureName.includes("orwell")) moodFolder = "Orwell";
-    else if (figureName.includes("trump")) moodFolder = "Trump";
-    else if (figureName.includes("rand")) moodFolder = "Rand";
-    else if (figureName.includes("satoshi") || figureName.includes("nakamoto"))
-      moodFolder = "Satoshi";
-
-    switch (moodImage) {
-      case "happy":
-        return moodFolder === "Trump"
-          ? `/resources/moods/${moodFolder}/trump_smile.webp`
-          : `/resources/moods/${moodFolder}/${moodFolder.toLowerCase()}_happy.webp`;
-      case "sad":
-        return `/resources/moods/${moodFolder}/${moodFolder.toLowerCase()}_sad.webp`;
-      case "angry":
-        return `/resources/moods/${moodFolder}/${moodFolder.toLowerCase()}_angry.webp`;
-      default:
-        return mockFigure.imageUrl;
-    }
-  };
-
-  return (
-    <div
-      className="relative rounded-none bg-white p-4"
-      style={{
-        border: "1px solid #cfd9de",
-        fontFamily:
-          'system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif',
-      }}
-    >
-      {/* Mock signal: badge + subtle watermark */}
-      <div
-        className="absolute top-2 right-2 z-20 inline-flex items-center gap-1 rounded-full border px-2 py-1 text-[10px] uppercase tracking-wide text-neutral-600 bg-white/80 backdrop-blur-sm"
-        style={{ borderColor: "#cfd9de" }}
-        aria-label="Mock post preview"
-        title="Mock preview (not an actual post)"
-      >
-        <span className="ph ph-[info--duotone] text-[14px] text-amber-500" />
-        Mock preview
-      </div>
-      <div className="pointer-events-none absolute inset-0 z-0 flex items-center justify-center">
-        <div className="select-none text-[44px] font-black tracking-[0.35em] text-black/5 -rotate-12">
-          MOCK
-        </div>
-      </div>
-
-      <div className="relative z-10 flex items-start gap-3">
-        <div className="h-10 w-10 shrink-0 rounded-full bg-neutral-900" />
-
-        <div className="min-w-0 flex-1">
-          <button
-            type="button"
-            className="inline-flex items-center gap-1 rounded-full border px-3 py-1 text-sm font-semibold"
-            style={{ borderColor: "#1d9bf0", color: "#1d9bf0" }}
-          >
-            Everyone
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              aria-hidden="true"
-            >
-              <path
-                d="M6 9l6 6 6-6"
-                stroke="#1d9bf0"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
-
-          <div
-            className="mt-3 min-h-[60px] text-[20px] leading-7 text-[#0f1419] whitespace-pre-wrap"
-            aria-label="Post text (auto-demo typing)"
-          >
-            {typed || ""}
-            <span className="inline-block w-[8px] text-[#0f1419] animate-pulse">
-              |
-            </span>
-          </div>
-
-          {/* Image Attachment Preview - Mock Out of Context Card */}
-          {hasImage && current && mockFigure && (
-            <div
-              className="mt-3 rounded-2xl overflow-hidden border"
-              style={{ borderColor: "#cfd9de" }}
-            >
-              <div className="relative aspect-[16/9] flex overflow-hidden bg-white">
-                {/* X button - top right */}
-                <button
-                  type="button"
-                  className="absolute top-2 right-2 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-black/50 hover:bg-black/70 transition-colors"
-                  aria-label="Close"
-                >
-                  <svg
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    className="text-white"
-                  >
-                    <path
-                      d="M18 6L6 18M6 6l12 12"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </button>
-
-                {/* Background stripes overlay */}
-                <div
-                  className="pointer-events-none absolute inset-0 z-0 opacity-30"
-                  style={{
-                    backgroundImage:
-                      "repeating-linear-gradient(135deg, rgba(0,0,0,0.08) 0px, rgba(0,0,0,0.08) 1px, transparent 1px, transparent 8px)",
-                    backgroundSize: "10px 10px",
-                    clipPath: "polygon(65% 0%, 100% 0%, 100% 100%, 20% 100%)",
-                    WebkitClipPath:
-                      "polygon(65% 0%, 100% 0%, 100% 100%, 20% 100%)",
-                  }}
-                />
-
-                {/* Left side - Figure image */}
-                <div className="relative flex-1 overflow-hidden">
-                  <img
-                    src={
-                      getCategoryImage(current.tag.label) || mockFigure.imageUrl
-                    }
-                    alt={mockFigure.name}
-                    className="absolute inset-0 w-full h-full object-cover object-left"
-                  />
-
-                  {/* Figure name and title */}
-                  <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-white via-white/95 to-transparent z-10">
-                    <div className="text-xs font-bold uppercase tracking-wide text-neutral-900 text-left">
-                      {mockFigure.name}
-                    </div>
-                    <div className="text-[9px] text-neutral-600 text-left">
-                      {mockFigure.title}
-                    </div>
-                  </div>
-
-                  {/* Twin logo */}
-                  <div className="absolute top-0 p-2 z-10">
-                    <img
-                      src="/resources/Twin_Logo.svg"
-                      alt="Twin"
-                      className="w-12 h-auto"
-                    />
-                  </div>
-                </div>
-
-                {/* Right side - Content */}
-                <div className="w-[40%] p-4 flex flex-col justify-center bg-white/95 relative z-10">
-                  {/* Category badge */}
-                  <div
-                    className="mb-3 flex flex-col items-center justify-center gap-1 px-3 py-2 border-2 shadow-sm text-center"
-                    style={{
-                      backgroundColor: current.tag.color,
-                      borderColor: current.tag.color,
-                      color: "white",
-                    }}
-                  >
-                    <span className="text-xl">{current.tag.emoji}</span>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-center">
-                      {current.tag.label}
-                    </span>
-                  </div>
-
-                  {/* Quote */}
-                  <div className="text-sm leading-relaxed text-neutral-800 font-quote">
-                    "{makePrefix(current.tag.label)}"
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          <button
-            type="button"
-            className="mt-2 inline-flex items-center gap-2 text-sm font-semibold"
-            style={{ color: "#1d9bf0" }}
-          >
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              aria-hidden="true"
-            >
-              <path
-                d="M12 2a10 10 0 100 20 10 10 0 000-20z"
-                stroke="#1d9bf0"
-                strokeWidth="2"
-              />
-              <path
-                d="M2 12h20"
-                stroke="#1d9bf0"
-                strokeWidth="2"
-                strokeLinecap="round"
-              />
-              <path
-                d="M12 2c2.8 2.7 4.5 6.2 4.5 10S14.8 19.3 12 22c-2.8-2.7-4.5-6.2-4.5-10S9.2 4.7 12 2z"
-                stroke="#1d9bf0"
-                strokeWidth="2"
-                strokeLinejoin="round"
-              />
-            </svg>
-            Everyone can reply
-          </button>
-
-          <div className="mt-3" style={{ borderTop: "1px solid #eff3f4" }} />
-
-          <div className="mt-3 flex items-center justify-between">
-            <div
-              className="flex items-center gap-4"
-              style={{ color: "#1d9bf0" }}
-            >
-              <button
-                type="button"
-                className="p-1"
-                aria-label="Media"
-                onClick={() => setHasImage(!hasImage)}
-                style={{ color: hasImage ? "#1d9bf0" : "#536471" }}
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                  <path
-                    d="M4 6.5A2.5 2.5 0 016.5 4h11A2.5 2.5 0 0120 6.5v11A2.5 2.5 0 0117.5 20h-11A2.5 2.5 0 014 17.5v-11z"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  />
-                  <path
-                    d="M8 14l2.5-2.5L16.5 18"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M14 12l1.5-1.5L20 15"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <circle cx="9" cy="9" r="1.5" fill="currentColor" />
-                </svg>
-              </button>
-
-              <button type="button" className="p-1" aria-label="GIF">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                  <path
-                    d="M4 7.5A3.5 3.5 0 017.5 4h9A3.5 3.5 0 0120 7.5v9A3.5 3.5 0 0116.5 20h-9A3.5 3.5 0 014 16.5v-9z"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  />
-                  <path
-                    d="M8 12h3v4H8a2 2 0 010-4z"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M13 12h3"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                  />
-                  <path
-                    d="M13 16v-4h3"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </button>
-
-              <button type="button" className="p-1" aria-label="Poll">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                  <path
-                    d="M6 18V10"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                  />
-                  <path
-                    d="M12 18V6"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                  />
-                  <path
-                    d="M18 18v-8"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                  />
-                </svg>
-              </button>
-
-              <button type="button" className="p-1" aria-label="Emoji">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                  <circle
-                    cx="12"
-                    cy="12"
-                    r="9"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  />
-                  <path
-                    d="M8.5 14.5c1 1 2.1 1.5 3.5 1.5s2.5-.5 3.5-1.5"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                  />
-                  <circle cx="9" cy="10" r="1" fill="currentColor" />
-                  <circle cx="15" cy="10" r="1" fill="currentColor" />
-                </svg>
-              </button>
-
-              <button type="button" className="p-1" aria-label="Schedule">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                  <circle
-                    cx="12"
-                    cy="12"
-                    r="9"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  />
-                  <path
-                    d="M12 7v5l3 2"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </button>
-
-              <button type="button" className="p-1" aria-label="Location">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                  <path
-                    d="M12 21s7-4.4 7-11a7 7 0 10-14 0c0 6.6 7 11 7 11z"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinejoin="round"
-                  />
-                  <circle
-                    cx="12"
-                    cy="10"
-                    r="2.5"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  />
-                </svg>
-              </button>
-            </div>
-
-            <div className="flex items-center gap-4">
-              {/* Character limit indicator (X-style) */}
-              <div
-                className="relative h-8 w-8"
-                aria-label={`Characters remaining: ${Math.max(
-                  -MAX_CHARS,
-                  charsRemaining
-                )}`}
-                title={`Characters remaining: ${Math.max(
-                  -MAX_CHARS,
-                  charsRemaining
-                )}`}
-              >
-                <svg
-                  width={ringSize}
-                  height={ringSize}
-                  viewBox="0 0 32 32"
-                  className="absolute inset-0"
-                  aria-hidden="true"
-                >
-                  <circle
-                    cx="16"
-                    cy="16"
-                    r={ringRadius}
-                    stroke="#cfd9de"
-                    strokeWidth="2"
-                    fill="none"
-                  />
-                  <circle
-                    cx="16"
-                    cy="16"
-                    r={ringRadius}
-                    stroke="#1d9bf0"
-                    strokeWidth="2"
-                    fill="none"
-                    strokeLinecap="round"
-                    strokeDasharray={ringCircumference}
-                    strokeDashoffset={ringCircumference * (1 - progress)}
-                    transform="rotate(-90 16 16)"
-                  />
-                </svg>
-                {charsUsed > 0 && charsRemaining <= 20 && (
-                  <div
-                    className="absolute inset-0 flex items-center justify-center text-[10px] font-semibold"
-                    style={{ color: "#1d9bf0" }}
-                  >
-                    {Math.max(-99, charsRemaining)}
-                  </div>
-                )}
-              </div>
-
-              <div
-                className="h-6"
-                style={{ width: 1, backgroundColor: "#eff3f4" }}
-              />
-
-              <button
-                type="button"
-                className="inline-flex h-8 w-8 items-center justify-center rounded-full border"
-                style={{ borderColor: "#cfd9de", color: "#1d9bf0" }}
-                aria-label="More"
-              >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                  <path
-                    d="M12 5v14"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                  />
-                  <path
-                    d="M5 12h14"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                  />
-                </svg>
-              </button>
-
-              <button
-                type="button"
-                className="rounded-full px-5 py-2 text-sm font-semibold text-white transition-opacity"
-                style={{
-                  backgroundColor: typed.length > 0 ? "#0f1419" : "#0f1419",
-                  opacity: typed.length > 0 ? 1 : 0.5,
-                  cursor: typed.length > 0 ? "pointer" : "not-allowed",
-                }}
-                disabled={typed.length === 0}
-              >
-                Post
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 const ContestRulesPage: React.FC<ContestRulesPageProps> = ({
   onBackHome,
   onStartRandom,
@@ -630,8 +44,8 @@ const ContestRulesPage: React.FC<ContestRulesPageProps> = ({
   }, []);
 
   return (
-    <div className="mx-auto max-w-2xl animate-fade-in text-neutral-900 px-4">
-      <div className="relative overflow-hidden border border-border bg-white p-6 md:p-10">
+    <div className="sm:mx-auto max-w-2xl animate-fade-in text-neutral-900 px-0 py-0 sm:px-4">
+      <div className="relative overflow-hidden sm:border sm:border-border bg-white pt-2 pb-4 px-4 sm:p-6 md:p-10">
         <div
           className="pointer-events-none absolute inset-0 opacity-5"
           style={{
@@ -642,7 +56,7 @@ const ContestRulesPage: React.FC<ContestRulesPageProps> = ({
         />
 
         <div className="relative flex flex-col gap-4">
-          <div className="flex items-center gap-2">
+          <div className="hidden sm:flex items-center gap-2">
             <img
               src="/resources/Twin_Logo.svg"
               alt="Twin"
@@ -654,38 +68,43 @@ const ContestRulesPage: React.FC<ContestRulesPageProps> = ({
           </div>
         </div>
 
-        <div className="relative mt-8">
+        <div className="relative mt-4 sm:mt-8">
           <div>
-            <div className="flex items-center gap-2 text-[11px] uppercase tracking-wide text-neutral-600">
-              <span className="ph ph-[sparkle]"></span>
+            <div className="flex items-center gap-2 text-[10px] sm:text-[11px] uppercase tracking-wide text-neutral-600">
+              <span className="ph ph-[sparkle] text-sm sm:text-base"></span>
               Sharing
             </div>
-            <h2 className="mt-2 text-lg font-semibold">
+            <h2 className="mt-2 text-base sm:text-lg font-semibold">
               Share your out of context moments with a twin.
             </h2>
-            <p className="mt-2 text-xs text-neutral-700">
+            <p className="mt-2 text-xs sm:text-xs text-neutral-700">
               AI judges score entries, category winners get highlighted, and the
               best posts live forever on Arweave.
             </p>
             <div className="mt-4">
-              <XPostMock tagOptions={tagOptions} />
+              <XPostMock
+                tagOptions={tagOptions}
+                onClick={() => {
+                  // Handler is managed inside XPostMock component
+                }}
+              />
             </div>
           </div>
         </div>
 
-        <div className="relative mt-10">
+        <div className="relative mt-4 sm:mt-10">
           <div className="border border-border bg-white/70 p-4 md:p-5 shadow-sm backdrop-blur-sm">
             <div className="flex flex-col gap-1">
-              <div className="flex items-center gap-2 text-[11px] uppercase tracking-wide text-neutral-600">
-                <span className="ph ph-[check-circle]"></span>
+              <div className="flex items-center gap-2 text-[10px] sm:text-[11px] uppercase tracking-wide text-neutral-600">
+                <span className="ph ph-[check-circle] text-sm sm:text-base"></span>
                 Quick checklist
               </div>
-              <p className="text-[11px] text-neutral-500">
+              <p className="text-[10px] sm:text-[11px] text-neutral-500">
                 Keep submissions clean and easy to judge.
               </p>
             </div>
 
-            <div className="mt-4 grid grid-cols-1 gap-3">
+            <div className="mt-4 grid grid-cols-1 gap-3 sm:gap-4">
               <button
                 type="button"
                 onClick={() => {
@@ -697,17 +116,17 @@ const ContestRulesPage: React.FC<ContestRulesPageProps> = ({
                   }
                   setExpandedItems(newExpanded);
                 }}
-                className="group relative flex items-center h-full gap-3 border border-border bg-white p-4 shadow-[0_1px_0_rgba(0,0,0,0.04)] cursor-pointer text-left"
+                className="group relative flex items-center min-h-[44px] gap-3 border border-border bg-white p-4 sm:p-4 shadow-[0_1px_0_rgba(0,0,0,0.04)] cursor-pointer text-left overflow-hidden hover:bg-neutral-50 active:bg-neutral-50 touch-manipulation hover:border-neutral-300 active:border-neutral-300 transition-[background-color,border-color] duration-200 ease focus-visible:outline-2 focus-visible:outline-neutral-400 focus-visible:outline-offset-2"
               >
                 <div
-                  className={`flex h-6 w-6 shrink-0 items-center justify-center transition-[color] duration-300 ease-out ${
+                  className={`flex h-8 w-8 sm:h-6 sm:w-6 shrink-0 items-center justify-center transition-[color,transform] duration-200 ease-out will-change-transform group-hover:-translate-y-0.5 group-hover:scale-110 group-active:scale-105 ${
                     expandedItems.has(1) ? "text-red-500" : "text-neutral-600"
                   }`}
                 >
-                  <span className="ph ph-[eye-slash] text-[18px]" />
+                  <span className="ph ph-[eye-slash] text-[16px] sm:text-[18px]" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-[11px] uppercase tracking-wide text-neutral-500">
+                  <p className="text-[10px] sm:text-[11px] uppercase tracking-wide text-neutral-500">
                     Redact sensitive info
                   </p>
                   <div
@@ -723,7 +142,7 @@ const ContestRulesPage: React.FC<ContestRulesPageProps> = ({
                     }}
                   >
                     <div className="min-h-0 pt-2 border-t border-neutral-200">
-                      <p className="text-xs text-neutral-600 leading-relaxed">
+                      <p className="text-xs sm:text-xs text-neutral-600 leading-relaxed">
                         Use image editing tools or blur features to cover up any
                         wallet addresses, transaction IDs, or other personally
                         identifiable information. This protects your privacy and
@@ -732,15 +151,13 @@ const ContestRulesPage: React.FC<ContestRulesPageProps> = ({
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center">
+                <div className="flex items-center min-w-[24px] min-h-[24px] sm:min-w-0 sm:min-h-0">
                   <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    className={`transition-transform ${
+                    className={`w-5 h-5 sm:w-4 sm:h-4 transition-transform ${
                       expandedItems.has(1) ? "rotate-180" : ""
                     }`}
+                    viewBox="0 0 24 24"
+                    fill="none"
                   >
                     <path
                       d="M6 9l6 6 6-6"
@@ -764,17 +181,17 @@ const ContestRulesPage: React.FC<ContestRulesPageProps> = ({
                   }
                   setExpandedItems(newExpanded);
                 }}
-                className="group relative flex items-center h-full gap-3 border border-border bg-white p-4 shadow-[0_1px_0_rgba(0,0,0,0.04)] cursor-pointer text-left"
+                className="group relative flex items-center min-h-[44px] gap-3 border border-border bg-white p-4 sm:p-4 shadow-[0_1px_0_rgba(0,0,0,0.04)] cursor-pointer text-left overflow-hidden hover:bg-neutral-50 active:bg-neutral-50 touch-manipulation hover:border-neutral-300 active:border-neutral-300 transition-[background-color,border-color] duration-200 ease focus-visible:outline-2 focus-visible:outline-neutral-400 focus-visible:outline-offset-2"
               >
                 <div
-                  className={`flex h-6 w-6 shrink-0 items-center justify-center transition-[color] duration-300 ease-out ${
+                  className={`flex h-8 w-8 sm:h-6 sm:w-6 shrink-0 items-center justify-center transition-[color,transform] duration-200 ease-out will-change-transform group-hover:-translate-y-0.5 group-hover:scale-110 group-active:scale-105 ${
                     expandedItems.has(2) ? "text-blue-500" : "text-neutral-600"
                   }`}
                 >
-                  <span className="ph ph-[info] text-[18px]" />
+                  <span className="ph ph-[info] text-[16px] sm:text-[18px]" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-[11px] uppercase tracking-wide text-neutral-500">
+                  <p className="text-[10px] sm:text-[11px] uppercase tracking-wide text-neutral-500">
                     Tag your moment
                   </p>
                   <div
@@ -801,15 +218,13 @@ const ContestRulesPage: React.FC<ContestRulesPageProps> = ({
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center">
+                <div className="flex items-center min-w-[24px] min-h-[24px] sm:min-w-0 sm:min-h-0">
                   <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    className={`transition-transform ${
+                    className={`w-5 h-5 sm:w-4 sm:h-4 transition-transform ${
                       expandedItems.has(2) ? "rotate-180" : ""
                     }`}
+                    viewBox="0 0 24 24"
+                    fill="none"
                   >
                     <path
                       d="M6 9l6 6 6-6"
@@ -833,17 +248,17 @@ const ContestRulesPage: React.FC<ContestRulesPageProps> = ({
                   }
                   setExpandedItems(newExpanded);
                 }}
-                className="group relative flex items-center h-full gap-3 border border-border bg-white p-4 shadow-[0_1px_0_rgba(0,0,0,0.04)] cursor-pointer text-left"
+                className="group relative flex items-center min-h-[44px] gap-3 border border-border bg-white p-4 sm:p-4 shadow-[0_1px_0_rgba(0,0,0,0.04)] cursor-pointer text-left overflow-hidden hover:bg-neutral-50 active:bg-neutral-50 touch-manipulation hover:border-neutral-300 active:border-neutral-300 transition-[background-color,border-color] duration-200 ease focus-visible:outline-2 focus-visible:outline-neutral-400 focus-visible:outline-offset-2"
               >
                 <div
-                  className={`flex h-6 w-6 shrink-0 items-center justify-center transition-[color] duration-300 ease-out ${
+                  className={`flex h-8 w-8 sm:h-6 sm:w-6 shrink-0 items-center justify-center transition-[color,transform] duration-200 ease-out will-change-transform group-hover:-translate-y-0.5 group-hover:scale-110 group-active:scale-105 ${
                     expandedItems.has(3) ? "text-amber-500" : "text-neutral-600"
                   }`}
                 >
-                  <span className="ph ph-[sparkle] text-[18px]" />
+                  <span className="ph ph-[sparkle] text-[16px] sm:text-[18px]" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-[11px] uppercase tracking-wide text-neutral-500">
+                  <p className="text-[10px] sm:text-[11px] uppercase tracking-wide text-neutral-500">
                     One moment per entry
                   </p>
                   <div
@@ -869,15 +284,13 @@ const ContestRulesPage: React.FC<ContestRulesPageProps> = ({
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center">
+                <div className="flex items-center min-w-[24px] min-h-[24px] sm:min-w-0 sm:min-h-0">
                   <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    className={`transition-transform ${
+                    className={`w-5 h-5 sm:w-4 sm:h-4 transition-transform ${
                       expandedItems.has(3) ? "rotate-180" : ""
                     }`}
+                    viewBox="0 0 24 24"
+                    fill="none"
                   >
                     <path
                       d="M6 9l6 6 6-6"
@@ -901,19 +314,19 @@ const ContestRulesPage: React.FC<ContestRulesPageProps> = ({
                   }
                   setExpandedItems(newExpanded);
                 }}
-                className="group relative flex items-center h-full gap-3 border border-border bg-white p-4 shadow-[0_1px_0_rgba(0,0,0,0.04)] cursor-pointer text-left"
+                className="group relative flex items-center min-h-[44px] gap-3 border border-border bg-white p-4 sm:p-4 shadow-[0_1px_0_rgba(0,0,0,0.04)] cursor-pointer text-left overflow-hidden hover:bg-neutral-50 active:bg-neutral-50 touch-manipulation hover:border-neutral-300 active:border-neutral-300 transition-[background-color,border-color] duration-200 ease focus-visible:outline-2 focus-visible:outline-neutral-400 focus-visible:outline-offset-2"
               >
                 <div
-                  className={`flex h-6 w-6 shrink-0 items-center justify-center transition-[color] duration-300 ease-out ${
+                  className={`flex h-8 w-8 sm:h-6 sm:w-6 shrink-0 items-center justify-center transition-[color,transform] duration-200 ease-out will-change-transform group-hover:-translate-y-0.5 group-hover:scale-110 group-active:scale-105 ${
                     expandedItems.has(4)
                       ? "text-emerald-500"
                       : "text-neutral-600"
                   }`}
                 >
-                  <span className="ph ph-[smiley] text-[18px]" />
+                  <span className="ph ph-[smiley] text-[16px] sm:text-[18px]" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-[11px] uppercase tracking-wide text-neutral-500">
+                  <p className="text-[10px] sm:text-[11px] uppercase tracking-wide text-neutral-500">
                     Keep it fun and clean
                   </p>
                   <div
@@ -940,15 +353,13 @@ const ContestRulesPage: React.FC<ContestRulesPageProps> = ({
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center">
+                <div className="flex items-center min-w-[24px] min-h-[24px] sm:min-w-0 sm:min-h-0">
                   <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    className={`transition-transform ${
+                    className={`w-5 h-5 sm:w-4 sm:h-4 transition-transform ${
                       expandedItems.has(4) ? "rotate-180" : ""
                     }`}
+                    viewBox="0 0 24 24"
+                    fill="none"
                   >
                     <path
                       d="M6 9l6 6 6-6"
@@ -972,19 +383,19 @@ const ContestRulesPage: React.FC<ContestRulesPageProps> = ({
                   }
                   setExpandedItems(newExpanded);
                 }}
-                className="group relative flex items-center h-full gap-3 border border-border bg-white p-4 shadow-[0_1px_0_rgba(0,0,0,0.04)] cursor-pointer text-left"
+                className="group relative flex items-center min-h-[44px] gap-3 border border-border bg-white p-4 sm:p-4 shadow-[0_1px_0_rgba(0,0,0,0.04)] cursor-pointer text-left overflow-hidden hover:bg-neutral-50 active:bg-neutral-50 touch-manipulation hover:border-neutral-300 active:border-neutral-300 transition-[background-color,border-color] duration-200 ease focus-visible:outline-2 focus-visible:outline-neutral-400 focus-visible:outline-offset-2"
               >
                 <div
-                  className={`flex h-6 w-6 shrink-0 items-center justify-center transition-[color] duration-300 ease-out ${
+                  className={`flex h-8 w-8 sm:h-6 sm:w-6 shrink-0 items-center justify-center transition-[color,transform] duration-200 ease-out will-change-transform group-hover:-translate-y-0.5 group-hover:scale-110 group-active:scale-105 ${
                     expandedItems.has(5)
                       ? "text-indigo-500"
                       : "text-neutral-600"
                   }`}
                 >
-                  <span className="ph ph-[target] text-[18px]" />
+                  <span className="ph ph-[target] text-[16px] sm:text-[18px]" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-[11px] uppercase tracking-wide text-neutral-500">
+                  <p className="text-[10px] sm:text-[11px] uppercase tracking-wide text-neutral-500">
                     What counts in the competition
                   </p>
                   <div
@@ -1008,15 +419,13 @@ const ContestRulesPage: React.FC<ContestRulesPageProps> = ({
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center">
+                <div className="flex items-center min-w-[24px] min-h-[24px] sm:min-w-0 sm:min-h-0">
                   <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    className={`transition-transform ${
+                    className={`w-5 h-5 sm:w-4 sm:h-4 transition-transform ${
                       expandedItems.has(5) ? "rotate-180" : ""
                     }`}
+                    viewBox="0 0 24 24"
+                    fill="none"
                   >
                     <path
                       d="M6 9l6 6 6-6"
@@ -1040,19 +449,19 @@ const ContestRulesPage: React.FC<ContestRulesPageProps> = ({
                   }
                   setExpandedItems(newExpanded);
                 }}
-                className="group relative flex items-center h-full gap-3 border border-border bg-white p-4 shadow-[0_1px_0_rgba(0,0,0,0.04)] cursor-pointer text-left"
+                className="group relative flex items-center min-h-[44px] gap-3 border border-border bg-white p-4 sm:p-4 shadow-[0_1px_0_rgba(0,0,0,0.04)] cursor-pointer text-left overflow-hidden hover:bg-neutral-50 active:bg-neutral-50 touch-manipulation hover:border-neutral-300 active:border-neutral-300 transition-[background-color,border-color] duration-200 ease focus-visible:outline-2 focus-visible:outline-neutral-400 focus-visible:outline-offset-2"
               >
                 <div
-                  className={`flex h-6 w-6 shrink-0 items-center justify-center transition-[color] duration-300 ease-out ${
+                  className={`flex h-8 w-8 sm:h-6 sm:w-6 shrink-0 items-center justify-center transition-[color,transform] duration-200 ease-out will-change-transform group-hover:-translate-y-0.5 group-hover:scale-110 group-active:scale-105 ${
                     expandedItems.has(6)
                       ? "text-purple-500"
                       : "text-neutral-600"
                   }`}
                 >
-                  <span className="ph ph-[gavel] text-[18px]" />
+                  <span className="ph ph-[gavel] text-[16px] sm:text-[18px]" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-[11px] uppercase tracking-wide text-neutral-500">
+                  <p className="text-[10px] sm:text-[11px] uppercase tracking-wide text-neutral-500">
                     How judging works
                   </p>
                   <div
@@ -1076,15 +485,13 @@ const ContestRulesPage: React.FC<ContestRulesPageProps> = ({
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center">
+                <div className="flex items-center min-w-[24px] min-h-[24px] sm:min-w-0 sm:min-h-0">
                   <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    className={`transition-transform ${
+                    className={`w-5 h-5 sm:w-4 sm:h-4 transition-transform ${
                       expandedItems.has(6) ? "rotate-180" : ""
                     }`}
+                    viewBox="0 0 24 24"
+                    fill="none"
                   >
                     <path
                       d="M6 9l6 6 6-6"
@@ -1102,11 +509,11 @@ const ContestRulesPage: React.FC<ContestRulesPageProps> = ({
 
         <div className="relative mt-10">
           <div>
-            <div className="flex items-center gap-2 text-[11px] uppercase tracking-wide text-neutral-600">
-              <span className="ph ph-[calendar]"></span>
+            <div className="flex items-center gap-2 text-[10px] sm:text-[11px] uppercase tracking-wide text-neutral-600">
+              <span className="ph ph-[calendar] text-sm sm:text-base"></span>
               Timeline
             </div>
-            <h2 className="mt-2 text-lg font-semibold">
+            <h2 className="mt-2 text-base sm:text-lg font-semibold">
               Quick schedule for the competition window.
             </h2>
             <div className="mt-4 relative">
@@ -1118,26 +525,28 @@ const ContestRulesPage: React.FC<ContestRulesPageProps> = ({
                   return (
                     <div
                       key={item.title}
-                      className={`relative pl-10 ${!isLast ? "pb-3" : ""}`}
+                      className={`relative pl-8 sm:pl-10 ${
+                        !isLast ? "pb-2 sm:pb-3" : ""
+                      }`}
                     >
                       {/* Rail segments (stop at the center of first/last marker) */}
                       {!isFirst && (
-                        <div className="absolute left-[10px] top-0 h-[26px] w-px bg-border z-0" />
+                        <div className="absolute left-[8px] sm:left-[10px] top-0 h-[20px] sm:h-[26px] w-px bg-border z-0" />
                       )}
                       {!isLast && (
-                        <div className="absolute left-[10px] top-[26px] bottom-0 w-px bg-border z-0" />
+                        <div className="absolute left-[8px] sm:left-[10px] top-[20px] sm:top-[26px] bottom-0 w-px bg-border z-0" />
                       )}
 
                       {/* Step marker (small square) */}
-                      <div className="absolute left-0 top-4 z-10 flex h-5 w-5 items-center justify-center bg-neutral-900 text-[10px] font-semibold text-white">
+                      <div className="absolute left-0 top-3 sm:top-4 z-10 flex h-5 w-5 sm:h-5 sm:w-5 items-center justify-center bg-neutral-900 text-[9px] sm:text-[10px] font-semibold text-white">
                         {index + 1}
                       </div>
 
-                      <div className="border border-border bg-white/80 p-4 shadow-[0_1px_0_rgba(0,0,0,0.04)]">
-                        <p className="text-xs font-semibold text-neutral-900 leading-tight">
+                      <div className="border border-border bg-white/80 p-3 sm:p-4 shadow-[0_1px_0_rgba(0,0,0,0.04)]">
+                        <p className="text-xs sm:text-xs font-semibold text-neutral-900 leading-tight">
                           {item.title}
                         </p>
-                        <p className="mt-1 text-xs text-neutral-700">
+                        <p className="mt-1 text-xs sm:text-xs text-neutral-700">
                           {item.detail}
                         </p>
                       </div>
@@ -1153,21 +562,28 @@ const ContestRulesPage: React.FC<ContestRulesPageProps> = ({
           <button
             type="button"
             onClick={() => onStartRandom?.()}
-            className="relative flex h-full w-full items-center gap-3 border border-neutral-800 bg-neutral-900 p-4 cursor-pointer text-left hover:bg-neutral-800 hover:shadow-lg hover:shadow-neutral-900/20 active:scale-[0.98] transition-[background-color,box-shadow,transform] duration-300 ease-out-circ"
+            className="relative flex min-h-[60px] sm:min-h-[auto] w-full items-center gap-3 border border-neutral-800 bg-neutral-900 p-4 sm:p-4 cursor-pointer text-left hover:bg-neutral-800 active:bg-neutral-800 touch-manipulation hover:shadow-lg hover:shadow-neutral-900/20 active:scale-[0.98] transition-[background-color,box-shadow,transform] duration-300 ease-out-circ overflow-hidden"
           >
-            <div className="flex h-6 w-6 shrink-0 items-center justify-center text-white">
-              <span className="ph ph-[rocket-launch] text-[18px]" />
+            <img
+              src="/resources/UI_loop.gif"
+              className="absolute inset-0 w-full h-full object-cover object-[20%_65%] opacity-50 pointer-events-none"
+              aria-hidden="true"
+              alt=""
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-neutral-900/60 via-neutral-900/50 to-neutral-900/60" />
+            <div className="relative z-10 flex h-8 w-8 sm:h-6 sm:w-6 shrink-0 items-center justify-center text-white">
+              <span className="ph ph-[rocket-launch] text-[16px] sm:text-[18px]" />
             </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-[11px] uppercase tracking-wide text-white">
+            <div className="relative z-10 min-w-0 flex-1">
+              <p className="text-xs sm:text-[11px] uppercase tracking-wide text-white">
                 Start competition
               </p>
-              <p className="mt-1 text-xs text-neutral-200 leading-relaxed">
+              <p className="mt-1 text-xs sm:text-xs text-neutral-200 leading-relaxed">
                 Chat with a Digital Twin to generate your Out of Context card.
               </p>
             </div>
-            <div className="flex items-center text-white">
-              <span className="ph ph-[arrow-up-right] text-[18px]" />
+            <div className="relative z-10 flex items-center min-w-[24px] min-h-[24px] sm:min-w-0 sm:min-h-0 text-white">
+              <span className="ph ph-[arrow-up-right] text-[16px] sm:text-[18px]" />
             </div>
           </button>
         </div>
@@ -1176,21 +592,21 @@ const ContestRulesPage: React.FC<ContestRulesPageProps> = ({
           <button
             type="button"
             onClick={() => setIsLegalOpen(true)}
-            className="group relative flex h-full gap-3 border border-border bg-neutral-50 p-4 shadow-[0_1px_0_rgba(0,0,0,0.04)] cursor-pointer text-left w-full hover:bg-neutral-100 hover:border-neutral-300 active:scale-[0.98] transition-[background-color,border-color,transform] duration-300 ease-out-circ"
+            className="group relative flex min-h-[60px] sm:min-h-[auto] gap-3 border border-border bg-neutral-50 p-4 sm:p-4 shadow-[0_1px_0_rgba(0,0,0,0.04)] cursor-pointer text-left w-full hover:bg-neutral-100 active:bg-neutral-100 touch-manipulation hover:border-neutral-300 active:border-neutral-300 active:scale-[0.98] transition-[background-color,border-color,transform] duration-300 ease-out-circ"
           >
-            <div className="flex h-6 w-6 shrink-0 items-center justify-center text-neutral-600">
-              <span className="ph ph-[scales] text-[18px]" />
+            <div className="flex h-8 w-8 sm:h-6 sm:w-6 shrink-0 items-center justify-center text-neutral-600">
+              <span className="ph ph-[scales] text-[16px] sm:text-[18px]" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-[11px] uppercase tracking-wide text-neutral-500">
+              <p className="text-xs sm:text-[11px] uppercase tracking-wide text-neutral-500">
                 Legal requirements
               </p>
-              <p className="mt-1 text-xs text-neutral-700 leading-relaxed">
+              <p className="mt-1 text-xs sm:text-xs text-neutral-700 leading-relaxed">
                 Review terms and conditions before submitting.
               </p>
             </div>
-            <div className="flex items-center text-neutral-600">
-              <span className="ph ph-[arrow-up-right] text-[18px]" />
+            <div className="flex items-center min-w-[24px] min-h-[24px] sm:min-w-0 sm:min-h-0 text-neutral-600">
+              <span className="ph ph-[arrow-up-right] text-[16px] sm:text-[18px]" />
             </div>
           </button>
         </div>
