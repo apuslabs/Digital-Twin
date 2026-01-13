@@ -30,7 +30,7 @@ const ContestRulesPage: React.FC<ContestRulesPageProps> = ({
   onStartRandom,
 }) => {
   const [isLegalOpen, setIsLegalOpen] = useState(false);
-  const [expandedItems, setExpandedItems] = useState<Set<number>>(new Set());
+  const [expandedItem, setExpandedItem] = useState<number | null>(null);
 
   const tagOptions = useMemo<TagOption[]>(() => {
     return Object.values(ShareCategory).map((category) => {
@@ -108,19 +108,13 @@ const ContestRulesPage: React.FC<ContestRulesPageProps> = ({
               <button
                 type="button"
                 onClick={() => {
-                  const newExpanded = new Set(expandedItems);
-                  if (newExpanded.has(1)) {
-                    newExpanded.delete(1);
-                  } else {
-                    newExpanded.add(1);
-                  }
-                  setExpandedItems(newExpanded);
+                  setExpandedItem(expandedItem === 1 ? null : 1);
                 }}
                 className="group relative flex items-center min-h-[44px] gap-3 border border-border bg-white p-4 sm:p-4 shadow-[0_1px_0_rgba(0,0,0,0.04)] cursor-pointer text-left overflow-hidden hover:bg-neutral-50 active:bg-neutral-50 touch-manipulation hover:border-neutral-300 active:border-neutral-300 transition-[background-color,border-color] duration-200 ease focus-visible:outline-2 focus-visible:outline-neutral-400 focus-visible:outline-offset-2"
               >
                 <div
                   className={`flex h-8 w-8 sm:h-6 sm:w-6 shrink-0 items-center justify-center transition-[color,transform] duration-200 ease-out will-change-transform group-hover:-translate-y-0.5 group-hover:scale-110 group-active:scale-105 ${
-                    expandedItems.has(1) ? "text-red-500" : "text-neutral-600"
+                    expandedItem === 1 ? "text-red-500" : "text-neutral-600"
                   }`}
                 >
                   <span className="ph ph-[eye-slash] text-[16px] sm:text-[18px]" />
@@ -131,12 +125,12 @@ const ContestRulesPage: React.FC<ContestRulesPageProps> = ({
                   </p>
                   <div
                     className={`grid overflow-hidden will-change-[grid-template-rows,opacity,filter] ${
-                      expandedItems.has(1)
+                      expandedItem === 1
                         ? "opacity-100 blur-0"
                         : "opacity-0 blur-[2px]"
                     }`}
                     style={{
-                      gridTemplateRows: expandedItems.has(1) ? "1fr" : "0fr",
+                      gridTemplateRows: expandedItem === 1 ? "1fr" : "0fr",
                       transition:
                         "grid-template-rows 200ms cubic-bezier(.165, .84, .44, 1), opacity 200ms cubic-bezier(.165, .84, .44, 1), filter 100ms cubic-bezier(.165, .84, .44, 1)",
                     }}
@@ -154,7 +148,7 @@ const ContestRulesPage: React.FC<ContestRulesPageProps> = ({
                 <div className="flex items-center min-w-[24px] min-h-[24px] sm:min-w-0 sm:min-h-0">
                   <svg
                     className={`w-5 h-5 sm:w-4 sm:h-4 transition-transform ${
-                      expandedItems.has(1) ? "rotate-180" : ""
+                      expandedItem === 1 ? "rotate-180" : ""
                     }`}
                     viewBox="0 0 24 24"
                     fill="none"
@@ -173,19 +167,13 @@ const ContestRulesPage: React.FC<ContestRulesPageProps> = ({
               <button
                 type="button"
                 onClick={() => {
-                  const newExpanded = new Set(expandedItems);
-                  if (newExpanded.has(2)) {
-                    newExpanded.delete(2);
-                  } else {
-                    newExpanded.add(2);
-                  }
-                  setExpandedItems(newExpanded);
+                  setExpandedItem(expandedItem === 2 ? null : 2);
                 }}
                 className="group relative flex items-center min-h-[44px] gap-3 border border-border bg-white p-4 sm:p-4 shadow-[0_1px_0_rgba(0,0,0,0.04)] cursor-pointer text-left overflow-hidden hover:bg-neutral-50 active:bg-neutral-50 touch-manipulation hover:border-neutral-300 active:border-neutral-300 transition-[background-color,border-color] duration-200 ease focus-visible:outline-2 focus-visible:outline-neutral-400 focus-visible:outline-offset-2"
               >
                 <div
                   className={`flex h-8 w-8 sm:h-6 sm:w-6 shrink-0 items-center justify-center transition-[color,transform] duration-200 ease-out will-change-transform group-hover:-translate-y-0.5 group-hover:scale-110 group-active:scale-105 ${
-                    expandedItems.has(2) ? "text-blue-500" : "text-neutral-600"
+                    expandedItem === 2 ? "text-blue-500" : "text-neutral-600"
                   }`}
                 >
                   <span className="ph ph-[info] text-[16px] sm:text-[18px]" />
@@ -196,12 +184,12 @@ const ContestRulesPage: React.FC<ContestRulesPageProps> = ({
                   </p>
                   <div
                     className={`grid overflow-hidden will-change-[grid-template-rows,opacity,filter] ${
-                      expandedItems.has(2)
+                      expandedItem === 2
                         ? "opacity-100 blur-0"
                         : "opacity-0 blur-[2px]"
                     }`}
                     style={{
-                      gridTemplateRows: expandedItems.has(2) ? "1fr" : "0fr",
+                      gridTemplateRows: expandedItem === 2 ? "1fr" : "0fr",
                       transition:
                         "grid-template-rows 200ms cubic-bezier(.165, .84, .44, 1), opacity 200ms cubic-bezier(.165, .84, .44, 1), filter 100ms cubic-bezier(.165, .84, .44, 1)",
                     }}
@@ -221,7 +209,7 @@ const ContestRulesPage: React.FC<ContestRulesPageProps> = ({
                 <div className="flex items-center min-w-[24px] min-h-[24px] sm:min-w-0 sm:min-h-0">
                   <svg
                     className={`w-5 h-5 sm:w-4 sm:h-4 transition-transform ${
-                      expandedItems.has(2) ? "rotate-180" : ""
+                      expandedItem === 2 ? "rotate-180" : ""
                     }`}
                     viewBox="0 0 24 24"
                     fill="none"
@@ -240,19 +228,13 @@ const ContestRulesPage: React.FC<ContestRulesPageProps> = ({
               <button
                 type="button"
                 onClick={() => {
-                  const newExpanded = new Set(expandedItems);
-                  if (newExpanded.has(3)) {
-                    newExpanded.delete(3);
-                  } else {
-                    newExpanded.add(3);
-                  }
-                  setExpandedItems(newExpanded);
+                  setExpandedItem(expandedItem === 3 ? null : 3);
                 }}
                 className="group relative flex items-center min-h-[44px] gap-3 border border-border bg-white p-4 sm:p-4 shadow-[0_1px_0_rgba(0,0,0,0.04)] cursor-pointer text-left overflow-hidden hover:bg-neutral-50 active:bg-neutral-50 touch-manipulation hover:border-neutral-300 active:border-neutral-300 transition-[background-color,border-color] duration-200 ease focus-visible:outline-2 focus-visible:outline-neutral-400 focus-visible:outline-offset-2"
               >
                 <div
                   className={`flex h-8 w-8 sm:h-6 sm:w-6 shrink-0 items-center justify-center transition-[color,transform] duration-200 ease-out will-change-transform group-hover:-translate-y-0.5 group-hover:scale-110 group-active:scale-105 ${
-                    expandedItems.has(3) ? "text-amber-500" : "text-neutral-600"
+                    expandedItem === 3 ? "text-amber-500" : "text-neutral-600"
                   }`}
                 >
                   <span className="ph ph-[sparkle] text-[16px] sm:text-[18px]" />
@@ -263,12 +245,12 @@ const ContestRulesPage: React.FC<ContestRulesPageProps> = ({
                   </p>
                   <div
                     className={`grid overflow-hidden will-change-[grid-template-rows,opacity,filter] ${
-                      expandedItems.has(3)
+                      expandedItem === 3
                         ? "opacity-100 blur-0"
                         : "opacity-0 blur-[2px]"
                     }`}
                     style={{
-                      gridTemplateRows: expandedItems.has(3) ? "1fr" : "0fr",
+                      gridTemplateRows: expandedItem === 3 ? "1fr" : "0fr",
                       transition:
                         "grid-template-rows 200ms cubic-bezier(.165, .84, .44, 1), opacity 200ms cubic-bezier(.165, .84, .44, 1), filter 100ms cubic-bezier(.165, .84, .44, 1)",
                     }}
@@ -287,7 +269,7 @@ const ContestRulesPage: React.FC<ContestRulesPageProps> = ({
                 <div className="flex items-center min-w-[24px] min-h-[24px] sm:min-w-0 sm:min-h-0">
                   <svg
                     className={`w-5 h-5 sm:w-4 sm:h-4 transition-transform ${
-                      expandedItems.has(3) ? "rotate-180" : ""
+                      expandedItem === 3 ? "rotate-180" : ""
                     }`}
                     viewBox="0 0 24 24"
                     fill="none"
@@ -306,21 +288,13 @@ const ContestRulesPage: React.FC<ContestRulesPageProps> = ({
               <button
                 type="button"
                 onClick={() => {
-                  const newExpanded = new Set(expandedItems);
-                  if (newExpanded.has(4)) {
-                    newExpanded.delete(4);
-                  } else {
-                    newExpanded.add(4);
-                  }
-                  setExpandedItems(newExpanded);
+                  setExpandedItem(expandedItem === 4 ? null : 4);
                 }}
                 className="group relative flex items-center min-h-[44px] gap-3 border border-border bg-white p-4 sm:p-4 shadow-[0_1px_0_rgba(0,0,0,0.04)] cursor-pointer text-left overflow-hidden hover:bg-neutral-50 active:bg-neutral-50 touch-manipulation hover:border-neutral-300 active:border-neutral-300 transition-[background-color,border-color] duration-200 ease focus-visible:outline-2 focus-visible:outline-neutral-400 focus-visible:outline-offset-2"
               >
                 <div
                   className={`flex h-8 w-8 sm:h-6 sm:w-6 shrink-0 items-center justify-center transition-[color,transform] duration-200 ease-out will-change-transform group-hover:-translate-y-0.5 group-hover:scale-110 group-active:scale-105 ${
-                    expandedItems.has(4)
-                      ? "text-emerald-500"
-                      : "text-neutral-600"
+                    expandedItem === 4 ? "text-emerald-500" : "text-neutral-600"
                   }`}
                 >
                   <span className="ph ph-[smiley] text-[16px] sm:text-[18px]" />
@@ -331,12 +305,12 @@ const ContestRulesPage: React.FC<ContestRulesPageProps> = ({
                   </p>
                   <div
                     className={`grid overflow-hidden will-change-[grid-template-rows,opacity,filter] ${
-                      expandedItems.has(4)
+                      expandedItem === 4
                         ? "opacity-100 blur-0"
                         : "opacity-0 blur-[2px]"
                     }`}
                     style={{
-                      gridTemplateRows: expandedItems.has(4) ? "1fr" : "0fr",
+                      gridTemplateRows: expandedItem === 4 ? "1fr" : "0fr",
                       transition:
                         "grid-template-rows 200ms cubic-bezier(.165, .84, .44, 1), opacity 200ms cubic-bezier(.165, .84, .44, 1), filter 100ms cubic-bezier(.165, .84, .44, 1)",
                     }}
@@ -356,7 +330,7 @@ const ContestRulesPage: React.FC<ContestRulesPageProps> = ({
                 <div className="flex items-center min-w-[24px] min-h-[24px] sm:min-w-0 sm:min-h-0">
                   <svg
                     className={`w-5 h-5 sm:w-4 sm:h-4 transition-transform ${
-                      expandedItems.has(4) ? "rotate-180" : ""
+                      expandedItem === 4 ? "rotate-180" : ""
                     }`}
                     viewBox="0 0 24 24"
                     fill="none"
@@ -375,21 +349,13 @@ const ContestRulesPage: React.FC<ContestRulesPageProps> = ({
               <button
                 type="button"
                 onClick={() => {
-                  const newExpanded = new Set(expandedItems);
-                  if (newExpanded.has(5)) {
-                    newExpanded.delete(5);
-                  } else {
-                    newExpanded.add(5);
-                  }
-                  setExpandedItems(newExpanded);
+                  setExpandedItem(expandedItem === 5 ? null : 5);
                 }}
                 className="group relative flex items-center min-h-[44px] gap-3 border border-border bg-white p-4 sm:p-4 shadow-[0_1px_0_rgba(0,0,0,0.04)] cursor-pointer text-left overflow-hidden hover:bg-neutral-50 active:bg-neutral-50 touch-manipulation hover:border-neutral-300 active:border-neutral-300 transition-[background-color,border-color] duration-200 ease focus-visible:outline-2 focus-visible:outline-neutral-400 focus-visible:outline-offset-2"
               >
                 <div
                   className={`flex h-8 w-8 sm:h-6 sm:w-6 shrink-0 items-center justify-center transition-[color,transform] duration-200 ease-out will-change-transform group-hover:-translate-y-0.5 group-hover:scale-110 group-active:scale-105 ${
-                    expandedItems.has(5)
-                      ? "text-indigo-500"
-                      : "text-neutral-600"
+                    expandedItem === 5 ? "text-indigo-500" : "text-neutral-600"
                   }`}
                 >
                   <span className="ph ph-[target] text-[16px] sm:text-[18px]" />
@@ -400,12 +366,12 @@ const ContestRulesPage: React.FC<ContestRulesPageProps> = ({
                   </p>
                   <div
                     className={`grid overflow-hidden will-change-[grid-template-rows,opacity,filter] ${
-                      expandedItems.has(5)
+                      expandedItem === 5
                         ? "opacity-100 blur-0"
                         : "opacity-0 blur-[2px]"
                     }`}
                     style={{
-                      gridTemplateRows: expandedItems.has(5) ? "1fr" : "0fr",
+                      gridTemplateRows: expandedItem === 5 ? "1fr" : "0fr",
                       transition:
                         "grid-template-rows 200ms cubic-bezier(.165, .84, .44, 1), opacity 200ms cubic-bezier(.165, .84, .44, 1), filter 100ms cubic-bezier(.165, .84, .44, 1)",
                     }}
@@ -422,7 +388,7 @@ const ContestRulesPage: React.FC<ContestRulesPageProps> = ({
                 <div className="flex items-center min-w-[24px] min-h-[24px] sm:min-w-0 sm:min-h-0">
                   <svg
                     className={`w-5 h-5 sm:w-4 sm:h-4 transition-transform ${
-                      expandedItems.has(5) ? "rotate-180" : ""
+                      expandedItem === 5 ? "rotate-180" : ""
                     }`}
                     viewBox="0 0 24 24"
                     fill="none"
@@ -441,21 +407,13 @@ const ContestRulesPage: React.FC<ContestRulesPageProps> = ({
               <button
                 type="button"
                 onClick={() => {
-                  const newExpanded = new Set(expandedItems);
-                  if (newExpanded.has(6)) {
-                    newExpanded.delete(6);
-                  } else {
-                    newExpanded.add(6);
-                  }
-                  setExpandedItems(newExpanded);
+                  setExpandedItem(expandedItem === 6 ? null : 6);
                 }}
                 className="group relative flex items-center min-h-[44px] gap-3 border border-border bg-white p-4 sm:p-4 shadow-[0_1px_0_rgba(0,0,0,0.04)] cursor-pointer text-left overflow-hidden hover:bg-neutral-50 active:bg-neutral-50 touch-manipulation hover:border-neutral-300 active:border-neutral-300 transition-[background-color,border-color] duration-200 ease focus-visible:outline-2 focus-visible:outline-neutral-400 focus-visible:outline-offset-2"
               >
                 <div
                   className={`flex h-8 w-8 sm:h-6 sm:w-6 shrink-0 items-center justify-center transition-[color,transform] duration-200 ease-out will-change-transform group-hover:-translate-y-0.5 group-hover:scale-110 group-active:scale-105 ${
-                    expandedItems.has(6)
-                      ? "text-purple-500"
-                      : "text-neutral-600"
+                    expandedItem === 6 ? "text-purple-500" : "text-neutral-600"
                   }`}
                 >
                   <span className="ph ph-[gavel] text-[16px] sm:text-[18px]" />
@@ -466,12 +424,12 @@ const ContestRulesPage: React.FC<ContestRulesPageProps> = ({
                   </p>
                   <div
                     className={`grid overflow-hidden will-change-[grid-template-rows,opacity,filter] ${
-                      expandedItems.has(6)
+                      expandedItem === 6
                         ? "opacity-100 blur-0"
                         : "opacity-0 blur-[2px]"
                     }`}
                     style={{
-                      gridTemplateRows: expandedItems.has(6) ? "1fr" : "0fr",
+                      gridTemplateRows: expandedItem === 6 ? "1fr" : "0fr",
                       transition:
                         "grid-template-rows 200ms cubic-bezier(.165, .84, .44, 1), opacity 200ms cubic-bezier(.165, .84, .44, 1), filter 100ms cubic-bezier(.165, .84, .44, 1)",
                     }}
@@ -488,7 +446,7 @@ const ContestRulesPage: React.FC<ContestRulesPageProps> = ({
                 <div className="flex items-center min-w-[24px] min-h-[24px] sm:min-w-0 sm:min-h-0">
                   <svg
                     className={`w-5 h-5 sm:w-4 sm:h-4 transition-transform ${
-                      expandedItems.has(6) ? "rotate-180" : ""
+                      expandedItem === 6 ? "rotate-180" : ""
                     }`}
                     viewBox="0 0 24 24"
                     fill="none"
