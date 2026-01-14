@@ -46,7 +46,7 @@ Google Analytics is configured in `index.html` with tracking ID: `G-W05SKVSQYE`
 
 **Event Name:** `share_button_click`
 
-**When Tracked:** Every time a user clicks the "Share Your Score Card" button.
+**When Tracked:** Every time a user clicks the "Share Your Out of Context Card" button.
 
 **Parameters:**
 - `event_category`: "Social"
@@ -74,9 +74,9 @@ Google Analytics is configured in `index.html` with tracking ID: `G-W05SKVSQYE`
 - `character_name`: Character name
 - `action_type`: "copy_to_x"
 
-**Location:** `ChatInterface.tsx` - Score card modal "Copy photo and post to X" button
+**Location:** `ChatInterface.tsx` - Out of Context card modal "Copy photo and post to X" button
 
-**Use Case:** Track how many users copy the score card to clipboard for sharing on X/Twitter.
+**Use Case:** Track how many users copy the Out of Context card to clipboard for sharing on X/Twitter.
 
 ---
 
@@ -92,9 +92,9 @@ Google Analytics is configured in `index.html` with tracking ID: `G-W05SKVSQYE`
 - `character_name`: Character name
 - `action_type`: "download"
 
-**Location:** `ChatInterface.tsx` - Score card modal "Save to desktop" button
+**Location:** `ChatInterface.tsx` - Out of Context card modal "Save to desktop" button
 
-**Use Case:** Track how many users download the score card to their desktop.
+**Use Case:** Track how many users download the Out of Context card to their desktop.
 
 ---
 

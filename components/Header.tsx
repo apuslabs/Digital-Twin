@@ -1,9 +1,14 @@
 import React from "react";
 
-const Header: React.FC<{ onLogoClick?: () => void }> = ({ onLogoClick }) => {
+const Header: React.FC<{ onLogoClick?: () => void; isHomePage?: boolean }> = ({ 
+  onLogoClick,
+  isHomePage = false
+}) => {
   return (
     <header className="bg-white backdrop-blur-sm py-4 border-b border-border sticky top-0 z-20">
-      <div className="container mx-auto px-4">
+      <div className={`mx-auto px-4 ${
+        isHomePage ? "max-w-[2000px]" : "container"
+      }`}>
         <div className="flex items-center justify-between">
           <button
             type="button"
@@ -14,13 +19,13 @@ const Header: React.FC<{ onLogoClick?: () => void }> = ({ onLogoClick }) => {
           >
             <img
               src="/resources/Twin_Logo.svg"
-              width="75"
-              height="24"
+              className="w-16 h-auto sm:w-20 md:w-[75px]"
               alt="Digital Twin logo"
             />
           </button>
 
           <div className="flex-1 flex justify-end">
+            <p className="text-sm text-neutral-500">Built on ⓐ Arweave.</p>
           </div>
         </div>
       </div>

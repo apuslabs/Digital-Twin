@@ -70,7 +70,7 @@ export const trackPromptSubmissionWithReward = (params: {
 /**
  * 3. Track share button clicks
  * 
- * Tracks when "Share Your Score Card" button is clicked.
+ * Tracks when "Share Your Out of Context Card" button is clicked.
  * Includes tooltip context to measure tooltip effectiveness.
  * 
  * @param characterName - Name of the character/twin
