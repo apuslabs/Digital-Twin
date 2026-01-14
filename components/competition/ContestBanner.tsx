@@ -1,12 +1,8 @@
 import React from "react";
-import { TagOption } from "../types/app";
-import { XPostMock } from "./XPostMock";
+import { TagOption } from "../../types/app";
+import { XPostMock } from "../common/XPostMock";
 import { EnterCompetitionButton } from "./EnterCompetitionButton";
-
-const dreamVideoUrl = new URL(
-  "../resources/videos/Main_Web-banner-alt.mp4",
-  import.meta.url
-).href;
+import dreamVideoUrl from "../../resources/videos/Main_Web-banner-alt.mp4?url";
 
 interface ContestBannerProps {
   tagOptions: TagOption[];
@@ -30,32 +26,17 @@ export const ContestBanner: React.FC<ContestBannerProps> = ({
           loop
           playsInline
           className="h-[180px] md:h-[360px] w-full object-cover object-left opacity-30 grayscale scale-150"
-          aria-label="Network is dreaming"
+          aria-label="dream-video"
         />
       </div>
-      <EnterCompetitionButton onClick={onNavigateToCompetition} />
       {/* Mock X Post - Hidden on mobile */}
-      <div
-        className="hidden md:block absolute top-8 right-8 z-[15] pointer-events-none overflow-hidden w-[600px] 2xl:w-[660px] transition-[filter,transform,opacity] duration-300 ease-out scale-[0.64] opacity-80 grayscale group-hover:grayscale-0 lg:scale-[0.77] lg:opacity-90 xl:scale-[0.91] xl:opacity-95 2xl:scale-100 origin-left"
-        style={{
-          maskImage: `
-            linear-gradient(to right, transparent 0%, black 1.5%, black 98.5%, transparent 100%),
-            linear-gradient(to bottom, transparent 0%, black 1%, black 99%, transparent 100%)
-          `,
-          WebkitMaskImage: `
-            linear-gradient(to right, transparent 0%, black 1.5%, black 98.5%, transparent 100%),
-            linear-gradient(to bottom, transparent 0%, black 1%, black 99%, transparent 100%)
-          `,
-          maskComposite: "intersect",
-          WebkitMaskComposite: "source-in",
-        }}
-      >
+      <div className="hidden md:block absolute top-8 left-8 right-auto lg:left-auto lg:right-8 z-[15] pointer-events-none overflow-hidden w-[600px] 2xl:w-[660px] transition-[filter,transform,opacity] duration-300 ease-out scale-[0.64] opacity-80 grayscale group-hover:grayscale-0 lg:scale-[0.77] lg:opacity-90 xl:scale-[0.91] xl:opacity-95 2xl:scale-100 origin-left lg:origin-right">
         <XPostMock tagOptions={tagOptions} />
       </div>
-      <div className="mb-20 md:mb-40 z-20">
+      <div className="md:mb-40 z-20">
         <div className="flex flex-col md:flex-row md:justify-between gap-4 md:gap-6 w-full">
           <div className="text-white">
-            <h2 className="font-bold scale-y-125 text-sm sm:text-lg xl:text-2xl">
+            <h2 className="font-bold scale-y-125 text-xs sm:text-lg xl:text-2xl ">
               Out of Context Contest
             </h2>
             <p className="mt-4 text-xs sm:text-sm max-w-lg">
@@ -64,6 +45,7 @@ export const ContestBanner: React.FC<ContestBannerProps> = ({
             </p>
           </div>
         </div>
+        <EnterCompetitionButton onClick={onNavigateToCompetition} />
       </div>
     </div>
   );

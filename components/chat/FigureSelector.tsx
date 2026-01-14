@@ -1,5 +1,5 @@
 import React from "react";
-import { Category, Figure } from "../types";
+import { Category, Figure } from "../../types";
 
 interface FigureSelectorProps {
   categories: Category[];
@@ -75,7 +75,7 @@ const FigureSelector: React.FC<FigureSelectorProps> = ({
 }) => {
   return (
     <div className="animate-fade-in">
-      <div className="mb-6">
+      <div className="max-sm:flex max-sm:justify-center max-sm:gap-4 mb-6 px-2">
         <h2 className="font mb-1 flex items-center gap-4">
           <span className="scale-y-125 font-bold text-sm sm:text-lg">
             Select a Digital Twin

@@ -1,6 +1,6 @@
 import React from "react";
 import { createPortal } from "react-dom";
-import { useTooltipPosition } from "../hooks/useTooltipPosition";
+import { useTooltipPosition } from "../../hooks/useTooltipPosition";
 
 interface MockWarningTooltipProps {
   show: boolean;
