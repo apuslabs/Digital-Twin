@@ -56,7 +56,9 @@ const ContestRulesPage: React.FC<ContestRulesPageProps> = ({
   }, []);
 
   return (
-    <div className="sm:mx-auto max-w-2xl animate-fade-in text-neutral-900 px-0 py-0 sm:px-4">
+    <>
+      <style>{styles}</style>
+      <div className="sm:mx-auto max-w-2xl animate-fade-in text-neutral-900 px-0 py-0 sm:px-4">
       <div className="relative overflow-hidden sm:border sm:border-border bg-white pt-2 pb-4 px-4 sm:p-6 md:p-10">
         <div
           className="pointer-events-none absolute inset-0 opacity-5"
@@ -365,6 +367,7 @@ const ContestRulesPage: React.FC<ContestRulesPageProps> = ({
         </Modal>
       </div>
     </div>
+    </>
   );
 };
 
