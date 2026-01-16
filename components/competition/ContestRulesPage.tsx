@@ -219,8 +219,7 @@ const ContestRulesPage: React.FC<ContestRulesPageProps> = ({
                 <ul className="list-disc pl-5 mt-1 space-y-1">
                   <li>Employees and contractors of Forward Research, Inc. and its affiliated entities</li>
                   <li>Immediate family members of FWD employees and contractors</li>
-                    <li>Anyone involved in administering the contest or serving on the Fwd Research marketing team review panel</li>
-
+                  <li>Anyone involved in administering the contest or serving on the Fwd Research marketing team review panel</li>
                 </ul>
                 <h4 className="font-medium mt-3">Geographic Restrictions:</h4>
                 <ul className="list-disc pl-5 mt-1 space-y-1">

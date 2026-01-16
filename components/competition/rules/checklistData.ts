@@ -21,7 +21,7 @@ export const checklistItems: ChecklistItemData[] = [
     iconColor: "text-blue-500",
     title: "Tag your moment",
     description:
-      'Include the name of the Digital Twin you were chatting with (e.g., "Satoshi", "Obama", "Ayn Rand"). Select the category tag that best matches the moment—whether it\'s unhinged, wholesome, oddly specific, cursed, advice, or out of character. This helps judges quickly understand your submission.',
+      'Include the name of the Digital Twin you were chatting with (e.g., "Satoshi", "Obama", "Ayn Rand"). Select the category tag that best matches the moment—whether it\'s unhinged, wholesome, oddly specific, cursed, advice, or out of character. This helps the Fwd Research marketing team quickly understand your submission.',
   },
   {
     id: 3,
@@ -54,6 +54,5 @@ export const checklistItems: ChecklistItemData[] = [
     title: "How judging works",
     description:
       "The Fwd Research marketing team reviews entries for originality, entertainment, and category fit. Winning posts are featured during the event.",
-
   },
 ];
