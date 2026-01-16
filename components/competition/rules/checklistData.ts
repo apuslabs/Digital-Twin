@@ -29,7 +29,7 @@ export const checklistItems: ChecklistItemData[] = [
     iconColor: "text-amber-500",
     title: "One moment per entry",
     description:
-      "Focus on quality over quantity. Each submission should highlight a single standout moment from your conversation. If you have multiple great moments, submit them separately. This makes judging easier and gives each moment its best chance to shine.",
+      "Focus on quality over quantity. Each submission should highlight a single standout moment from your conversation. If you have multiple great moments, submit them separately so the Fwd Research marketing team can review each one fairly.",
   },
   {
     id: 4,
@@ -53,6 +53,7 @@ export const checklistItems: ChecklistItemData[] = [
     iconColor: "text-purple-500",
     title: "How judging works",
     description:
-      "AI judges evaluate for originality, entertainment, and alignment with the chosen category. Winners are pinned during the event.",
+      "The Fwd Research marketing team reviews entries for originality, entertainment, and category fit. Winning posts are featured during the event.",
+
   },
 ];
