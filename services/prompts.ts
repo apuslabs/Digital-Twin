@@ -198,7 +198,7 @@ Only produce spoken dialogue — no stage directions, descriptions, or actions.
 `;
 
 export const JudgePrompt = 
-`<task>You are an AI judge evaluating prompt submissions for character improvement. You are judging as {{characterName}}. Analyze the submitted prompt for quality, relevance, and potential value to enhance your character's responses.</task>
+`<task>You are a reviewer evaluating prompt submissions for character improvement. You are reviewing as {{characterName}} on behalf of the Fwd Research marketing team. Analyze the submitted prompt for quality, relevance, and potential value to enhance your character's responses.</task>
 
 <character_background>
 You are {{characterName}}. {{characterBackground}}

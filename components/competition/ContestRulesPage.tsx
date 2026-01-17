@@ -28,8 +28,8 @@ const timeline = [
     detail: "Live during the competition window.",
   },
   {
-    title: "Daily judging",
-    detail: "AI agents score and highlight standout chats in real time.",
+    title: "Weekly review",
+    detail: "Entries are reviewed by the Fwd Research marketing team each week.",
   },
   {
     title: "Winners posted",
@@ -70,13 +70,13 @@ const ContestRulesPage: React.FC<ContestRulesPageProps> = ({
         />
 
         <div className="relative flex flex-col gap-4">
-          <div className="hidden sm:flex items-center justify-center gap-2">
+          <div className="hidden sm:flex items-center justify-center gap-4">
             <img
               src="/resources/Twin_Logo.svg"
               alt="Twin"
               className="h-4 w-auto"
             />
-            <span className="text-[11px] uppercase tracking-[0.18em] text-neutral-500">
+            <span className="text-[11px] uppercase tracking-[0.18em] text-neutral-500 translate-y-[1px]">
               OUT OF CONTEXT
             </span>
           </div>
@@ -90,8 +90,8 @@ const ContestRulesPage: React.FC<ContestRulesPageProps> = ({
                 SHARE YOUR OUT OF CONTEXT MOMENTS ON X.
               </h2>
               <p className="mt-2 text-xs sm:text-xs text-neutral-700">
-                AI judges score entries, category winners get highlighted, and
-                the best posts live forever on Arweave.
+                The Fwd Research marketing team will review submissions for creativity,
+                humor, and category fit, then highlight standout posts.
               </p>
             </div>
 
@@ -219,7 +219,7 @@ const ContestRulesPage: React.FC<ContestRulesPageProps> = ({
                 <ul className="list-disc pl-5 mt-1 space-y-1">
                   <li>Employees and contractors of Forward Research, Inc. and its affiliated entities</li>
                   <li>Immediate family members of FWD employees and contractors</li>
-                  <li>Any person or entity involved in administering or judging the contest</li>
+                  <li>Anyone involved in administering the contest or serving on the Fwd Research marketing team review panel</li>
                 </ul>
                 <h4 className="font-medium mt-3">Geographic Restrictions:</h4>
                 <ul className="list-disc pl-5 mt-1 space-y-1">
@@ -334,7 +334,7 @@ const ContestRulesPage: React.FC<ContestRulesPageProps> = ({
                 <h4 className="font-medium mt-3">Selection Process:</h4>
                 <ul className="list-disc pl-5 mt-1 space-y-1">
                   <li>Winners are selected by the FWD marketing team based on creativity, humor, unexpectedness, and alignment with contest categories</li>
-                  <li>Selection criteria are subjective and at the discretion of the judging team</li>
+                  <li>Selection criteria are subjective and at the discretion of the Fwd Research marketing team</li>
                   <li>The Sponsor's decisions regarding winner selection are final and binding</li>
                 </ul>
                 <h4 className="font-medium mt-3">Dispute Resolution:</h4>

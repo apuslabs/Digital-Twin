@@ -21,7 +21,7 @@ export const checklistItems: ChecklistItemData[] = [
     iconColor: "text-blue-500",
     title: "Tag your moment",
     description:
-      'Include the name of the Digital Twin you were chatting with (e.g., "Satoshi", "Obama", "Ayn Rand"). Select the category tag that best matches the moment—whether it\'s unhinged, wholesome, oddly specific, cursed, advice, or out of character. This helps judges quickly understand your submission.',
+      'Include the name of the Digital Twin you were chatting with (e.g., "Satoshi", "Obama", "Ayn Rand"). Select the category tag that best matches the moment—whether it\'s unhinged, wholesome, oddly specific, cursed, advice, or out of character. This helps the Fwd Research marketing team quickly understand your submission.',
   },
   {
     id: 3,
@@ -29,7 +29,7 @@ export const checklistItems: ChecklistItemData[] = [
     iconColor: "text-amber-500",
     title: "One moment per entry",
     description:
-      "Focus on quality over quantity. Each submission should highlight a single standout moment from your conversation. If you have multiple great moments, submit them separately. This makes judging easier and gives each moment its best chance to shine.",
+      "Focus on quality over quantity. Each submission should highlight a single standout moment from your conversation. If you have multiple great moments, submit them separately so the Fwd Research marketing team can review each one fairly.",
   },
   {
     id: 4,
@@ -53,6 +53,6 @@ export const checklistItems: ChecklistItemData[] = [
     iconColor: "text-purple-500",
     title: "How judging works",
     description:
-      "AI judges evaluate for originality, entertainment, and alignment with the chosen category. Winners are pinned during the event.",
+      "The Fwd Research marketing team reviews entries for originality, entertainment, and category fit. Winning posts are featured during the event.",
   },
 ];
