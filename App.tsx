@@ -9,7 +9,9 @@ import {
 import Header from "./components/layout/Header";
 import { Footer } from "./components/layout/Footer";
 import { SelectorPage } from "./components/home/SelectorPage";
+import { PrivateTwinReviewPage } from "./components/home/PrivateTwinReviewPage";
 import { ChatPage } from "./components/chat/ChatPage";
+import { PrivateTwinChatPage } from "./components/chat/PrivateTwinChatPage";
 import { ContestPage } from "./components/competition/ContestPage";
 
 
@@ -34,6 +36,8 @@ const AppLayout: React.FC = () => {
       >
         <Routes>
           <Route path="/" element={<SelectorPage />} />
+          <Route path="/private/review" element={<PrivateTwinReviewPage />} />
+          <Route path="/private/chat" element={<PrivateTwinChatPage />} />
           <Route path="/chat/:figureId" element={<ChatPage />} />
           <Route path="/outofcontext/" element={<ContestPage />} />
         </Routes>

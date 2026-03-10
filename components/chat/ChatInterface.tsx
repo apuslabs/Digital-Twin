@@ -1910,7 +1910,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
               <div className="border border-border bg-white p-3 w-full xl:w-auto">
                 <h2 className="text-xl font-bold">{figure.name}</h2>
                 <p className="text-sm text-neutral-500">{figure.title}</p>
-                {figure.id !== "ao" && (
+                {figure.id !== "ao" && !!figure.arweaveTxId && (
                   <div className="flex items-center mt-1">
                     <span className="text-xs text-neutral-500 mr-2">
                       Permanent Prompt:

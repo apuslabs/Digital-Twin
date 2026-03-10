@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { Figure } from "../../types";
 import { FIGURES } from "../../constants";
 import ChatInterface from "./ChatInterface";
@@ -7,7 +7,6 @@ import ChatInterface from "./ChatInterface";
 export const ChatPage: React.FC = () => {
   const { figureId } = useParams<{ figureId: string }>();
   const navigate = useNavigate();
-  const location = useLocation();
 
   const selectedFigure = useMemo(() => {
     return FIGURES.find((f) => f.id === figureId) || null;
